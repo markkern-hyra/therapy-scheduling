@@ -43,10 +43,6 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
 
 - `src/app/` — сторінки й server actions; `src/proxy.ts` — оновлення сесії (НЕ `middleware.ts`)
 - `src/lib/supabase/{client,server,proxy}.ts` — клієнти Supabase; `database.types.ts` — генерується
-- UI — за дизайн-системою «Therapy Scheduling» (ADR 0004): токени — `@theme` у `src/app/globals.css` (у класах лише
-  вони: `bg-surface`, `text-ink`, `bg-brand` …, жодних сирих кольорів Tailwind чи hex); кнопки, поля, підписи й
-  повідомлення — лише `src/components/ui` (`Button`, `Input`, `Label`, `Alert`); компоненти застосунку —
-  `src/app/_components/`
 - `supabase/migrations/` — схема як код; `supabase/seed.sql` — ідемпотентний сид
 - `requirements/` — знімок вимог PM (лише через `/requirements-sync`): `product.md` і `<N>-<slug>.md`, у кожному
   першим рядком `> Джерело: …`
