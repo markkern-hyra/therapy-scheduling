@@ -27,7 +27,7 @@
 | Шар курсу | Де в шаблоні |
 |---|---|
 | Правила й команди | `AGENTS.md`, `CLAUDE.md`, `.claude/commands/` (`requirements-sync`, `conformance`, `opsx/`), `.cursor/commands/` |
-| Скіли | `.claude/skills/` (`spec-clarify`, `spec-review`, `openspec-*`; Cursor читає цю ж теку) |
+| Скіли | `.claude/skills/` (`spec-clarify`, `spec-review`, `openspec-*`, копії `ponytail` і superpowers — AGENTS.md, «Скіли розробки»; Cursor читає цю ж теку) |
 | MCP з мінімальними правами | `.mcp.json`, `.claude/settings.json` (лише Claude Code) |
 | Вимоги й специфікації | `requirements/`, `openspec/`, `product/` (denylist), `scripts/check-*.mjs`, `docs/conformance.md` |
 | Процес і ворота | `.github/` (CI, шаблон PR), `.coderabbit.yaml`, `docs/bootstrap.md` |
@@ -307,4 +307,5 @@ PR-ом «Оновлення шаблону» (розділ «Оновлення
 
 MIT — див. [LICENSE](LICENSE): шаблон можна вільно брати для власних і клієнтських проєктів. Протокол уточнень у
 `.claude/skills/spec-clarify` (і його таксономію, яку використовує `.claude/skills/spec-review`) адаптовано з
-[GitHub Spec Kit](https://github.com/github/spec-kit) (MIT, Copyright GitHub, Inc.).
+[GitHub Spec Kit](https://github.com/github/spec-kit) (MIT, Copyright GitHub, Inc.). Скіли `ponytail` (MIT, © DietrichGebert) і
+superpowers (MIT, © Jesse Vincent) — копії без змін, джерела й ліцензії в `.claude/skills/THIRD-PARTY-NOTICES.md`.
