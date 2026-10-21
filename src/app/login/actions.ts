@@ -12,7 +12,7 @@ export async function login(formData: FormData) {
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) {
-    redirect("/login?error=missing");
+    redirect("/login?error=LOGIN_MISSING");
   }
 
   const supabase = await createClient();
@@ -20,7 +20,7 @@ export async function login(formData: FormData) {
 
   if (error) {
     // Не показуємо текст помилки Auth: він може підказати, чи існує email.
-    redirect("/login?error=invalid");
+    redirect("/login?error=LOGIN_INVALID");
   }
 
   revalidatePath("/", "layout");

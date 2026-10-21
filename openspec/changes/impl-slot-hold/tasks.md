@@ -8,7 +8,7 @@
 
 ## 1. Ролі й клієнти
 
-- [ ] 1.1 Міграція ролей: `admin` / `scheduler` / `therapist` (зняти constraint → `member` → `therapist` → default
+- [x] 1.1 Міграція ролей: `admin` / `scheduler` / `therapist` (зняти constraint → `member` → `therapist` → default
   `therapist` → новий constraint), `private.has_role(variadic text[])`, політика select профілів терапевтів для
   `scheduler`; міграція `clients` (`full_name` і `email` `not null`, check імені й формату email — ADR 0003, unique email
   у нижньому регістрі, GRANT insert `full_name`, `email` і RLS для admin / scheduler); `supabase/demo-users.json`
