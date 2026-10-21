@@ -54,7 +54,8 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
 - `.github/` — `ci.yml`, шаблон PR
 - `scripts/` — перевірки спеки й покриття AC; `tests/` — тести (`tests/fixtures/` — дані тестів скриптів)
 - `.claude/commands/` — наші `requirements-sync.md` і `conformance.md` (у `.cursor/commands/` — посилання на них);
-  `.claude/skills/` — наші скіли `spec-clarify` і `spec-review`; Cursor читає їх звідти ж. `openspec-*` і `/opsx*`
+  `.claude/skills/` — наші скіли `spec-clarify` і `spec-review` та копії `ponytail` і шести скілів superpowers (розділ
+  «Скіли розробки»; джерела й ліцензії — `.claude/skills/THIRD-PARTY-NOTICES.md`); Cursor читає їх звідти ж. `openspec-*` і `/opsx*`
   у `.claude/` та `.cursor/` згенерував OpenSpec (однакові копії для двох інструментів) — вручну не редагуй.
 - Нові шари курсу — новими файлами: e2e-тести — `tests/e2e/*.spec.ts` (Vitest їх не запускає, і `ac:coverage`
   не рахує їх як покриття AC, доки e2e не запускає окремий крок CI — тоді фільтр у `scripts/lib/test-titles.mjs`
@@ -107,6 +108,27 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
 - На кожен коментар CodeRabbit — виправлення або відповідь, чому ні.
 - `/opsx:verify` і `/conformance` — порадники; ворота — CI (`spec`, `app`, `conformance`, `db-check`).
 - Виправлення шаблону курсу переносимо `git cherry-pick <sha>` у гілку `template/<коротко>`, не `git merge` (історії не пов'язані), — PR «Оновлення шаблону».
+
+## Скіли розробки: ponytail і superpowers
+
+Копії в `.claude/skills/` без змін (джерела, коміти й ліцензії MIT — `.claude/skills/THIRD-PARTY-NOTICES.md`).
+На своїх кроках вони **обов'язкові**, а не «за бажанням»: викликай скіл до дії й дотримуйся його.
+
+| Коли | Скіл | Тут це означає |
+|---|---|---|
+| Початок роботи над задачею | `using-superpowers` | перед дією звірити, який скіл із цієї таблиці доречний |
+| Будь-яка зміна коду, міграції, тестів чи скриптів | `ponytail` (рівень `full`) | найменша повна зміна: спершу наявне в репо, потім платформа, потім встановлені залежності; у кінці відповіді — що пропущено і ризики |
+| Реалізація задачі `impl-<зріз>` (`/opsx:apply`, гілка `task/…`) | `test-driven-development` | спершу тест `it("AC-…: …")`, побачити його червоним, потім мінімальний код |
+| Падає тест, CI, збірка чи поведінка не та | `systematic-debugging` | корінь причини до виправлення; після 3 невдалих спроб — обговорити підхід з людиною |
+| Перед комітом, push, PR і будь-яким «готово» / «пройшло» | `verification-before-completion` | свіжий запуск `npm run lint`, `typecheck`, `test`, `ac:coverage` (для `openspec/` — ще `spec:check`); висновок — лише з виводом |
+| Перед PR «Реалізація» | `requesting-code-review` | субагент-рецензент на diff задачі проти `design.md` і AC; Critical і Important — виправити до PR |
+| Коментарі CodeRabbit | `receiving-code-review` | перевірити проти коду; виправлення або технічна відповідь у треді коментаря |
+
+- Пріоритет: цей файл і процес OpenSpec вищі за скіли. Скілів superpowers, яких тут немає, не додаємо: `brainstorming` →
+  `/opsx:explore` і `spec-clarify`; `writing-plans` / `executing-plans` → зміна `impl-<зріз>` і `/opsx:apply`;
+  `finishing-a-development-branch` → PR, CodeRabbit і Squash and merge (у `main` — лише через PR).
+- Ponytail і DRY: спільний хелпер, компонент чи SQL-функція — з другого повтору тієї самої логіки; абстракцій
+  «на майбутнє» немає.
 
 ## База даних (Supabase)
 
