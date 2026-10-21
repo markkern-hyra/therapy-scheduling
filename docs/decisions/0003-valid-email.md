@@ -20,7 +20,8 @@ PM вимагає «коректний email» (AC-HOLD-15: email без @ ві�
   регістр); формат не перевіряє.
 - Порушення check (`23514`) → код `CLIENT_INVALID` → «Enter the client's name and a valid email.»; порушення unique
   (`23505`) → `CLIENT_EXISTS` → «A client with this email already exists.» (`src/lib/scheduling/messages.ts`).
-- Ім'я — check `clients_full_name_check`: `btrim(full_name) <> ''`, той самий код `CLIENT_INVALID`.
+- Ім'я — check `clients_full_name_check`: `full_name ~ '[^[:space:]]'` (хоча б один непробільний символ; `btrim` знімає
+  лише пробіли, а не табуляцію й переноси), той самий код `CLIENT_INVALID`.
 
 ## Розглянуті варіанти
 

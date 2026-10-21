@@ -25,15 +25,16 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
 
         <section className="flex max-w-sm flex-col gap-4">
           <h2 className="text-lg font-semibold">New client</h2>
-          {/* noValidate: порожнє ім'я й email без @ відхиляє база, і планувальник бачить текст PM, а не підказку браузера. */}
+          {/* noValidate: порожнє ім'я й email без @ відхиляє база, і планувальник бачить текст PM, а не підказку браузера;
+              required лишається як семантика для екранних читачів. */}
           <form action={createClientCard} noValidate className="flex flex-col gap-4">
             <Label>
               Full name
-              <Input name="full_name" autoComplete="off" />
+              <Input name="full_name" autoComplete="off" required />
             </Label>
             <Label>
               Email
-              <Input name="email" type="email" autoComplete="off" />
+              <Input name="email" type="email" autoComplete="off" required />
             </Label>
             <div>
               <Button type="submit">Create client</Button>

@@ -12,9 +12,14 @@
 
 ## Рішення
 
-- Джерело — невелика перша дизайн-система «Therapy Scheduling» (артефакт claude.ai, приватний:
-  https://claude.ai/artifact/LmSdGitY1aeGTpppnvrLb6): 11 кольорів однієї світлої теми, Geist і Geist Mono, кроки відступів
-  Tailwind 1–6, кути 4 / 8 / 9999 px, правила тексту й статусів у її README.
+- Канон у репо — `@theme` у `src/app/globals.css` і це ADR. Бренд-бук із поясненнями — невелика перша дизайн-система
+  «Therapy Scheduling» (приватний артефакт claude.ai розробника: https://claude.ai/artifact/LmSdGitY1aeGTpppnvrLb6;
+  читачам репо може бути недоступний): 11 кольорів однієї світлої теми, Geist і Geist Mono, кроки відступів Tailwind
+  1, 2, 3, 4, 6, кути 4 / 8 / 9999 px.
+- Правила вжитку (коротко, щоб не залежати від артефакту): `surface` — тло, `ink` / `ink-muted` — текст, `brand` — одна
+  головна дія на екран і статус «Confirmed», `brand-soft` + `brand-strong` — «Held», `surface-muted` + `ink-muted` —
+  «Expired» і «Past», `danger` — лише помилки; рамки полів — `line-strong`, роздільники — `line`; тіней немає; статус —
+  завжди словом, колір лише підсилює.
 - Токени — у `@theme` файлу `src/app/globals.css` під тими самими іменами (`bg-surface`, `text-ink`,
   `border-line-strong`, `bg-brand`, `text-danger` …). Палітру Tailwind прибрано (`--color-*: initial`), тож сирі
   кольори в класах просто не працюють.
@@ -31,7 +36,8 @@
 
 ## Наслідки
 
-- Зміна кольору — у двох місцях: `tokens.json` артефакту і `@theme` у `globals.css` (однакові імена), в одному PR.
+- Зміна кольору — спершу `@theme` у `globals.css` (канон) у PR, потім те саме ім'я й значення в `tokens.json`
+  артефакту, щоб бренд-бук не відставав.
 - Нова сторінка складається з компонентів `src/components/ui` і класів токенів; новий стан (наприклад, статус) —
-  спершу в README дизайн-системи, потім у коді.
+  у «Правилах вжитку» цього ADR і в README дизайн-системи в тому самому PR, що й код.
 - Темну тему згодом можна додати новим ADR: друга тема в артефакті й `@media` у `globals.css`.

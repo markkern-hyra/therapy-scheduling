@@ -38,8 +38,9 @@ create policy profiles_select_therapists_for_scheduler
 -- ── Клієнти ─────────────────────────────────────────────────────────────────
 create table public.clients (
   id         uuid primary key default gen_random_uuid(),
+  -- Хоча б один непробільний символ (btrim знімає лише пробіли, а не табуляцію й переноси) — AC-HOLD-11.
   full_name  text not null
-    constraint clients_full_name_check check (btrim(full_name) <> ''),
+    constraint clients_full_name_check check (full_name ~ '[^[:space:]]'),
   -- Email зберігаємо вже нормалізованим (AC-HOLD-35), тож unique ловить і « Client1@Example.TEST » (AC-HOLD-34).
   -- Формат «valid email» — ADR 0003 (AC-HOLD-15).
   email      text not null

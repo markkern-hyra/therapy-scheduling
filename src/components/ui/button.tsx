@@ -9,7 +9,7 @@ const VARIANTS = {
 export function Button({
   variant = "primary",
   ...props
-}: ComponentProps<"button"> & { variant?: keyof typeof VARIANTS }) {
+}: Omit<ComponentProps<"button">, "className"> & { variant?: keyof typeof VARIANTS }) {
   return (
     <button
       {...props}

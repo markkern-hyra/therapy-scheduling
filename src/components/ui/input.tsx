@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 
-export function Input(props: ComponentProps<"input">) {
+export function Input(props: Omit<ComponentProps<"input">, "className">) {
   return (
     <input
       {...props}
