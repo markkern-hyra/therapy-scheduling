@@ -54,6 +54,7 @@ Docker не потрібен: локально — лише npm run dev прот
       пароль у рядку percent-encoded — `SUPABASE_DB_URL` (environment `production`)
 - [x] Запасний шлях (лише якщо `--db-url` не працює): секрети environment `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD`,
       `SUPABASE_PROJECT_ID` (README, «Міграції в прод: запасний шлях») — не потрібно: основний шлях `--db-url` працює
+      (на запасний шлях `db-deploy` переходить, лише коли `SUPABASE_DB_URL` видалено — README, «Міграції в прод»)
 - [x] (Необов'язково) секрет репо `SPEC_DENYLIST` — ті самі справжні назви через кому, для CI — не потрібно: PM списку
       не надсилав
 
@@ -92,7 +93,9 @@ Docker не потрібен: локально — лише npm run dev прот
 
 - [ ] `git switch -c setup/bootstrap` → цей файл із доказами розділів 1–6 → push → `gh pr create --web` (тип «Реалізація»)
       → окремим коментарем `@coderabbitai review` — <!-- посилання на PR (наступним PR) -->
-- [ ] Поки перевірки не зелені, кнопка merge заблокована; push у `main` напряму відхиляється — <!-- знімок -->
+- [ ] Поки перевірки не зелені, кнопка merge заблокована; push у `main` напряму відхиляється —
+      [img/merge-blocked.png](img/merge-blocked.png) (PR #2: обов'язкові перевірки ще йдуть, «Merge pull request»
+      неактивна); відмову прямого push у `main` ще не перевірено
 - [ ] Vercel створив preview для PR — <!-- посилання на preview (наступним PR) -->
 - [ ] **Squash and merge** → прод-деплой Vercel пройшов — <!-- посилання -->
 - [ ] (З першою задачею, що має міграцію) `db-check` зелений, після merge `db-deploy` застосував її у вашу базу — <!-- посилання на run -->
