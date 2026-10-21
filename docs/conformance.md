@@ -33,12 +33,12 @@
 
 | AC | Що перевіряє | Код | Тест | Статус |
 |---|---|---|---|---|
-| AC-HOLD-10 | новий клієнт з ім'ям та email створюється й доступний для утримання | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-11 | порожнє ім'я — клієнта не створено, «Enter the client's name and a valid email.» | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-15 | email без @ — клієнта не створено, «Enter the client's name and a valid email.» | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-16 | той самий email — «A client with this email already exists.» | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-34 | той самий email іншим регістром і з пробілами — дублікат | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-35 | email зберігається й показується малими літерами без пробілів | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-10 | новий клієнт з ім'ям та email створюється й доступний для утримання | `src/app/clients/actions.ts` (createClientCard), `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | відкладено (вибір клієнта під час утримання — задача 3.1) |
+| AC-HOLD-11 | порожнє ім'я — клієнта не створено, «Enter the client's name and a valid email.» | `src/app/clients/actions.ts` (createClientCard), `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | реалізовано |
+| AC-HOLD-15 | email без @ — клієнта не створено, «Enter the client's name and a valid email.» | `src/app/clients/actions.ts` (createClientCard), `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | реалізовано |
+| AC-HOLD-16 | той самий email — «A client with this email already exists.» | `src/app/clients/actions.ts` (createClientCard), `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | реалізовано |
+| AC-HOLD-34 | той самий email іншим регістром і з пробілами — дублікат | `src/app/clients/actions.ts` (createClientCard), `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | реалізовано |
+| AC-HOLD-35 | email зберігається й показується малими літерами без пробілів | `src/app/clients/actions.ts` (createClientCard), `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | реалізовано |
 | AC-HOLD-01 | слоти дня зі статусами вільний / «Held» / «Confirmed»; утримати можна лише вільний | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-32 | слоти, що вже почалися без активного утримання, — «Past», не утримуються | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-18 | день без вільних слотів — «No free slots on this day.» і всі слоти зі статусами | — | — | відкладено (чекає реалізації) |
