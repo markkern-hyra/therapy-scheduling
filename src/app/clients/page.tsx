@@ -43,12 +43,12 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
         </section>
 
         <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">All clients</h2>
+          <h2 id="all-clients" className="text-lg font-semibold">All clients</h2>
           {clients.length === 0 ? (
             <p className="text-sm text-ink-muted">No clients yet.</p>
           ) : (
             <div className="overflow-hidden rounded-md border border-line">
-              <table className="w-full text-left text-sm">
+              <table aria-labelledby="all-clients" className="w-full text-left text-sm">
                 <thead className="bg-surface-muted text-xs font-medium text-ink-muted">
                   <tr>
                     <th className="px-3 py-2">Name</th>
