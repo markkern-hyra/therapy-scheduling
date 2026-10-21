@@ -13,13 +13,24 @@
 - Платформа (requirements/product.md, «Що поза scope»): жодних фонових задач частіше ніж раз на добу — прострочення
   рахуємо за часом створення утримання, а не задачею за розкладом.
 
+## Принципи
+
+- **DRY — одне джерело правди на правило.** Правила запису (утримання, підтвердження, ролі, унікальність email) — лише
+  в базі; TypeScript їх не повторює, а показує статуси й перекладає коди помилок бази в тексти PM. Формули, потрібні в
+  кількох місцях, — один хелпер: `private.has_role`, `private.is_active_hold`, `requireRole`, `runAction`, `messages.ts`.
+- **KISS.** Без окремої таблиці сеансів, без RPC там, де вистачає одного `insert`/`update` з тригером, без бібліотек UI
+  й дат, без шарів-репозиторіїв і класів.
+- **SOLID у функціональному коді.** Маленькі модулі з однією відповідальністю (`time`, `status`, `visibility`,
+  `clients`, `messages`); чисті функції отримують дані й `now` параметрами (тести задають час AC); сторінки й server
+  actions тонкі — лише зчитати, викликати доменну функцію чи базу, показати результат.
+
 ## Goals / Non-Goals
 
 **Goals:**
 
 - Кожен AC-HOLD-01 … 36: код + тест `it("AC-HOLD-NN: …")` + рядок «реалізовано» в `docs/conformance.md`.
-- Правила утримання й підтвердження тримає **база**, а не лише сторінка: прямий запит до Data API в обхід сторінок
-  дає ті самі відмови (AC-HOLD-03, 04, 07, 08, 13, 14, 17, 22, 25, 36).
+- Правила утримання й підтвердження тримає **база**: прямий запит до Data API в обхід сторінок дає ті самі відмови
+  (AC-HOLD-03, 04, 07, 08, 13, 14, 17, 22, 25, 36).
 - Права з матриці `requirements/product.md` — у RLS (терапевт бачить лише своє, AC-HOLD-09, 21).
 - Увесь показ часу — America/Los_Angeles, формат `РРРР-ММ-ДД ГГ:ХХ`, 24 години = 1440 хвилин незалежно від переходу
   на літній/зимовий час.
@@ -37,8 +48,14 @@
 
 Міграція в порядку з AGENTS.md: зняти `profiles_role_check` → `update profiles set role = 'therapist' where role =
 'member'` → `alter column role set default 'therapist'` (найменші права) → новий `profiles_role_check` з `admin`,
-`scheduler`, `therapist`. Роль читаємо лише з `profiles.role` через `private.current_app_role()`.
-Інтерфейс — англійською (Assumptions PM), тож тексти шаблону на `/` і `/login` теж переводимо.
+`scheduler`, `therapist`. Роль читаємо лише з `profiles.role`.
+
+- SQL: `private.has_role(variadic roles text[])` (`security definer`, `set search_path = ''`) поверх наявного
+  `private.current_app_role()` — один вираз для всіх політик і тригерів замість повторюваного `in (…)`.
+- TypeScript: `src/lib/auth/roles.ts` — тип `Role` і `STAFF_ROLES = ['admin', 'scheduler']` (хто утримує, підтверджує й
+  створює клієнтів); `src/lib/auth/require-role.ts` — `requireRole(...roles)`: `getClaims()` (не `getSession()`) →
+  `profiles.role` → інакше перенаправлення на `/`. Одна перевірка для всіх сторінок і server actions.
+- Інтерфейс — англійською (Assumptions PM), тож тексти шаблону на `/` і `/login` теж переводимо.
 
 *Альтернатива:* роль у `user_metadata` / JWT — відкинуто (AGENTS.md: роль лише з `profiles`).
 
@@ -55,43 +72,46 @@
   сеансів немає, `confirmed_at is not null`.
 - **Статус не зберігаємо, а обчислюємо з часу:** `Confirmed`, якщо `confirmed_at`; інакше `Held`, якщо
   `now() < expires_at`; інакше `Expired`. Статус слоту: `Confirmed` / `Held` за його утриманнями, інакше `Past`, якщо
-  `starts_at <= now()`, інакше вільний (AC-HOLD-01, 05, 06, 32). Так прострочення відбувається «саме», без задачі за
+  `starts_at <= now()`, інакше вільний (AC-HOLD-01, 05, 06, 32). Прострочення відбувається «саме», без задачі за
   розкладом.
+- «Активне утримання» (`Held` або `Confirmed`) — один хелпер `private.is_active_hold(confirmed_at, expires_at)` для
+  тригерів і RLS; у TypeScript той самий зміст має `holdStatus` у `status.ts` (показ, не запис).
 - `created_at` і `expires_at = created_at + interval '24 hours'` ставить тригер (клієнт їх не передає й не має на них
   GRANT). `timestamptz + interval '24 hours'` додає рівно 1440 хвилин і на переході на літній/зимовий час (AC-HOLD-02,
   05, 06). Згенерованою колонкою не робимо: `timestamptz + interval` у Postgres не `immutable`.
 - Старі прострочені утримання слоту лишаються в таблиці: слот може мати багато утримань у часі, але не більше одного
-  активного (`Held`) або підтвердженого (рішення 4).
+  активного (рішення 4).
 
 ### 3. Права: GRANT + RLS
 
 | Таблиця | select | insert | update | delete |
 |---|---|---|---|---|
 | `profiles` | власний; admin — усі; scheduler — профілі терапевтів | — (тригер) | `full_name` (як у шаблоні) | — |
-| `clients` | admin, scheduler — усі; therapist — клієнти власних непрострочених утримань і сеансів | admin, scheduler (`full_name`, `email`) | — | — |
+| `clients` | admin, scheduler — усі; therapist — клієнти власних активних утримань і сеансів | admin, scheduler (`full_name`, `email`) | — | — |
 | `slots` | admin, scheduler — усі; therapist — власні | — (лише `service_role`) | — | — |
-| `holds` | admin, scheduler — усі; therapist — на власних слотах і лише `confirmed_at is not null or expires_at > now()` | admin, scheduler (`slot_id`, `client_id`) | admin, scheduler (`confirmed_at`) | — |
+| `holds` | admin, scheduler — усі; therapist — на власних слотах і лише активні | admin, scheduler (`slot_id`, `client_id`) | admin, scheduler (`confirmed_at`) | — |
 
-- Політики `to authenticated`, `auth.uid()` лише як `(select auth.uid())`. Перехресні умови (клієнт ↔ утримання ↔
-  слот) — через хелпери в `private` (`security definer`, `set search_path = ''`), щоб уникнути рекурсії політик (42P17).
+- Політики `to authenticated`, `auth.uid()` лише як `(select auth.uid())`, роль — `private.has_role(…)`. Перехресні
+  умови (клієнт ↔ утримання ↔ слот) — через хелпери в `private` (`security definer`, `set search_path = ''`), щоб
+  уникнути рекурсії політик (42P17).
 - Прострочене утримання терапевту не видно вже на рівні RLS, а не лише сторінки (AC-HOLD-21; рішення PM #5).
 
-### 4. Правила утримання й підтвердження — у базі (AC-HOLD-03, 04, 07, 08, 13, 14, 17, 22, 25, 26, 36)
+### 4. Правила утримання й підтвердження — лише в базі (AC-HOLD-03, 04, 07, 08, 13, 14, 17, 22, 25, 26, 36)
 
 Утримання — один `insert into holds`, підтвердження — один `update holds set confirmed_at`: кожен запит — одна
 транзакція. Перевірки робить тригер `before insert` / `before update` (`private.*`, `security definer`,
 `set search_path = ''`), бо `before`-тригер спрацьовує раніше за `with check` RLS і має дати впізнаваний код помилки.
+Це **єдине** місце цих правил: server action їх не повторює.
 
 **Утримання** (`private.check_new_hold`), по черзі; помилка — `raise exception '<КОД>'`:
 
-1. роль не `admin` / `scheduler` → `HOLD_FORBIDDEN` (AC-HOLD-08);
+1. не `private.has_role('admin', 'scheduler')` → `HOLD_FORBIDDEN` (AC-HOLD-08);
 2. `select … from clients where id = new.client_id for update`, потім `select … from slots where id = new.slot_id for
    update` — завжди в цьому порядку (без взаємних блокувань);
-3. на слоті вже є `Held` або підтверджене утримання → `SLOT_TAKEN` (AC-HOLD-03, 17);
+3. на слоті вже є активне утримання → `SLOT_TAKEN` (AC-HOLD-03, 17);
 4. `slots.starts_at <= now()` → `SLOT_STARTED` (AC-HOLD-07);
-5. у клієнта є `Held` або підтверджене утримання, слот якого перетинається з цим (`s.starts_at < new_end and
-   s.ends_at > new_start` — суміжні не перетинаються, глосарій «Перетин») → `CLIENT_BUSY` (AC-HOLD-25); прострочені не
-   рахуються (AC-HOLD-26);
+5. у клієнта є активне утримання, слот якого перетинається з цим (`s.starts_at < new_end and s.ends_at > new_start` —
+   суміжні не перетинаються, глосарій «Перетин») → `CLIENT_BUSY` (AC-HOLD-25); прострочені не рахуються (AC-HOLD-26);
 6. `created_at = now()`, `expires_at = now() + interval '24 hours'`, `confirmed_at = null`.
 
 Блокування рядка слоту `for update` серіалізує одночасні спроби: друга транзакція чекає першу, а після її коміту
@@ -100,38 +120,36 @@
 
 **Підтвердження** (`private.check_hold_confirm`, `before update of confirmed_at`):
 
-1. роль не `admin` / `scheduler` → `CONFIRM_FORBIDDEN` (AC-HOLD-14);
+1. не `private.has_role('admin', 'scheduler')` → `CONFIRM_FORBIDDEN` (AC-HOLD-14);
 2. `old.confirmed_at is not null` → `ALREADY_CONFIRMED` (AC-HOLD-36): друге `update` того самого рядка чекає на
    блокування першого й після його коміту бачить уже підтверджене утримання — і для «в ту саму мить»;
 3. `old.expires_at <= now()` → `HOLD_EXPIRED` (AC-HOLD-13);
 4. `slots.starts_at <= now()` → `CONFIRM_STARTED`, утримання лишається `Held` (AC-HOLD-22, 23);
-5. `confirmed_at = now()` (значення від клієнта ігнорується); будь-який планувальник чи адміністратор може
-   підтвердити будь-яке утримання (AC-HOLD-19, 27).
+5. `confirmed_at = now()` (значення від клієнта ігнорується) — утримання стає сеансом; будь-який планувальник чи
+   адміністратор може підтвердити будь-яке утримання (AC-HOLD-19, 27).
 
-*Альтернативи:* (а) перевірки лише в server action — відкинуто: прямий запит до Data API їх оминає, а одночасність
-(AC-HOLD-04, 36) без блокування в базі не гарантувати; (б) RPC-функції `hold_slot` / `confirm_hold` — рівноцінно, але
-тригер ловить і прямий `insert`/`update`, тож окрема RPC не потрібна; (в) exclusion- чи частковий unique-індекс —
-неможливий, бо «активне» залежить від `now()`.
+*Альтернативи:* (а) перевірки ще й у server action «для швидкої відповіді» — відкинуто: дублювання правил (DRY), а
+сторінка й так не показує кнопок «Hold» / «Confirm» там, де статус їх не дозволяє; (б) RPC-функції `hold_slot` /
+`confirm_hold` — зайвий шар (KISS): тригер ловить і прямий `insert`/`update`; (в) exclusion- чи частковий unique-індекс
+— неможливий, бо «активне» залежить від `now()`.
 
 ### 5. Час і часовий пояс (AC-HOLD-02, 05, 06, 22, 23, 28–31)
 
 - У базі — `timestamptz`; порівняння з `now()`.
 - У застосунку — `src/lib/scheduling/time.ts` на `Intl.DateTimeFormat` з `timeZone: 'America/Los_Angeles'`, без нових
   залежностей: `formatPracticeDateTime` (`2026-11-03 14:30`), `practiceDayRange(day)` і `practiceWeek(today)` (межі дня й
-  тижня пн–нд у UTC з урахуванням переходу на літній/зимовий час), `holdExpiresAt`.
+  тижня пн–нд у UTC з урахуванням переходу на літній/зимовий час).
 - Усі доменні функції приймають `now` параметром — тести задають час AC (наприклад, `2026-11-03T12:30` за LA).
 
-### 6. Доменний модуль `src/lib/scheduling/` (чистий TypeScript, без Supabase)
+### 6. Доменний модуль `src/lib/scheduling/` (чистий TypeScript, без Supabase; лише показ)
 
 | Файл | Що робить | AC |
 |---|---|---|
-| `time.ts` | часовий пояс практики, формат, межі дня й тижня, `holdExpiresAt` | 02, 05, 06, 30, 31 |
-| `status.ts` | `holdStatus`, `slotStatus`, `isHoldable`, `daySlotsView` (повідомлення «No free slots on this day.») | 01, 05, 06, 18, 24, 32, 33 |
-| `holds.ts` | `checkHold`, `checkConfirm` — ті самі правила й порядок, що в тригерах | 03, 04, 07, 08, 12–14, 17, 19, 22, 23, 25–27, 36 |
+| `time.ts` | часовий пояс практики, формат, межі дня й тижня | 02, 05, 06, 30, 31 |
+| `status.ts` | `holdStatus`, `slotStatus` (вільний, «Held», «Confirmed», «Expired», «Past»), `isHoldable`, `daySlotsView` («No free slots on this day.») | 01, 02, 05, 06, 12, 18, 24, 26, 32, 33 |
 | `visibility.ts` | `schedulerHolds` (прострочене — до початку слоту), `therapistWeek` (без прострочених, лише власне) | 09, 20, 21, 28–31 |
-| `clients.ts` | `normalizeEmail`, `checkClient` | 10, 11, 15, 16, 34, 35 |
-| `roles.ts` | `canHold`, `canConfirm`, `canManageClients` | 08, 14, 19 |
-| `messages.ts` | код → текст PM дослівно; розпізнавання кодів з помилок Postgres (`23505` → `CLIENT_EXISTS`, `42501` → `*_FORBIDDEN`) | усі повідомлення |
+| `clients.ts` | `normalizeEmail` (форма перед записом; правило формату — check бази й ADR 0003) | 34, 35 |
+| `messages.ts` | одна мапа код → текст PM дослівно; `errorCode(error)` — код із помилки Postgres (`raise exception '<КОД>'`, `23505` → `CLIENT_EXISTS`, `23514` на `clients` → `CLIENT_INVALID`, `42501` → `*_FORBIDDEN`) | 03, 04, 07, 08, 11, 13–17, 22, 25, 36 |
 
 Коди й тексти: `SLOT_TAKEN` «This slot is no longer available.»; `SLOT_STARTED` «This slot has already started and cannot
 be held.»; `HOLD_FORBIDDEN` «Only schedulers and admins can hold slots.»; `CLIENT_BUSY` «This client already has a hold or
@@ -142,32 +160,38 @@ already started and cannot be confirmed.»; `ALREADY_CONFIRMED` «This hold is a
 
 ### 7. Server actions і сторінки
 
+Спільне (одне місце на всі сторінки й actions):
+
+- `requireRole(...roles)` (рішення 1) — на початку кожної сторінки й кожного server action.
+- `runAction(write, { back })` у `src/lib/actions.ts` — виконати запис; помилку Supabase через `errorCode` перекласти
+  в код; `redirect` на `back` з `?error=<КОД>` або без нього. Кожен action — 3–5 рядків.
+- Маленькі компоненти `src/app/_components/`: `StatusBadge`, `ErrorMessage` (читає `?error=` і `messages.ts`),
+  навігація за роллю. Лише Tailwind.
+
 | Сторінка | Хто | Що | Server action | AC |
 |---|---|---|---|---|
 | `/` | усі | роль і посилання; scheduler/admin → `/slots`, therapist → `/schedule` | `signOut` | — |
-| `/clients` | admin, scheduler | список клієнтів і форма «ім'я + email» | `createClientCard` → `checkClient` → `insert clients` | 10, 11, 15, 16, 34, 35 |
-| `/slots?therapist=…&day=…` | admin, scheduler | слоти терапевта на день зі статусами, клієнт і «Held until», кнопка «Hold» з вибором клієнта лише для вільних | `holdSlot` → `checkHold` → `insert holds` | 01–04, 06, 07, 17, 18, 24–26, 32, 33 |
-| `/holds` | admin, scheduler | утримання й сеанси: клієнт, терапевт, слот, статус, «Held until»; кнопка «Confirm» для `Held` | `confirmHold` → `checkConfirm` → `update holds` | 05, 06, 12, 13, 19, 20, 22, 23, 27–29, 36 |
+| `/clients` | admin, scheduler | список клієнтів і форма «ім'я + email» | `createClientCard` → `insert clients` (email через `normalizeEmail`) | 10, 11, 15, 16, 34, 35 |
+| `/slots?therapist=…&day=…` | admin, scheduler | слоти терапевта на день зі статусами, клієнт і «Held until», «Hold» з вибором клієнта лише для `isHoldable` | `holdSlot` → `insert holds` | 01–04, 06, 07, 17, 18, 24–26, 32, 33 |
+| `/holds` | admin, scheduler | утримання й сеанси: клієнт, терапевт, слот, статус, «Held until»; «Confirm» для `Held` | `confirmHold` → `update holds` | 05, 06, 12, 13, 19, 20, 22, 23, 27–29, 36 |
 | `/schedule?week=…` | therapist | власний тиждень пн–нд зі статусами слотів, перемикання тижнів | — | 09, 21, 30, 31 |
 
-- Роль — `getClaims()` + `profiles.role` (не `getSession()`); сторінки іншої ролі перенаправляють на `/`.
-- Server action спершу перевіряє роль і правила доменом (швидка відповідь), потім пише в базу; помилку бази
-  перекладає `messages.ts` на той самий код. Код повертаємо в `?error=<КОД>`, сторінка показує текст PM.
-- Терапевт кнопок «Hold» / «Confirm» не бачить; прямий виклик action чи Data API дає `HOLD_FORBIDDEN` /
-  `CONFIRM_FORBIDDEN` (AC-HOLD-08, 14).
+- Терапевт сторінок `/clients`, `/slots`, `/holds` не відкриває (`requireRole`), а прямий виклик action чи Data API
+  отримує від бази `HOLD_FORBIDDEN` / `CONFIRM_FORBIDDEN` (AC-HOLD-08, 14).
 
 ### 8. «Valid email» (AC-HOLD-11, 15)
 
-PM правила не визначила (припущення розробника в `add-slot-hold`). Рішення: після `normalizeEmail` (`btrim` + нижній
-регістр) email має відповідати `^[^\s@]+@[^\s@]+\.[^\s@]+$` — одне `@`, щось до нього, крапка в домені, без пробілів.
-Те саме правило — у `checkClient` і в check-обмеженні `clients.email`. Запис рішення — ADR 0003.
+PM правила не визначила (припущення розробника в `add-slot-hold`). Рішення: після нормалізації (`btrim` + нижній
+регістр) email має відповідати `^[^\s@]+@[^\s@]+\.[^\s@]+$`. Правило живе в одному місці — check-обмеженні
+`clients.email` (порушення → `CLIENT_INVALID`); форма лише нормалізує email перед записом. Запис рішення — ADR 0003.
 
 ### 9. Тести
 
 - Юніт-тести `tests/scheduling/*.test.ts`, назви починаються з AC ID (`it("AC-HOLD-32: …")`); дані й час — з AC.
-- Для правил, які тримає база (AC-HOLD-04, 08, 14, 17, 25, 36), тест перевіряє доменну функцію з тим самим порядком
-  перевірок і розпізнавання коду помилки бази → текст PM. Саму одночасність і RLS перевіряємо вручну (два сеанси в
-  браузері, три ролі) за чеклістом у PR задачі.
+- Що перевіряють: статуси й видимість (`status.ts`, `visibility.ts`), час (`time.ts`), нормалізацію email
+  (`clients.ts`) і переклад помилки бази в текст PM (`messages.ts`) для кожного коду правил запису.
+- Самі правила бази (тригери, RLS, одночасність AC-HOLD-04 і 36) — ручна перевірка за чеклістом у PR задачі
+  (два вікна браузера, три ролі, прямий запит під therapist).
 
 ### 10. Демо-дані
 
@@ -182,10 +206,10 @@ PM правила не визначила (припущення розробни
 
 ## Risks / Trade-offs
 
-- [Тести бази не в CI] RLS, тригери й одночасність перевіряються вручну → чекліст ручної перевірки в кожному PR з
-  міграцією (pgTAP свідомо не додаємо — див. «Узгоджено з розробником»).
-- [Два місця правил] Правила утримання є і в тригері, і в `holds.ts` → однаковий порядок перевірок і ті самі коди;
-  тест на кожен код.
+- [Правила бази без автотестів] Тригери, RLS і одночасність не покриті Vitest → чекліст ручної перевірки в кожному PR з
+  міграцією; тести Vitest перевіряють переклад кожного коду помилки. pgTAP свідомо не додаємо.
+- [Статус у двох мовах] «Активне утримання» є в SQL (`is_active_hold`, для запису й RLS) і в TypeScript (`holdStatus`,
+  для показу) → одна формула з однаковими назвами; зміна статусу — в обох у тому самому PR.
 - [Час сервера vs бази] Статус на сторінці рахує `new Date()` сервера Next.js, а тригер — `now()` бази → розбіжність
   у секунди на межі хвилини; база — остаточна інстанція (тригер відмовить, сторінка покаже текст PM).
 - [Старі демо-користувачі] `member1@` і `member2@` після міграції стануть терапевтами й отримають демо-слоти →
@@ -195,16 +219,18 @@ PM правила не визначила (припущення розробни
 ## Migration Plan
 
 - Міграції — по одній на задачу (`npx supabase migration new <назва>`), у порядку задач `tasks.md`: ролі → клієнти →
-  слоти й `generate_demo_slots` → утримання з тригерами й RLS. Кожна — `db-check` у PR, `db-deploy` після merge.
+  слоти й `generate_demo_slots` → утримання з тригером утримання й RLS → тригер підтвердження → видимість клієнтів для
+  терапевта. Кожна — `db-check` у PR, `db-deploy` після merge.
 - Після міграції ролей і слотів: `npm run users:demo` (користувачі, ролі, слоти); клієнти демо — Actions → CI → Run
   workflow з `include_seed` або через сторінку `/clients`.
 - Відкат — лише новою міграцією (без `down`), як вимагає AGENTS.md.
 
 ## Узгоджено з розробником
 
+- Принципи DRY / KISS / SOLID (розділ «Принципи»): правила запису — лише в базі, TypeScript — показ і переклад кодів.
 - ADR у `docs/decisions/` (статус «прийнято»), кожен — у PR задачі, де рішення з'являється в коді:
   0001 — сеанс як підтверджене утримання й статус, обчислений з часу (рішення 2; задача 4.1);
-  0002 — правила утримання й підтвердження в тригерах з блокуванням рядків (рішення 4; задача 4.1);
-  0003 — правило «valid email» (рішення 8; задача 2.1).
+  0002 — правила утримання й підтвердження лише в тригерах бази з блокуванням рядків (рішення 4; задача 4.1);
+  0003 — правило «valid email» в check-обмеженні (рішення 8; задача 2.1).
 - Автотестів бази (pgTAP, окремий workflow) не додаємо: RLS, тригери й одночасність — ручна перевірка за чеклістом у PR
   задачі (як у курсовому демо).
