@@ -1,57 +1,66 @@
 /* Класи шукаємо лише в src/: приклади-заборони з DESIGN.md і AGENTS.md не потрапляють у CSS. */
 @import "tailwindcss" source("..");
 
-/* Токени дизайн-системи «Therapy Scheduling» (DESIGN.md, ADR 0005): семантичні пари shadcn/ui, OKLCH.
-   Значення — у :root (світла тема) і @media (prefers-color-scheme: dark); класи — з @theme inline.
-   Новий токен — спершу DESIGN.md, потім тут у трьох місцях. */
+/* Токени дизайн-системи «Therapy Scheduling» (DESIGN.md, ADR 0005): семантичні пари shadcn/ui, OKLCH; теплий спокійний
+   напрям — теплі нейтральні (відтінок 60–80°), шавлієво-бірюзовий акцент (172°). background — тло сторінки, card —
+   поверхні (картки, поля, списки) поверх нього. Значення — у :root (світла тема) і @media (prefers-color-scheme: dark);
+   класи — з @theme inline. Новий токен — спершу DESIGN.md, потім тут у трьох місцях. */
 :root {
   color-scheme: light dark;
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.205 0 0);
+  --background: oklch(0.977 0.004 75);
+  --foreground: oklch(0.255 0.012 60);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.205 0 0);
-  --primary: oklch(0.51 0.086 186);
-  --primary-foreground: oklch(0.985 0 0);
-  --primary-hover: oklch(0.46 0.078 186);
-  --muted: oklch(0.967 0.001 286.4);
-  --muted-foreground: oklch(0.442 0.017 285.8);
-  --destructive: oklch(0.51 0.19 27);
-  --border: oklch(0.92 0.004 286.3);
-  --input: oklch(0.552 0.016 285.9);
-  --ring: oklch(0.51 0.086 186);
-  --status-held: oklch(0.953 0.051 180.8);
-  --status-held-foreground: oklch(0.44 0.072 188);
-  /* «Confirmed» — той самий акцент, що й головна дія, в обох темах. */
-  --status-confirmed: var(--primary);
-  --status-confirmed-foreground: var(--primary-foreground);
+  --card-foreground: oklch(0.255 0.012 60);
+  --primary: oklch(0.5 0.08 172);
+  --primary-foreground: oklch(0.985 0.003 90);
+  --primary-hover: oklch(0.45 0.075 172);
+  --primary-soft: oklch(0.955 0.025 172);
+  --muted: oklch(0.955 0.006 75);
+  --muted-foreground: oklch(0.47 0.013 60);
+  --destructive: oklch(0.52 0.17 28);
+  --destructive-soft: oklch(0.965 0.016 25);
+  --border: oklch(0.905 0.007 75);
+  --input: oklch(0.64 0.012 70);
+  --ring: oklch(0.5 0.08 172);
+  /* «Held» — пісочний: утримання чекає підтвердження; «Confirmed» — бірюзовий, у гамі акценту. */
+  --status-held: oklch(0.95 0.05 85);
+  --status-held-foreground: oklch(0.45 0.09 65);
+  --status-confirmed: oklch(0.93 0.045 172);
+  --status-confirmed-foreground: oklch(0.38 0.07 172);
+  --card-shadow: 0 1px 2px oklch(0.25 0.02 60 / 0.05), 0 4px 14px oklch(0.25 0.02 60 / 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: oklch(0.17 0.004 286);
-    --foreground: oklch(0.96 0.002 286);
-    --card: oklch(0.21 0.005 286);
-    --card-foreground: oklch(0.96 0.002 286);
-    --primary: oklch(0.75 0.1 184);
-    --primary-foreground: oklch(0.2 0.03 190);
-    --primary-hover: oklch(0.81 0.09 184);
-    --muted: oklch(0.27 0.006 286);
-    --muted-foreground: oklch(0.74 0.012 286);
-    --destructive: oklch(0.71 0.16 22);
-    --border: oklch(0.3 0.006 286);
-    --input: oklch(0.56 0.014 286);
-    --ring: oklch(0.75 0.1 184);
-    --status-held: oklch(0.31 0.05 186);
-    --status-held-foreground: oklch(0.88 0.07 182);
+    --background: oklch(0.175 0.006 70);
+    --foreground: oklch(0.95 0.006 80);
+    --card: oklch(0.215 0.007 70);
+    --card-foreground: oklch(0.95 0.006 80);
+    --primary: oklch(0.77 0.09 170);
+    --primary-foreground: oklch(0.2 0.03 175);
+    --primary-hover: oklch(0.82 0.08 170);
+    --primary-soft: oklch(0.3 0.04 172);
+    --muted: oklch(0.26 0.008 70);
+    --muted-foreground: oklch(0.72 0.012 75);
+    --destructive: oklch(0.72 0.15 25);
+    --destructive-soft: oklch(0.27 0.04 25);
+    --border: oklch(0.3 0.008 70);
+    --input: oklch(0.55 0.012 70);
+    --ring: oklch(0.77 0.09 170);
+    --status-held: oklch(0.33 0.05 75);
+    --status-held-foreground: oklch(0.88 0.08 85);
+    --status-confirmed: oklch(0.32 0.05 172);
+    --status-confirmed-foreground: oklch(0.88 0.07 170);
+    --card-shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 4px 14px oklch(0 0 0 / 0.25);
   }
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --radius-sm: 4px;
-  --radius-md: 8px;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --shadow-card: var(--card-shadow);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -60,9 +69,11 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

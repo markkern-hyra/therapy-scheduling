@@ -82,7 +82,7 @@ export function ClientCardForm({ today }: { today: string }) {
       </Card>
       <div className="flex gap-2">
         <Button type="submit" disabled={pending}>
-          Create client
+          {pending ? "Creating…" : "Create client"}
         </Button>
         <ButtonLink href="/clients" variant="secondary">
           Cancel

@@ -3,19 +3,21 @@ import type { ReactNode } from "react";
 export type Description = {
   term: string;
   detail: ReactNode;
-  // Дата й час — Geist Mono (DESIGN.md, розділ 3); відсутнє значення («Not provided») — приглушене.
-  mono?: boolean;
+  // Дата й час — табличні цифри (DESIGN.md, розділ 3); відсутнє значення («Not provided») — приглушене.
+  numeric?: boolean;
   muted?: boolean;
 };
 
-// Пари «підпис — значення» (<dl>): підпис ліворуч на широкому екрані, над значенням — на вузькому.
+// Пари «підпис — значення» (<dl>) сіткою: підпис над значенням, 1–3 колонки за шириною.
 export function DescriptionList({ items }: { items: Description[] }) {
   return (
-    <dl className="divide-y divide-border text-sm">
+    <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item) => (
-        <div key={item.term} className="grid gap-1 py-3 first:pt-0 last:pb-0 sm:grid-cols-[12rem_1fr] sm:gap-4">
-          <dt className="text-muted-foreground">{item.term}</dt>
-          <dd className={item.muted ? "text-muted-foreground" : item.mono ? "font-mono" : undefined}>{item.detail}</dd>
+        <div key={item.term} className="flex flex-col gap-1">
+          <dt className="text-sm text-muted-foreground">{item.term}</dt>
+          <dd className={`text-base ${item.muted ? "text-muted-foreground" : "font-medium"} ${item.numeric ? "tabular-nums" : ""}`}>
+            {item.detail}
+          </dd>
         </div>
       ))}
     </dl>

@@ -10,12 +10,12 @@ import { practiceToday } from "@/lib/scheduling/time";
 // Форма нової картки з анкети (AC-CARD-01–03). Терапевт за прямим посиланням бачить лише відмову, без форми
 // (AC-CARD-06; варіант A питання Sofiia-pm/therapy-scheduling-spec#24) — дія createClientCard відмовляє й без сторінки.
 export default async function NewClientPage() {
-  const { role, email } = await requireRole();
+  const { role, name } = await requireRole();
 
   return (
     <>
-      <AppNav role={role} email={email} />
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-6">
+      <AppNav role={role} name={name} />
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-8">
         <PageHeader
           title="New client"
           description="A client card from the intake form."

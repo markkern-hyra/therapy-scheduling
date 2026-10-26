@@ -9,7 +9,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { error } = await searchParams;
 
   return (
-    <AuthShell>
+    <AuthShell tagline>
       <h1 className="text-2xl font-semibold">Sign in</h1>
       <ErrorMessage code={error} />
       <form action={login} className="flex flex-col gap-4">

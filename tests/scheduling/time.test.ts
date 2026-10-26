@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatDayStep,
   formatPracticeDateTime,
   formatPracticeTime,
   isPracticeDay,
   practiceDayRange,
   practiceToday,
+  shiftPracticeDay,
 } from "@/lib/scheduling/time";
 
 describe("time: часовий пояс практики America/Los_Angeles", () => {
@@ -50,5 +52,16 @@ describe("time: часовий пояс практики America/Los_Angeles", (
     expect(isPracticeDay("0000-01-01")).toBe(false);
     expect(isPracticeDay("2026-1-3")).toBe(false);
     expect(isPracticeDay(["2026-11-03"])).toBe(false);
+  });
+
+  it("сусідній день — календарний крок через межу місяця й року і день переходу часу", () => {
+    expect(shiftPracticeDay("2026-10-31", 1)).toBe("2026-11-01");
+    expect(shiftPracticeDay("2027-01-01", -1)).toBe("2026-12-31");
+    expect(shiftPracticeDay("2026-11-01", 1)).toBe("2026-11-02");
+  });
+
+  it("підпис дня для кроків днями — день тижня й число місяця", () => {
+    expect(formatDayStep("2026-10-27")).toBe("Tue 27");
+    expect(formatDayStep("2026-11-01")).toBe("Sun 1");
   });
 });

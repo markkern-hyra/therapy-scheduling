@@ -50,9 +50,22 @@ export function isPracticeDay(value: unknown): value is string {
   return !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === value;
 }
 
+// Календарний день за `days` днів від `day` («РРРР-ММ-ДД»): арифметика дат, без годин, тож переходи часу не заважають.
+export function shiftPracticeDay(day: string, days: number): string {
+  const date = new Date(`${day}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+const dayStep = new Intl.DateTimeFormat("en-US", { timeZone: "UTC", weekday: "short", day: "numeric" });
+
+// «Tue 27» — підпис кроку днями на сторінці слотів.
+export function formatDayStep(day: string): string {
+  const p = Object.fromEntries(dayStep.formatToParts(new Date(`${day}T00:00:00Z`)).map(({ type, value }) => [type, value]));
+  return `${p.weekday} ${p.day}`;
+}
+
 // Межі дня `day` («РРРР-ММ-ДД») за LA: [start, end).
 export function practiceDayRange(day: string): { start: Date; end: Date } {
-  const next = new Date(`${day}T00:00:00Z`);
-  next.setUTCDate(next.getUTCDate() + 1);
-  return { start: practiceMidnight(day), end: practiceMidnight(next.toISOString().slice(0, 10)) };
+  return { start: practiceMidnight(day), end: practiceMidnight(shiftPracticeDay(day, 1)) };
 }

@@ -7,7 +7,7 @@ const BADGES = {
   Past: "muted",
 } as const;
 
-// Статус слоту → бейдж зі словом PM; вільний слот — без бейджа й без власного кольору (DESIGN.md, розділи 2 і 5).
-export function StatusBadge({ status }: { status: SlotStatus }) {
-  return status === "free" ? "Free" : <Badge variant={BADGES[status]}>{status}</Badge>;
+// Статус зайнятого чи минулого слоту → бейдж зі словом PM; вільний слот бейджа не має (DESIGN.md, розділи 2 і 5).
+export function StatusBadge({ status }: { status: Exclude<SlotStatus, "free"> }) {
+  return <Badge variant={BADGES[status]}>{status}</Badge>;
 }

@@ -14,27 +14,30 @@ export async function currentUser() {
 
   // RLS: власний профіль бачить кожен.
   const { data: profile, error } = claims
-    ? await supabase.from("profiles").select("email, role").eq("id", claims.sub).maybeSingle()
+    ? await supabase.from("profiles").select("email, full_name, role").eq("id", claims.sub).maybeSingle()
     : { data: null, error: null };
   if (error) throw new Error(error.message);
 
+  const email = profile?.email ?? claims?.email ?? null;
   return {
     supabase,
     signedIn: Boolean(claims),
     role: toRole(profile?.role),
-    email: profile?.email ?? claims?.email ?? null,
+    email,
+    // Ім'я в шапці; немає імені в профілі — email.
+    name: profile?.full_name ?? email,
   };
 }
 
 // Початок кожної сторінки й server action (proxy — лише UX). Без входу — на /login; без ролі — на /no-access; роль не з
 // переліку — на «/»; без аргументів — будь-яка роль.
 export async function requireRole(...roles: Role[]) {
-  const { supabase, signedIn, role, email } = await currentUser();
+  const { supabase, signedIn, role, email, name } = await currentUser();
 
   const access = accessFor(signedIn, role, roles);
   if (access === "login") redirect("/login");
   if (access === "no-access") redirect("/no-access");
   if (access === "forbidden") redirect("/");
 
-  return { supabase, role: role as Role, email };
+  return { supabase, role: role as Role, email, name };
 }
