@@ -89,7 +89,8 @@ private.is_own_client(id))`). Хелпер — `security definer`, бо полі
 ## Auth
 
 - **Proxy — лише UX:** `src/proxy.ts` перенаправляє без сесії на `/login` (AC-CARD-07), але дані захищає не він.
-- **Кожна сторінка й Server Action** починається з `requireRole` (`getClaims()`, не `getSession()`; роль — з
+- **Кожна захищена сторінка й Server Action** починається з `requireRole` (сторінка `/login` і дії, що сесію
+  створюють чи завершують, — `login`, `signOut` — його не викликають) (`getClaims()`, не `getSession()`; роль — з
   `profiles.role`, ніколи з `user_metadata`): без claims → `/login` (AC-CARD-07); роль `null` → `/no-access`
   (AC-CARD-11). Сама сторінка `/no-access` `requireRole` не викликає (інакше — цикл перенаправлень): вона перевіряє
   лише вхід (`getClaims()`), а користувача з роллю відправляє на `/`.
