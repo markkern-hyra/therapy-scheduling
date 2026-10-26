@@ -22,7 +22,7 @@
 
 ## 2. Свої клієнти терапевта
 
-- [ ] 2.1 Міграція `own_clients`: `private.is_own_client` і політика `clients_select_own_for_therapist`; `/clients` для
+- [x] 2.1 Міграція `own_clients`: `private.is_own_client` і політика `clients_select_own_for_therapist`; `/clients` для
   терапевта (свої клієнти, порожній стан AC-CARD-09), `/clients/[id]` — «You don't have access to this client.» для
   чужого чи простроченого; посилання «Clients» у навігації терапевта.
   - Тести бази (PGlite): AC-CARD-04, 05, 08, 09 (відмова і незмінна картка); логіка вибору тексту порожнього стану.
