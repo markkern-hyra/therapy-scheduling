@@ -13,13 +13,13 @@ const LINKS: Record<Role, { href: string; label: string }[]> = {
 
 export function AppNav({ role }: { role: Role | null }) {
   return (
-    <header className="border-b border-line">
+    <header className="border-b border-border">
       <nav className="mx-auto flex w-full max-w-3xl items-center gap-6 px-6 py-3 text-sm">
         <Link href="/" className="text-lg font-semibold">
           Therapy Scheduling
         </Link>
         {(role ? LINKS[role] : []).map((link) => (
-          <Link key={link.href} href={link.href} className="text-brand hover:underline">
+          <Link key={link.href} href={link.href} className="text-primary hover:underline">
             {link.label}
           </Link>
         ))}

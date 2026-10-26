@@ -1,4 +1,5 @@
 @AGENTS.md
+@DESIGN.md
 
 - Мова відповідей і документації — українська; код, команди й імена файлів — англійською.
 - Скіли: `.claude/skills/` (spec-clarify, spec-review, openspec-*, ponytail, superpowers: using-superpowers, test-driven-development, systematic-debugging, verification-before-completion, requesting-code-review, receiving-code-review — коли кожен обов'язковий, див. AGENTS.md, «Скіли розробки»); команди: `/requirements-sync`, `/conformance`, `/opsx:*`.

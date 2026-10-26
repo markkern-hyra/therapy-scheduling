@@ -3,6 +3,7 @@ import { ErrorMessage } from "@/app/_components/error-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader } from "@/components/ui/table";
 import { requireRole } from "@/lib/auth/require-role";
 import { STAFF_ROLES } from "@/lib/auth/roles";
 import { createClientCard } from "./actions";
@@ -45,26 +46,24 @@ export default async function ClientsPage({ searchParams }: PageProps<"/clients"
         <section className="flex flex-col gap-4">
           <h2 id="all-clients" className="text-lg font-semibold">All clients</h2>
           {clients.length === 0 ? (
-            <p className="text-sm text-ink-muted">No clients yet.</p>
+            <p className="text-sm text-muted-foreground">No clients yet.</p>
           ) : (
-            <div className="overflow-hidden rounded-md border border-line">
-              <table aria-labelledby="all-clients" className="w-full text-left text-sm">
-                <thead className="bg-surface-muted text-xs font-medium text-ink-muted">
-                  <tr>
-                    <th className="px-3 py-2">Name</th>
-                    <th className="px-3 py-2">Email</th>
+            <Table aria-labelledby="all-clients">
+              <TableHeader>
+                <tr>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                </tr>
+              </TableHeader>
+              <TableBody>
+                {clients.map((client) => (
+                  <tr key={client.id}>
+                    <TableCell>{client.full_name}</TableCell>
+                    <TableCell>{client.email}</TableCell>
                   </tr>
-                </thead>
-                <tbody>
-                  {clients.map((client) => (
-                    <tr key={client.id} className="border-t border-line">
-                      <td className="px-3 py-2">{client.full_name}</td>
-                      <td className="px-3 py-2">{client.email}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </section>
       </main>

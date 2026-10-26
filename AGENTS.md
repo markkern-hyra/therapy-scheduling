@@ -29,6 +29,8 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
 - `npm run dev` · `npm run build` (має показати `ƒ Proxy (Middleware)`) · `npm run lint` (0 warnings)
 - `npm run typecheck` (`next typegen && tsc --noEmit`) · `npm test` (Vitest)
 - `npm run spec:validate` · `npm run spec:check` · `npm run ac:coverage`
+- `npm run check:design` (лише токени) · `npm run check:boundary` (секретний ключ лише на сервері) — у CI окремий
+  workflow `.github/workflows/architecture.yml`
 - `node scripts/check-migration-order.mjs` — нова міграція новіша за `origin/main`, застосовані не змінено (у CI — `db-check`)
 - `npx supabase migration new <назва>` → SQL → PR. Застосовує міграції у вашу базу ЛИШЕ CI (`db-deploy` після merge у `main`)
 - Типи БД: готовий `database.types.ts` — у Summary прогону job `db-check` (Docker не потрібен); або `npm run db:types`
@@ -43,9 +45,8 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
 
 - `src/app/` — сторінки й server actions; `src/proxy.ts` — оновлення сесії (НЕ `middleware.ts`)
 - `src/lib/supabase/{client,server,proxy}.ts` — клієнти Supabase; `database.types.ts` — генерується
-- UI — за дизайн-системою «Therapy Scheduling» (ADR 0004): токени — `@theme` у `src/app/globals.css` (у класах лише
-  вони: `bg-surface`, `text-ink`, `bg-brand` …, жодних сирих кольорів Tailwind чи hex); кнопки, поля, підписи й
-  повідомлення — лише `src/components/ui` (`Button`, `Input`, `Label`, `Alert`); компоненти застосунку —
+- UI — за дизайн-системою `DESIGN.md` (ADR 0005, розділ «Дизайн-система» нижче): токени — `src/app/globals.css`;
+  компоненти — `src/components/ui` (`Button`, `Input`, `Label`, `Alert`, `Table`); компоненти застосунку —
   `src/app/_components/`
 - `supabase/migrations/` — схема як код; `supabase/seed.sql` — ідемпотентний сид
 - `requirements/` — знімок вимог PM (лише через `/requirements-sync`): `product.md` і `<N>-<slug>.md`, у кожному
@@ -133,6 +134,18 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
   `finishing-a-development-branch` → PR, CodeRabbit і Squash and merge (у `main` — лише через PR).
 - Ponytail і DRY: спільний хелпер, компонент чи SQL-функція — з другого повтору тієї самої логіки; абстракцій
   «на майбутнє» немає.
+
+## Дизайн-система
+
+- Правила вигляду — `DESIGN.md` (ADR 0005). Кольори — лише семантичні утиліти з токенів (`bg-primary`,
+  `text-muted-foreground`, `border-input` …); жодних hex, `bg-[#…]`, сирих палітр (`zinc-500`, `bg-white`), кольорів в
+  inline style і `dark:`-класів на сторінках (темну тему дають токени).
+- Компоненти — лише з `@/components/ui` (власні, на токенах, без `className`; змінюються лише в цій теці). Нових
+  кольорів у компонентах не вигадуй; новий варіант — у компоненті й рядком у `DESIGN.md`, розділ 5.
+- Новий токен: `DESIGN.md` (розділ 9) → `:root` і `@media (prefers-color-scheme: dark)` у `src/app/globals.css` →
+  `--color-<назва>` у `@theme inline`.
+- Тексти станів (порожній список, помилка, відмова) — дослівно з AC PM.
+- Перевірка: `npm run check:design` (CI: `.github/workflows/architecture.yml`).
 
 ## База даних (Supabase)
 
