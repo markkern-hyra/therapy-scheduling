@@ -1,3 +1,4 @@
+import { AuthShell } from "@/app/_components/auth-shell";
 import { ErrorMessage } from "@/app/_components/error-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { error } = await searchParams;
 
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-6 py-6">
+    <AuthShell>
       <h1 className="text-2xl font-semibold">Sign in</h1>
       <ErrorMessage code={error} />
       <form action={login} className="flex flex-col gap-4">
@@ -22,6 +23,6 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         </Label>
         <Button type="submit">Sign in</Button>
       </form>
-    </main>
+    </AuthShell>
   );
 }

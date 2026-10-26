@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { AppNav } from "@/app/_components/app-nav";
+import { ButtonLink } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { Table, TableBody, TableCell, TableHead, TableHeader } from "@/components/ui/table";
 import { requireRole } from "@/lib/auth/require-role";
 import { canCreateCards, cardFields, emptyClientsText } from "@/lib/scheduling/clients";
@@ -7,7 +9,7 @@ import { canCreateCards, cardFields, emptyClientsText } from "@/lib/scheduling/c
 // Список карток. Хто що бачить, вирішує RLS: admin і scheduler — усі, у картці дитини — опікуна (AC-CARD-10); терапевт —
 // лише свої клієнти (AC-CARD-04, 08) або текст порожнього стану (AC-CARD-09).
 export default async function ClientsPage() {
-  const { supabase, role } = await requireRole();
+  const { supabase, role, email } = await requireRole();
   const { data: clients, error } = await supabase
     .from("clients")
     .select("id, full_name, kind, email, birth_date, language, guardian_name, guardian_email")
@@ -16,25 +18,22 @@ export default async function ClientsPage() {
 
   return (
     <>
-      <AppNav role={role} />
+      <AppNav role={role} email={email} />
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-6">
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-semibold">Clients</h1>
-          {canCreateCards(role) && (
-            <Link href="/clients/new" className="text-sm font-medium text-primary hover:underline">
-              New client
-            </Link>
-          )}
-        </div>
+        <PageHeader
+          title="Clients"
+          titleId="clients-title"
+          description={
+            role === "therapist" ? "Clients with a hold or a confirmed session with you." : "All client cards."
+          }
+          actions={canCreateCards(role) && <ButtonLink href="/clients/new">New client</ButtonLink>}
+        />
 
         <section className="flex flex-col gap-4">
-          <h2 id="all-clients" className="text-lg font-semibold">
-            {role === "therapist" ? "My clients" : "All clients"}
-          </h2>
           {clients.length === 0 ? (
             <p className="text-sm text-muted-foreground">{emptyClientsText(role)}</p>
           ) : (
-            <Table aria-labelledby="all-clients">
+            <Table aria-labelledby="clients-title">
               <TableHeader>
                 <tr>
                   <TableHead>Name</TableHead>
@@ -56,9 +55,13 @@ export default async function ClientsPage() {
                       </TableCell>
                       <TableCell>{fields.type}</TableCell>
                       <TableCell>
-                        <span className="font-mono">{fields.birthDate}</span>
+                        <span className={client.birth_date ? "font-mono whitespace-nowrap" : "text-muted-foreground"}>
+                          {fields.birthDate}
+                        </span>
                       </TableCell>
-                      <TableCell>{fields.language}</TableCell>
+                      <TableCell>
+                        <span className={client.language ? "" : "text-muted-foreground"}>{fields.language}</span>
+                      </TableCell>
                       <TableCell>{fields.contact}</TableCell>
                     </tr>
                   );

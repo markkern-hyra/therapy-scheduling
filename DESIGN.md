@@ -63,6 +63,8 @@
 | `input` на `background` | 4.8 | 4.1 | ≥ 3 |
 | `ring` на `background` | 5.5 | 9.0 | ≥ 3 |
 | `ring` на `card` | 5.5 | 8.3 | ≥ 3 |
+| `primary` (назва в `LinkCard`) на `card` | 5.5 | 8.3 | ≥ 4.5 |
+| `primary` (рамка обраного `Choice`) на `card` | 5.5 | 8.3 | ≥ 3 |
 
 ## 3. Типографіка
 
@@ -71,22 +73,30 @@ America/Los_Angeles, `2026-11-03 14:30`; дата — `2026-11-03`.
 
 | Роль | Клас | Де |
 |---|---|---|
-| Заголовок сторінки | `text-2xl font-semibold` | один `h1` на сторінку |
-| Заголовок розділу | `text-lg font-semibold` | `h2`: форма, список |
+| Назва продукту | `text-base font-semibold` | шапка (`AppNav`); над карткою входу — `text-sm`, приглушена |
+| Заголовок сторінки | `text-2xl font-semibold` | один `h1` на сторінку (`PageHeader`) |
+| Заголовок розділу | `text-lg font-semibold` | `h2`: заголовок `Card`, список |
 | Основний текст | `text-base` | текст, значення полів |
 | Рядки таблиць, повідомлення | `text-sm` | `Table`, `Alert` |
 | Підпис поля, текст кнопки | `text-sm font-medium` | `Label`, `Button` |
 | Заголовок колонки, бейдж | `text-xs font-medium` | `TableHead`, статус |
-| Підпис, допоміжний текст | `text-sm text-muted-foreground` | порожні стани, `dt` |
+| Підпис, допоміжний текст | `text-sm text-muted-foreground` | підпис під `h1`, порожні стани, `dt`, «Not provided» |
 | Дата й час | `font-mono text-sm` | слоти, «Held until», дата народження |
 
 ## 4. Відступи й радіуси
 
-- Кроки Tailwind `1`, `2`, `3`, `4`, `6` (4–24px), інших немає. Поле й кнопка — `px-3 py-2`; клітинка таблиці —
-  `px-3 py-2`; між полями форми — `gap-4`; між секціями й бічні поля — `gap-6`, `px-6`.
-- Вміст — одна колонка `max-w-3xl` (768px), форми — `max-w-sm` (384px); сторінка входу — по центру.
-- Радіуси: `rounded-sm` (4px) — кнопки й поля; `rounded-md` (8px) — повідомлення й рамка таблиці; `rounded-full` —
-  бейджі. Тіней немає: межі — рамка 1px.
+- Кроки Tailwind `1`, `2`, `3`, `4`, `6` (4–24px), інших немає. Клітинка таблиці — `px-3 py-2`; між полями форми —
+  `gap-4`; між секціями й бічні поля — `gap-6`, `px-6`; усередині `Card` — `p-6`.
+- Висота елементів керування одна: поле, `Select`, `Choice` і кнопка — `h-10` (40px; поле `px-3`, кнопка `px-4`), тож
+  поля й кнопка стоять в один ряд (фільтр на `/slots`); у рядку таблиці — `h-8` (`Button` і `Select` `size="sm"`).
+- Розміри — не відступи, тож кроки вище до них не застосовні: висоти `h-8`/`h-10`, найменша ширина вибору клієнта в
+  рядку слоту `min-w-32`, колонка підпису `DescriptionList` — `12rem`, плитки `LinkCard` — від `16rem` (`auto-fit`).
+- Вміст — одна колонка `max-w-3xl` (768px); форма з розділами в `Card` — `max-w-xl` (576px); вхід і «доступу ще немає» —
+  `max-w-sm` (384px) по центру (`AuthShell`).
+- Радіуси: `rounded-sm` (4px) — кнопки, поля, пункт навігації; `rounded-md` (8px) — повідомлення, `Card`, `LinkCard` і
+  рамка таблиці; `rounded-full` — бейджі. Тіней немає: межі — рамка 1px.
+- Вузький екран (< 640px): розділи шапки — другим рядком, email у шапці — з `md`; таблиця не ховає колонок (дані
+  анкети — усі, AC-CARD-04), а прокручується всередині своєї рамки.
 
 ## 5. Компоненти й варіанти
 
@@ -95,13 +105,22 @@ America/Los_Angeles, `2026-11-03 14:30`; дата — `2026-11-03`.
 
 | Компонент | Варіанти | Правило |
 |---|---|---|
-| `Button` | `primary`, `secondary` | `primary` — одна основна дія на екран («Create client», «Sign in»); решта — `secondary`: «Sign out», «Show» і дії в рядках таблиці («Hold», «Confirm»), бо їх на екрані багато |
+| `Button` | `primary`, `secondary`; `size`: `md` (h-10), `sm` (h-8) | `primary` — одна основна дія на екран («Create client», «Sign in»); решта — `secondary`: «Sign out», «Show», «Cancel» і дії в рядках таблиці («Hold», «Confirm», `size="sm"`), бо їх на екрані багато |
+| `ButtonLink` (у `button.tsx`) | ті самі, що `Button` | перехід, що виглядає як кнопка: «New client» (`primary` — головна дія списку), «Cancel» (`secondary`) |
 | `Input` + `Label` | — | `Label` обгортає поле (`<Label>Email<Input … /></Label>`) — зв'язок без `htmlFor`; placeholder не замість підпису |
-| `Table` (`TableHeader`, `TableBody`, `TableHead`, `TableCell`) | — | `aria-labelledby` на заголовок розділу; рядки — звичайні `<tr>` |
+| `Select` | `size`: `md`, `sm` | той самий вигляд, що `Input`; `sm` — у рядку таблиці поруч із `Button sm` |
+| `Choice` | — | радіокнопка в рамці для 2–3 варіантів замість `Select` («Adult» / «Child»); групу обгортає `<fieldset>` з `<legend>`; обраний — рамка `primary` |
+| `Table` (`TableHeader`, `TableBody`, `TableHead`, `TableCell`) | — | `aria-labelledby` на заголовок, що називає таблицю (`PageHeader` чи `h2`); рядки — звичайні `<tr>`; на вузькому екрані — прокрутка в рамці, колонки не ховаємо |
+| `PageHeader` | `back`, `description`, `actions` | верх кожної сторінки застосунку: шлях назад (посилання «Clients»), `h1`, підпис, дії праворуч (головна — одна), роздільник знизу |
+| `Card` | `title` | поверхня розділу (рамка 1px на `card`, `p-6`); заголовок — `h2` |
+| `DescriptionList` | `mono`, `muted` у пункті | пари «підпис — значення» (`<dl>`): картка клієнта, обліковий запис; дата — `mono`, відсутнє («Not provided») — `muted` |
+| `LinkCard` | — | розділ застосунку плиткою на головній: назва (`primary`) і для чого розділ; наведення — межа `input` |
+| `NavLink` | — | пункт шапки; поточний розділ — `aria-current="page"` і тло `muted`, інші — `muted-foreground`; єдиний клієнтський (`"use client"`) компонент в `ui` — потребує `usePathname` |
 | `Alert` | помилка | `role="alert"`, текст дослівно з AC, над формою чи таблицею |
 | `Badge` (зріз 1, задача 2.1) | `held`, `confirmed`, `muted` | бейдж-пігулка на токенах статусів у `src/components/ui`; завжди зі словом статусу |
 
-Компоненти застосунку (`AppNav`, `ErrorMessage`, далі `StatusBadge`, що перетворює статус на варіант `Badge`) — у
+Компоненти застосунку (`AppNav` — назва, розділи ролі, email і роль, «Sign out»; `AuthShell` — вхід і «доступу ще
+немає»; `ErrorMessage`; `StatusBadge`, що перетворює статус на варіант `Badge`; `ClientCardForm`) — у
 `src/app/_components/` і складаються з компонентів `ui` без власних кольорів.
 
 ## 6. Стани
@@ -135,6 +154,8 @@ America/Los_Angeles, `2026-11-03 14:30`; дата — `2026-11-03`.
 |---|---|
 | `bg-primary text-primary-foreground` у `Button` | `bg-zinc-900 text-white`, `bg-[#0f766e]`, `style={{ color: "#…" }}` |
 | `Button`, `Input`, `Label`, `Table`, `Alert` з `@/components/ui` | власний `<button className="…">` чи `<table className="…">` у сторінці |
+| перехід-дія — `ButtonLink` | `<Link className="… bg-primary …">` у сторінці |
+| поля й кнопка в одному ряду однієї висоти (`h-10`) | кнопка нижча за поле поруч |
 | одна `primary`-кнопка на екран | дві головні дії поруч |
 | текст статусу + токени статусу | червоний чи зелений бейдж без слова; статус кольором `destructive` |
 | `text-muted-foreground` для другорядного | новий відтінок сірого «лише для цієї сторінки» |
@@ -157,3 +178,6 @@ America/Los_Angeles, `2026-11-03 14:30`; дата — `2026-11-03`.
 - Візуально: знімки `/login`, `/` і `/clients` у світлій і темній темі (`docs/img/ws7-before-*`, `docs/img/ws7-after-*`),
   Tab по формі (`docs/img/ws7-after-login-focus-*`), контраст. Темні знімки «до» збігаються зі світлими: до ADR 0005
   темної теми не було (`color-scheme: light`).
+- Візуальний цикл (розвиток дизайн-системи): кожна сторінка × роль × світла й темна тема й вузький екран (390px) —
+  Playwright у Chrome проти локального Supabase; знахідки й виправлення — в описі PR, знімки до й після —
+  `docs/img/ws7-visual-before-*`, `docs/img/ws7-visual-after-*`.
