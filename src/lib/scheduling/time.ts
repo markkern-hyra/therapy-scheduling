@@ -22,18 +22,32 @@ export function formatPracticeDateTime(date: Date): string {
   return `${day} ${time}`;
 }
 
+// «14:30» — лише час слоту, коли день уже обрано.
+export function formatPracticeTime(date: Date): string {
+  return local(date).time;
+}
+
 // Сьогоднішня дата за LA, «РРРР-ММ-ДД».
 export function practiceToday(now: Date): string {
   return local(now).date;
 }
 
-// Північ дня `day` за LA як момент UTC: зсув поясу на цю дату береться з Intl, тож перехід на літній/зимовий час
-// враховано (день переходу триває 23 чи 25 годин).
+// Північ дня `day` за LA як момент UTC. Зсув поясу береться в момент `dayT00:00Z` (16:00 чи 17:00 попереднього дня за
+// LA); це вірно, бо в США час переходить о 02:00 за місцевим часом — уже після півночі. День переходу триває 23 чи
+// 25 годин.
 function practiceMidnight(day: string): Date {
   const guess = new Date(`${day}T00:00:00Z`);
   const { date, time } = local(guess);
   const offset = new Date(`${date}T${time}:00Z`).getTime() - guess.getTime();
   return new Date(guess.getTime() - offset);
+}
+
+// День з адреси (?day=…) — лише справжня дата «РРРР-ММ-ДД» не раніше 1970 року; інакше сторінка бере сьогодні.
+export function isPracticeDay(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value < "1970-01-01") return false;
+  const time = Date.parse(`${value}T00:00:00Z`);
+  // 2026-02-30 Date «перекочує» на 2026-03-02 — така дата не збігається з собою після перетворення.
+  return !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === value;
 }
 
 // Межі дня `day` («РРРР-ММ-ДД») за LA: [start, end).

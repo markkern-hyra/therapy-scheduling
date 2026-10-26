@@ -8,16 +8,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader } from "@/component
 import { requireRole } from "@/lib/auth/require-role";
 import { STAFF_ROLES } from "@/lib/auth/roles";
 import { daySlotsView } from "@/lib/scheduling/status";
-import { formatPracticeDateTime, practiceDayRange, practiceToday } from "@/lib/scheduling/time";
-
-const DAY = /^\d{4}-\d{2}-\d{2}$/;
+import { formatPracticeTime, isPracticeDay, practiceDayRange, practiceToday } from "@/lib/scheduling/time";
 
 // Слоти терапевта на день зі статусами (AC-HOLD-24; «Held», «Confirmed» і «Hold» — задача 3.1).
 export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
   const { supabase, role } = await requireRole(...STAFF_ROLES);
   const params = await searchParams;
   const now = new Date();
-  const day = typeof params.day === "string" && DAY.test(params.day) ? params.day : practiceToday(now);
+  const day = isPracticeDay(params.day) ? params.day : practiceToday(now);
 
   const { data: therapists, error: therapistsError } = await supabase
     .from("profiles")
@@ -25,7 +23,8 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
     .eq("role", "therapist")
     .order("full_name");
   if (therapistsError) throw new Error(therapistsError.message);
-  const therapistId = therapists.find((t) => t.id === params.therapist)?.id ?? therapists[0]?.id;
+  const therapist = therapists.find((t) => t.id === params.therapist) ?? therapists[0];
+  const therapistId = therapist?.id;
 
   const { start, end } = practiceDayRange(day);
   const { data: slots, error: slotsError } = therapistId
@@ -35,6 +34,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
         .eq("therapist_id", therapistId)
         .gte("starts_at", start.toISOString())
         .lt("starts_at", end.toISOString())
+        .order("starts_at")
     : { data: [], error: null };
   if (slotsError) throw new Error(slotsError.message);
   const view = daySlotsView(slots, now);
@@ -67,7 +67,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
 
         <section className="flex flex-col gap-4">
           <h2 id="day-slots" className="text-lg font-semibold">
-            {day}
+            {therapist ? `${therapist.full_name ?? therapist.email} — ${day}` : day}
           </h2>
           {view.message && <p className="text-sm text-muted-foreground">{view.message}</p>}
           {view.slots.length > 0 && (
@@ -83,8 +83,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
                   <tr key={slot.id}>
                     <TableCell>
                       <span className="font-mono">
-                        {formatPracticeDateTime(new Date(slot.starts_at)).slice(11)}–
-                        {formatPracticeDateTime(new Date(slot.ends_at)).slice(11)}
+                        {formatPracticeTime(new Date(slot.starts_at))}–{formatPracticeTime(new Date(slot.ends_at))}
                       </span>
                     </TableCell>
                     <TableCell>

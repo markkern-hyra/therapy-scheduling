@@ -1,5 +1,6 @@
 // Слоти терапевтів (задача 2.1 impl-slot-hold): права на рівні бази й демо-слоти.
 import { beforeAll, describe, expect, it } from "vitest";
+import { practiceToday } from "@/lib/scheduling/time";
 import { createTestDb, type TestDb } from "./supabase-pglite";
 
 let t: TestDb;
@@ -47,6 +48,30 @@ describe("slots: хто бачить і хто пише", () => {
     expect(n).toBe(2);
   });
 
+  it("терапевт не змінює й не видаляє власний слот", async () => {
+    await expect(
+      t.asUser(therapist1, "update public.slots set starts_at = starts_at + interval '1 hour' where therapist_id = $1", [
+        therapist1,
+      ]),
+    ).rejects.toThrow(/permission denied/);
+    await expect(
+      t.asUser(therapist1, "delete from public.slots where therapist_id = $1", [therapist1]),
+    ).rejects.toThrow(/permission denied/);
+    const rows = await t.asService<{ starts_at: Date }>("select starts_at from public.slots where therapist_id = $1", [
+      therapist1,
+    ]);
+    expect(rows.map((r) => r.starts_at.toISOString())).toEqual(["2026-11-03T18:00:00.000Z"]);
+  });
+
+  it("слот починається на початку години", async () => {
+    await expect(
+      t.asService(
+        "insert into public.slots (therapist_id, starts_at, ends_at) values ($1, '2026-11-05 18:30Z', '2026-11-05 19:30Z')",
+        [therapist1],
+      ),
+    ).rejects.toThrow(/slots_starts_on_hour_check/);
+  });
+
   it("слот триває рівно 60 хвилин", async () => {
     await expect(
       t.asService(
@@ -75,6 +100,22 @@ describe("generate_demo_slots", () => {
       new Set(["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00"]),
     );
     expect(rows.every((r) => r.dow >= 1 && r.dow <= 5)).toBe(true);
+
+    // Вікно — від понеділка поточного тижня за LA до п'ятниці третього наступного тижня.
+    const today = new Date(`${practiceToday(new Date())}T00:00:00Z`);
+    const monday = new Date(today);
+    monday.setUTCDate(today.getUTCDate() - ((today.getUTCDay() + 6) % 7));
+    const lastFriday = new Date(monday);
+    lastFriday.setUTCDate(monday.getUTCDate() + 25);
+    const [range] = await t.asService<{ first: string; last: string }>(
+      `select to_char(min(starts_at at time zone 'America/Los_Angeles'), 'YYYY-MM-DD HH24:MI') as first,
+              to_char(max(starts_at at time zone 'America/Los_Angeles'), 'YYYY-MM-DD HH24:MI') as last
+         from public.slots`,
+    );
+    expect(range).toEqual({
+      first: `${monday.toISOString().slice(0, 10)} 09:00`,
+      last: `${lastFriday.toISOString().slice(0, 10)} 15:00`,
+    });
   });
 
   it("користувач застосунку не викликає generate_demo_slots", async () => {

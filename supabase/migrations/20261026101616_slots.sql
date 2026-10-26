@@ -8,6 +8,10 @@ create table public.slots (
   -- Кожен слот — 60 хвилин (Припущення PM).
   ends_at      timestamptz not null,
   constraint slots_duration_check check (ends_at = starts_at + interval '60 minutes'),
+  -- Починається на початку години (Припущення PM); зсуви UTC і LA — цілі години, тож хвилини однакові в обох.
+  constraint slots_starts_on_hour_check check (
+    extract(minute from starts_at) = 0 and extract(second from starts_at) = 0
+  ),
   constraint slots_therapist_starts_key unique (therapist_id, starts_at)
 );
 

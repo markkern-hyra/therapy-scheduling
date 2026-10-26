@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatPracticeDateTime, practiceDayRange, practiceToday } from "@/lib/scheduling/time";
+import {
+  formatPracticeDateTime,
+  formatPracticeTime,
+  isPracticeDay,
+  practiceDayRange,
+  practiceToday,
+} from "@/lib/scheduling/time";
 
 describe("time: часовий пояс практики America/Los_Angeles", () => {
   it("показує дату й час у форматі РРРР-ММ-ДД ГГ:ХХ за LA", () => {
@@ -21,7 +27,28 @@ describe("time: часовий пояс практики America/Los_Angeles", (
     });
   });
 
+  it("день переходу на літній час триває 23 години", () => {
+    expect(practiceDayRange("2026-03-08")).toEqual({
+      start: new Date("2026-03-08T08:00:00Z"),
+      end: new Date("2026-03-09T07:00:00Z"),
+    });
+  });
+
   it("сьогодні — дата за LA, а не за UTC", () => {
     expect(practiceToday(new Date("2026-11-04T07:30:00Z"))).toBe("2026-11-03");
+  });
+
+  it("час без дати — ГГ:ХХ за LA", () => {
+    expect(formatPracticeTime(new Date("2026-11-03T18:00:00Z"))).toBe("10:00");
+  });
+
+  it("день з адреси — лише справжня дата РРРР-ММ-ДД", () => {
+    expect(isPracticeDay("2026-11-03")).toBe(true);
+    expect(isPracticeDay("2026-02-29")).toBe(false);
+    expect(isPracticeDay("2026-02-30")).toBe(false);
+    expect(isPracticeDay("2026-13-45")).toBe(false);
+    expect(isPracticeDay("0000-01-01")).toBe(false);
+    expect(isPracticeDay("2026-1-3")).toBe(false);
+    expect(isPracticeDay(["2026-11-03"])).toBe(false);
   });
 });
