@@ -27,7 +27,7 @@ describe("slots: хто бачить і хто пише", () => {
     }
   });
 
-  it("терапевт бачить лише власні слоти", async () => {
+  it("AC-HOLD-09: терапевт бачить лише власні слоти, а не слоти іншого терапевта", async () => {
     const rows = await t.asUser<{ therapist_id: string }>(therapist1, "select therapist_id from public.slots");
     expect(rows.map((r) => r.therapist_id)).toEqual([therapist1]);
   });
