@@ -50,19 +50,18 @@ export type Database = {
                   }
                   Relationships: [
                     {
-                      foreignKeyName: "holds_client_id_fkey"
-                      columns: ["client_id"]
-                      isOneToOne: false
-                      referencedRelation: "clients"
-                      referencedColumns: ["id"]
-                    },
-                    {
-                      foreignKeyName: "holds_slot_id_fkey"
-                      columns: ["slot_id"]
-                      isOneToOne: false
-                      referencedRelation: "slots"
-                      referencedColumns: ["id"]
-                    }
+      foreignKeyName: "holds_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "holds_slot_id_fkey"
+      columns: ["slot_id"]
+isOneToOne: false
+      referencedRelation: "slots"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"profiles": {
                   Row: {
@@ -91,12 +90,12 @@ export type Database = {
                   }
                   Relationships: [
                     {
-                      foreignKeyName: "slots_therapist_id_fkey"
-                      columns: ["therapist_id"]
-                      isOneToOne: false
-                      referencedRelation: "profiles"
-                      referencedColumns: ["id"]
-                    }
+      foreignKeyName: "slots_therapist_id_fkey"
+      columns: ["therapist_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 }
           }
@@ -105,7 +104,7 @@ export type Database = {
           }
           Functions: {
             "generate_demo_slots":
-{ Args: never; Returns: undefined
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            }
           }
           Enums: {
