@@ -67,6 +67,9 @@ Docker не потрібен: локально — лише npm run dev прот
 - [x] Settings → Deployment Protection → **Require Log In** вимкнено → Save (інакше PM і викладач не відкриють ваші preview;
       точну назву перемикача перевірте в інтерфейсі) — [img/vercel-protection.png](img/vercel-protection.png)
 - [x] Після змінних — редеплой; прод-URL відкривається — https://therapy-scheduling-theta.vercel.app (`/` → `/login`)
+- [x] Регіон функцій — `dub1` (`vercel.json`), поруч із базою `eu-west-1`: за замовчуванням Vercel бере `iad1` (США), і
+      кожен запит сторінки до Supabase йшов через Атлантику (заміри проду: `/login` без бази — 0,18 с, `/clients` — 0,64 с,
+      `/slots` — 0,97 с)
 
 ## 5. База й перший зелений CI
 
