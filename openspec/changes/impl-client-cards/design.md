@@ -112,8 +112,13 @@ private.is_own_client(id))`). Хелпер — `security definer`, щоб «св
   AC-CARD-06 (insert від therapist — `42501`, кількість карток та сама), AC-CARD-07 (`anon` — `permission
   denied` на select і insert), AC-CARD-10 (scheduler2, admin — усі три з опікуном), AC-CARD-11 (без ролі — 0 рядків,
   insert відмовлено, кількість та сама), пастка ролі (update власного `role` — `permission denied`, роль та сама).
-- **Логіка (Vitest):** `cardFromForm`, `canCreateCards` (AC-CARD-06 на рівні дії), `errorCode` за назвою обмеження,
-  вибір тексту порожнього стану за роллю (AC-CARD-09).
+- **Логіка (Vitest):** `cardFromForm`, `canCreateCards`, `errorCode` за назвою обмеження, `contactEmail` (AC-CARD-02),
+  `accessFor` (AC-CARD-07, 11: без входу — `/login`, без ролі — `/no-access`), вибір тексту порожнього стану за роллю
+  (AC-CARD-09).
+- **Дія (Vitest, `requireRole` і клієнт Supabase підставлено):** `createClientCard` — терапевт отримує `CARD_FORBIDDEN`
+  без спроби запису (AC-CARD-06), відмова бази повертає введене у форму (AC-CARD-03).
+- **Сторінки** (Server Components) окремо не рендеримо: що показати, вирішують `accessFor`, RLS і тексти з `messages.ts`,
+  покриті вище; рендер і перенаправлення в браузері — e2e (WS8), видно на скрінах за ролями.
 - **Мутаційна перевірка:** таблиця «AC → що тимчасово прибрали → який тест упав» в описі кожного PR; у CI — червоні
   прогони щонайменше для AC-CARD-06 (`alter policy clients_insert_staff … with check (true)` у кінці ще не застосованої
   міграції `client_cards`: застосовану міграцію не змінюємо, інакше впаде `db-check`, а не тест) і AC-CARD-05
