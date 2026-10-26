@@ -5,7 +5,7 @@ import type { ComponentProps } from "react";
 // <TableBody><tr><TableCell>…</TableCell></tr></TableBody></Table>
 export function Table(props: Omit<ComponentProps<"table">, "className">) {
   return (
-    <div className="overflow-hidden rounded-md border border-border bg-card text-card-foreground">
+    <div className="overflow-x-auto rounded-md border border-border bg-card text-card-foreground">
       <table {...props} className="w-full text-left text-sm" />
     </div>
   );

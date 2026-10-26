@@ -23,30 +23,35 @@ ADR 0004 (WS6) дав одну світлу тему з власними іме�
   Джерело — оновлений артефакт Claude Design «Therapy Scheduling» (`project/README.md`, `project/tokens.json`);
   канон у репо — `DESIGN.md` і `globals.css`, артефакт оновлюємо тим самим PR, що й токени.
 - **Токени — семантичні пари shadcn/ui в OKLCH:** `background`, `foreground`, `card`, `card-foreground`, `primary`,
-  `primary-foreground`, `muted`, `muted-foreground`, `destructive`, `border`, `input`, `ring` і статуси
-  `status-held`, `status-confirmed` з парами `*-foreground`. `secondary`, `accent` і `popover` не заводимо, доки
+  `primary-foreground`, `primary-hover`, `muted`, `muted-foreground`, `destructive`, `border`, `input`, `ring` і
+  статуси `status-held`, `status-confirmed` з парами `*-foreground`. `primary-hover` — окремий токен, бо
+  `hover:bg-primary/90` у світлій темі світлішає і дає білому тексту 4.3:1 (нижче 4.5:1). `secondary`, `accent` і `popover` не заводимо, доки
   немає компонента, якому вони потрібні.
 - **Дві теми за системою:** значення в `:root` і `@media (prefers-color-scheme: dark)`, класи — `@theme inline` з
   `--color-*` на кожен токен. Перемикача й класу `.dark` немає; `dark:`-класи на сторінках не потрібні.
 - **Контраст** кожної пари в обох темах пораховано й записано в `DESIGN.md` (текст ≥ 4.5:1, межі полів і фокус ≥ 3:1).
 - **Компоненти — власні, на токенах** (`Button`, `Input`, `Label`, `Alert`, новий `Table`) у `src/components/ui`,
   без `className`: сторінка не може перефарбувати компонент.
-- **Палітру Tailwind не вимикаємо** (`--color-*: initial` прибрано); сирі кольори ловить `npm run check:design`
-  (`scripts/check-design-tokens.mjs` з матеріалів курсу) у job «Дизайн-система: лише токени» окремого workflow
-  `.github/workflows/architecture.yml`.
+- **Палітру Tailwind не вимикаємо** (`--color-*: initial` прибрано, як радить гайд курсу); сирі кольори в
+  `src/` поза `src/components/ui` ловить `npm run check:design` (`scripts/check-design-tokens.mjs` з матеріалів
+  курсу) у job «Дизайн-система: лише токени» окремого workflow `.github/workflows/architecture.yml`. Компоненти `ui`
+  скрипт свідомо пропускає — там кольори охороняють правило в `AGENTS.md` і рев'ю.
+- **Tailwind шукає класи лише в `src/`** (`@import "tailwindcss" source("..")`): приклади-заборони з `DESIGN.md` і
+  `AGENTS.md` (`bg-zinc-900`, `bg-[#…]`) не потрапляють у CSS.
 
 ## Розглянуті варіанти
 
-- **shadcn/ui через `npx shadcn init`** — ні: додає залежності (`@base-ui/react`, `class-variance-authority`, `cn`,
-  `lucide-react`, `tw-animate-css`), переписує `globals.css` (блок `.dark`, `@custom-variant dark`), а його
+- **shadcn/ui через `npx shadcn init`** — ні: додає залежності (`@base-ui/react`, `class-variance-authority`,
+  `clsx` і `tailwind-merge` для функції `cn`, `lucide-react`, `tw-animate-css`), переписує `globals.css` (блок `.dark`, `@custom-variant dark`), а його
   компоненти приймають `className`, тож сторінка знову може принести свої кольори. Для п'яти простих компонентів
   власний код коротший; імена токенів ті самі, тож перейти на shadcn/ui пізніше — заміна файлів у `ui`.
 - **Лишити імена й одну тему з ADR 0004** — ні: не збігається з тим, що пишуть агенти й чого вимагає курс; темну
   тему довелося б додавати потім з перейменуванням усіх класів.
 - **Темна тема класом `.dark` з перемикачем** — ні: перемикача немає у вимогах PM; два способи (клас і система)
   змішувати не можна, а системний не потребує ні JavaScript, ні збереженого вибору.
-- **Лишити `--color-*: initial`** — ні: сирий клас мовчки нічого не робить, і порушення видно лише на екрані;
-  `check:design` показує файл і рядок у CI.
+- **Лишити `--color-*: initial`** — ні: сирий клас тоді мовчки нічого не робить (гайд курсу радить не вмикати), а
+  на сторінках порушення з файлом і рядком показує `check:design` у CI. Ціна — компоненти `ui` захищені лише
+  рев'ю, не скриптом.
 
 ## Наслідки
 

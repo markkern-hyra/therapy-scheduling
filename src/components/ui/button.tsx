@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 
 const VARIANTS = {
-  primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+  primary: "bg-primary text-primary-foreground hover:bg-primary-hover",
   secondary: "border border-input bg-background text-foreground hover:bg-muted",
 };
 

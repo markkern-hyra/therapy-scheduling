@@ -26,6 +26,7 @@
 | `background` / `foreground` | тло сторінки й основний текст | `oklch(1 0 0)` / `oklch(0.205 0 0)` | `oklch(0.17 0.004 286)` / `oklch(0.96 0.002 286)` | `bg-background`, `text-foreground` |
 | `card` / `card-foreground` | таблиці, поля вводу | `oklch(1 0 0)` / `oklch(0.205 0 0)` | `oklch(0.21 0.005 286)` / `oklch(0.96 0.002 286)` | `bg-card`, `text-card-foreground` |
 | `primary` / `primary-foreground` | основна дія (одна на екран), посилання навігації | `oklch(0.51 0.086 186)` / `oklch(0.985 0 0)` | `oklch(0.75 0.1 184)` / `oklch(0.2 0.03 190)` | `bg-primary`, `text-primary-foreground`, `text-primary` |
+| `primary-hover` | тло головної кнопки при наведенні (світла — темніше, темна — світліше; текст той самий) | `oklch(0.46 0.078 186)` | `oklch(0.81 0.09 184)` | `hover:bg-primary-hover` (лише в `Button`) |
 | `muted` / `muted-foreground` | заголовки таблиць, наведення; підписи, порожні стани | `oklch(0.967 0.001 286.4)` / `oklch(0.442 0.017 285.8)` | `oklch(0.27 0.006 286)` / `oklch(0.74 0.012 286)` | `bg-muted`, `text-muted-foreground` |
 | `destructive` | лише текст і рамка помилки | `oklch(0.51 0.19 27)` | `oklch(0.71 0.16 22)` | `text-destructive`, `border-destructive` |
 | `border` | роздільники, межа таблиці й шапки | `oklch(0.92 0.004 286.3)` | `oklch(0.3 0.006 286)` | `border-border`, `divide-border` |
@@ -53,6 +54,7 @@
 | `muted-foreground` на `muted` | 7.0 | 6.5 | ≥ 4.5 |
 | `primary` (посилання) на `background` | 5.5 | 9.0 | ≥ 4.5 |
 | `primary-foreground` на `primary` | 5.3 | 8.4 | ≥ 4.5 |
+| `primary-foreground` на `primary-hover` | 6.6 | 10.3 | ≥ 4.5 |
 | `destructive` на `background` | 6.3 | 6.9 | ≥ 4.5 |
 | `destructive` на `card` | 6.3 | 6.4 | ≥ 4.5 |
 | `status-held-foreground` на `status-held` | 6.7 | 9.2 | ≥ 4.5 |
@@ -97,14 +99,15 @@ America/Los_Angeles, `2026-11-03 14:30`; дата — `2026-11-03`.
 | `Input` + `Label` | — | `Label` обгортає поле (`<Label>Email<Input … /></Label>`) — зв'язок без `htmlFor`; placeholder не замість підпису |
 | `Table` (`TableHeader`, `TableBody`, `TableHead`, `TableCell`) | — | `aria-labelledby` на заголовок розділу; рядки — звичайні `<tr>` |
 | `Alert` | помилка | `role="alert"`, текст дослівно з AC, над формою чи таблицею |
-| Бейдж статусу | «Held», «Confirmed», «Expired», «Past» | компонент застосунку `StatusBadge` (`src/app/_components/`, зріз 1, задача 2.1) на токенах статусів; завжди зі словом |
+| `Badge` (зріз 1, задача 2.1) | `held`, `confirmed`, `muted` | бейдж-пігулка на токенах статусів у `src/components/ui`; завжди зі словом статусу |
 
-Компоненти застосунку (`AppNav`, `ErrorMessage`, далі `StatusBadge`) — у `src/app/_components/` і складаються з
-компонентів `ui` і класів токенів.
+Компоненти застосунку (`AppNav`, `ErrorMessage`, далі `StatusBadge`, що перетворює статус на варіант `Badge`) — у
+`src/app/_components/` і складаються з компонентів `ui` без власних кольорів.
 
 ## 6. Стани
 
-Тексти — дослівно з AC PM.
+Тексти — дослівно з AC PM. Рядки з AC-CARD — зріз 2 (вимога PM Sofiia-pm/therapy-scheduling-spec#19): цільовий
+стан, який з'явиться в задачах `impl-client-cards`; до того, наприклад, `requireRole` перенаправляє на `/`.
 
 | Стан | Як виглядає | Приклад тексту |
 |---|---|---|
@@ -152,4 +155,5 @@ America/Los_Angeles, `2026-11-03 14:30`; дата — `2026-11-03`.
 - Виняток — коментар `design-ok: <причина>` у тому самому рядку; кожен виняток — з реальною причиною. Зараз
   винятків немає.
 - Візуально: знімки `/login`, `/` і `/clients` у світлій і темній темі (`docs/img/ws7-before-*`, `docs/img/ws7-after-*`),
-  Tab по формі, контраст.
+  Tab по формі (`docs/img/ws7-after-login-focus-*`), контраст. Темні знімки «до» збігаються зі світлими: до ADR 0005
+  темної теми не було (`color-scheme: light`).

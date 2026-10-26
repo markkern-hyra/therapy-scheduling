@@ -1,4 +1,5 @@
-@import "tailwindcss";
+/* Класи шукаємо лише в src/: приклади-заборони з DESIGN.md і AGENTS.md не потрапляють у CSS. */
+@import "tailwindcss" source("..");
 
 /* Токени дизайн-системи «Therapy Scheduling» (DESIGN.md, ADR 0005): семантичні пари shadcn/ui, OKLCH.
    Значення — у :root (світла тема) і @media (prefers-color-scheme: dark); класи — з @theme inline.
@@ -12,6 +13,7 @@
   --card-foreground: oklch(0.205 0 0);
   --primary: oklch(0.51 0.086 186);
   --primary-foreground: oklch(0.985 0 0);
+  --primary-hover: oklch(0.46 0.078 186);
   --muted: oklch(0.967 0.001 286.4);
   --muted-foreground: oklch(0.442 0.017 285.8);
   --destructive: oklch(0.51 0.19 27);
@@ -33,6 +35,7 @@
     --card-foreground: oklch(0.96 0.002 286);
     --primary: oklch(0.75 0.1 184);
     --primary-foreground: oklch(0.2 0.03 190);
+    --primary-hover: oklch(0.81 0.09 184);
     --muted: oklch(0.27 0.006 286);
     --muted-foreground: oklch(0.74 0.012 286);
     --destructive: oklch(0.71 0.16 22);
@@ -56,6 +59,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-destructive: var(--destructive);
