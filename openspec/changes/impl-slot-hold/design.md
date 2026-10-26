@@ -2,14 +2,15 @@
 
 ## Context
 
-- Специфікація: `openspec/specs/{slot-holds,therapist-schedule,clients}/spec.md`, AC-HOLD-01 … AC-HOLD-36 (переклад
-  Sofiia-pm/therapy-scheduling-spec#2; рішення PM з #3–#12 уже в тексті AC і в Assumptions архівованої зміни
-  `add-slot-hold`).
+- Специфікація: `openspec/specs/{slot-holds,therapist-schedule,clients}/spec.md`, AC-HOLD-01 … AC-HOLD-42 (переклад
+  Sofiia-pm/therapy-scheduling-spec#2; рішення PM з #3–#18 уже в тексті AC і в Assumptions архівованих змін
+  `add-slot-hold` і `clarify-slot-hold-2`).
 - Шаблон дає: `profiles` з ролями `member` / `admin`, хелпер `private.current_app_role()`, тригер
   `on_auth_user_created`, вхід email + пароль, `getClaims()` на сервері, `scripts/create-demo-users.mjs`.
 - Обмеження стеку (AGENTS.md): Next.js 16 App Router без Cache Components; Supabase без Docker локально; міграції
   застосовує лише CI; кожна таблиця — RLS + `revoke` + явні `grant` + політика на кожну операцію; кілька кроків з
-  перевіркою — однією транзакцією в Postgres; Vitest без бази; нових залежностей без згоди не додаємо.
+  перевіркою — однією транзакцією в Postgres; тести бази — PGlite у процесі Vitest (рішення 9); нових залежностей без
+  згоди не додаємо.
 - Платформа (requirements/product.md, «Що поза scope»): жодних фонових задач частіше ніж раз на добу — прострочення
   рахуємо за часом створення утримання, а не задачею за розкладом.
 
@@ -28,7 +29,7 @@
 
 **Goals:**
 
-- Кожен AC-HOLD-01 … 36: код + тест `it("AC-HOLD-NN: …")` + рядок «реалізовано» в `docs/conformance.md`.
+- Кожен AC-HOLD-01 … 42: код + тест `it("AC-HOLD-NN: …")` + рядок «реалізовано» в `docs/conformance.md`.
 - Правила утримання й підтвердження тримає **база**: прямий запит до Data API в обхід сторінок дає ті самі відмови
   (AC-HOLD-03, 04, 07, 08, 13, 14, 17, 22, 25, 36).
 - Права з матриці `requirements/product.md` — у RLS (терапевт бачить лише своє, AC-HOLD-09, 21).
@@ -40,7 +41,6 @@
 - Екрани адміністратора для користувачів і доступності терапевтів (слоти — демо-даними).
 - Тип сеансу, документи згоди, повторювані сеанси, сповіщення (Non-goals специфікації).
 - Показ, хто створив і хто підтвердив утримання (поза межами PM) — у базі ці поля не заводимо.
-- Автотести бази в CI (див. «Узгоджено з розробником»).
 
 ## Decisions
 
@@ -65,9 +65,9 @@
 | Таблиця | Ключові колонки | AC |
 |---|---|---|
 | `profiles` (шаблон) | `role` ∈ admin / scheduler / therapist; терапевт — профіль із роллю `therapist` | усі |
-| `clients` | `full_name` (`not null`; check: не порожнє після `btrim`), `email` (`not null`; unique; check: `email = lower(btrim(email))` і формат), `created_at` | 10, 11, 15, 16, 34, 35 |
+| `clients` | `full_name` (`not null`; check: не порожнє після `btrim`), `email` (`not null`; unique; check: `email = lower(btrim(email))` і формат), `created_at` | 10, 11, 15, 16, 34, 35, 39, 41 |
 | `slots` | `therapist_id` → profiles, `starts_at` timestamptz, `ends_at` (check `ends_at = starts_at + 60 хв`); unique (`therapist_id`, `starts_at`) | 01, 18, 24, 30–33 |
-| `holds` | `slot_id` → slots, `client_id` → clients, `created_at`, `expires_at`, `confirmed_at` (null — не підтверджено) | 02–08, 12–14, 17, 19–29, 36 |
+| `holds` | `slot_id` → slots, `client_id` → clients, `created_at`, `expires_at`, `confirmed_at` (null — не підтверджено) | 02–08, 12–14, 17, 19–29, 36–38, 42 |
 
 - **Сеанс = підтверджене утримання** (глосарій: «Підтвердження — момент, коли утримання стає сеансом»): окремої таблиці
   сеансів немає, `confirmed_at is not null`.
@@ -156,7 +156,7 @@
 |---|---|---|
 | `time.ts` | часовий пояс практики, формат, межі дня й тижня | 02, 05, 06, 30, 31 |
 | `status.ts` | `holdStatus`, `slotStatus` (вільний, «Held», «Confirmed», «Expired», «Past»), `isHoldable`, `daySlotsView` («No free slots on this day.») | 01, 02, 05, 06, 12, 18, 24, 26, 32, 33 |
-| `visibility.ts` | `schedulerHolds` (прострочене — до початку слоту), `therapistWeek` (без прострочених, лише власне) | 09, 20, 21, 28–31 |
+| `visibility.ts` | `schedulerHolds` (лише «Held» і «Expired», слот яких ще не почався, за часом слоту від найближчого; прострочене зникає, коли слот знову утримали за тим самим клієнтом), `therapistWeek` (без прострочених, лише власне; клієнт — лише ім'я) | 09, 20, 21, 28–31, 37, 38, 40, 42 |
 | `clients.ts` | `normalizeEmail` (форма перед записом; правило формату — check бази й ADR 0003) | 34, 35 |
 | `messages.ts` | одна мапа код → текст PM дослівно; `errorCode(error)` — код із помилки Postgres (`raise exception '<КОД>'`, `23505` → `CLIENT_EXISTS`, `23514` на `clients` → `CLIENT_INVALID`, `42501` → `*_FORBIDDEN`) | 03, 04, 07, 08, 11, 13–17, 22, 25, 36 |
 
@@ -181,19 +181,19 @@ already started and cannot be confirmed.»; `ALREADY_CONFIRMED` «This hold is a
 | Сторінка | Хто | Що | Server action | AC |
 |---|---|---|---|---|
 | `/` | усі | роль і посилання; scheduler/admin → `/slots`, therapist → `/schedule` | `signOut` | — |
-| `/clients` | admin, scheduler | список клієнтів і форма «ім'я + email» | `createClientCard` → `insert clients` (email через `normalizeEmail`) | 10, 11, 15, 16, 34, 35 |
+| `/clients` | admin, scheduler | список клієнтів і форма «ім'я + email» | `createClientCard` → `insert clients` (email через `normalizeEmail`) | 10, 11, 15, 16, 34, 35, 39, 41 |
 | `/slots?therapist=…&day=…` | admin, scheduler | слоти терапевта на день зі статусами, клієнт і «Held until», «Hold» з вибором клієнта лише для `isHoldable` | `holdSlot` → `insert holds` | 01–04, 06, 07, 17, 18, 24–26, 32, 33 |
-| `/holds` | admin, scheduler | утримання й сеанси: клієнт, терапевт, слот, статус, «Held until»; «Confirm» для `Held` | `confirmHold` → `update holds` | 05, 06, 12, 13, 19, 20, 22, 23, 27–29, 36 |
-| `/schedule?week=…` | therapist | власний тиждень пн–нд зі статусами слотів, перемикання тижнів | — | 09, 21, 30, 31 |
+| `/holds` | admin, scheduler | утримання «Held» і «Expired» (без сеансів) за часом слоту: клієнт, терапевт, слот, статус, «Held until»; «Confirm» для `Held` | `confirmHold` → `update holds` | 05, 06, 12, 13, 19, 20, 22, 23, 27–29, 36–38, 42 |
+| `/schedule?week=…` | therapist | власний тиждень пн–нд зі статусами слотів і ім'ям клієнта (без email), перемикання тижнів | — | 09, 21, 30, 31, 40 |
 
 - Терапевт сторінок `/clients`, `/slots`, `/holds` не відкриває (`requireRole`), а прямий виклик `holdSlot` /
   `confirmHold` чи Data API отримує від бази `HOLD_FORBIDDEN` / `CONFIRM_FORBIDDEN`, і `runAction` показує текст PM
   (AC-HOLD-08, 14).
 
-### 8. «Valid email» (AC-HOLD-11, 15)
+### 8. «Valid email» (AC-HOLD-11, 15, 39)
 
-PM правила не визначила (припущення розробника в `add-slot-hold`). Рішення: після нормалізації (`btrim` + нижній
-регістр) email має відповідати `^[^\s@]+@[^\s@]+\.[^\s@]+$`. Правило живе в одному місці — check-обмеженні
+Правило PM («Припущення» Sofiia-pm/therapy-scheduling-spec#2 після #16; AC-HOLD-39) збігається з рішенням, ухваленим
+до нього: після нормалізації (`btrim` + нижній регістр) email має відповідати `^[^\s@]+@[^\s@]+\.[^\s@]+$`. Правило живе в одному місці — check-обмеженні
 `clients.email` (порушення → `CLIENT_INVALID`); форма лише нормалізує email перед записом. Запис рішення — ADR 0003.
 
 ### 9. Тести
@@ -201,8 +201,11 @@ PM правила не визначила (припущення розробни
 - Юніт-тести `tests/scheduling/*.test.ts`, назви починаються з AC ID (`it("AC-HOLD-32: …")`); дані й час — з AC.
 - Що перевіряють: статуси й видимість (`status.ts`, `visibility.ts`), час (`time.ts`), нормалізацію email
   (`clients.ts`) і переклад помилки бази в текст PM (`messages.ts`) для кожного коду правил запису.
-- Самі правила бази (тригери, RLS, одночасність AC-HOLD-04 і 36) — ручна перевірка за чеклістом у PR задачі
-  (два вікна браузера, три ролі, прямий запит під therapist).
+- Правила бази (тригери, RLS, column grants) — тести бази на PGlite: `tests/db/supabase-pglite.ts` (взято з демо курсу й
+  адаптовано) застосовує `supabase/migrations/*.sql` і `seed.sql` у справжньому Postgres у процесі Vitest; `asUser` /
+  `asAnon` / `asService` виконують запит від ролі. Кожен тест перевіряє і відмову, і те, що дані не змінились.
+- Одночасність (AC-HOLD-04, 36) PGlite (одне з'єднання) не відтворює — ручна перевірка за чеклістом у PR задачі (два
+  вікна браузера).
 
 ### 10. Демо-дані
 
@@ -217,8 +220,8 @@ PM правила не визначила (припущення розробни
 
 ## Risks / Trade-offs
 
-- [Правила бази без автотестів] Тригери, RLS і одночасність не покриті Vitest → чекліст ручної перевірки в кожному PR з
-  міграцією; тести Vitest перевіряють переклад кожного коду помилки. pgTAP свідомо не додаємо.
+- [PGlite — не Supabase] Auth, Data API і JWT в емуляції спрощені (`auth.uid()` читає `request.jwt.claim.sub`) →
+  налаштування хмарного проєкту тест бази не перевіряє; одночасність — ручна перевірка.
 - [Статус у двох мовах] «Активне утримання» є в SQL (`is_active_hold`, для запису й RLS) і в TypeScript (`holdStatus`,
   для показу) → одна формула з однаковими назвами; зміна статусу — в обох у тому самому PR.
 - [Час сервера vs бази] Статус на сторінці рахує `new Date()` сервера Next.js, а тригер — `now()` бази → розбіжність
@@ -243,5 +246,5 @@ PM правила не визначила (припущення розробни
   0001 — сеанс як підтверджене утримання й статус, обчислений з часу (рішення 2; задача 3.1);
   0002 — правила утримання й підтвердження лише в тригерах бази з блокуванням рядків (рішення 4; задача 3.1);
   0003 — правило «valid email» в check-обмеженні (рішення 8; задача 1.1).
-- Автотестів бази (pgTAP, окремий workflow) не додаємо: RLS, тригери й одночасність — ручна перевірка за чеклістом у PR
-  задачі (як у курсовому демо).
+- З WS7 — тести бази на PGlite (dev-залежність `@electric-sql/pglite` у першому PR задачі, що їх потребує; курс вимагає
+  тест на кожен відмовний AC). pgTAP і окремого workflow не додаємо; одночасність — ручна перевірка.
