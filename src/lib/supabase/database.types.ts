@@ -25,14 +25,14 @@ export type Database = {
           Tables: {
             "clients": {
                   Row: {
-                    "created_at": string,"email": string,"full_name": string,"id": string
+                    "birth_date": string | null,"created_at": string,"email": string | null,"full_name": string,"guardian_email": string | null,"guardian_name": string | null,"id": string,"kind": string,"language": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"email": string,"full_name": string,"id"?: string
+                    "birth_date"?: string | null,"created_at"?: string,"email"?: string | null,"full_name": string,"guardian_email"?: string | null,"guardian_name"?: string | null,"id"?: string,"kind"?: string,"language"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"email"?: string,"full_name"?: string,"id"?: string
+                    "birth_date"?: string | null,"created_at"?: string,"email"?: string | null,"full_name"?: string,"guardian_email"?: string | null,"guardian_name"?: string | null,"id"?: string,"kind"?: string,"language"?: string | null
                   }
                   Relationships: [
                     
@@ -50,30 +50,29 @@ export type Database = {
                   }
                   Relationships: [
                     {
-                      foreignKeyName: "holds_client_id_fkey"
-                      columns: ["client_id"]
-                      isOneToOne: false
-                      referencedRelation: "clients"
-                      referencedColumns: ["id"]
-                    },
-                    {
-                      foreignKeyName: "holds_slot_id_fkey"
-                      columns: ["slot_id"]
-                      isOneToOne: false
-                      referencedRelation: "slots"
-                      referencedColumns: ["id"]
-                    }
+      foreignKeyName: "holds_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: false
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "holds_slot_id_fkey"
+      columns: ["slot_id"]
+isOneToOne: false
+      referencedRelation: "slots"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"profiles": {
                   Row: {
-                    "created_at": string,"email": string | null,"full_name": string | null,"id": string,"role": string
+                    "created_at": string,"email": string | null,"full_name": string | null,"id": string,"role": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"email"?: string | null,"full_name"?: string | null,"id": string,"role"?: string
+                    "created_at"?: string,"email"?: string | null,"full_name"?: string | null,"id": string,"role"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"email"?: string | null,"full_name"?: string | null,"id"?: string,"role"?: string
+                    "created_at"?: string,"email"?: string | null,"full_name"?: string | null,"id"?: string,"role"?: string | null
                   }
                   Relationships: [
                     
@@ -91,12 +90,12 @@ export type Database = {
                   }
                   Relationships: [
                     {
-                      foreignKeyName: "slots_therapist_id_fkey"
-                      columns: ["therapist_id"]
-                      isOneToOne: false
-                      referencedRelation: "profiles"
-                      referencedColumns: ["id"]
-                    }
+      foreignKeyName: "slots_therapist_id_fkey"
+      columns: ["therapist_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 }
           }
@@ -105,7 +104,7 @@ export type Database = {
           }
           Functions: {
             "generate_demo_slots":
-{ Args: never; Returns: undefined
+{ Args: Record<PropertyKey, never>; Returns: undefined
                            }
           }
           Enums: {

@@ -5,6 +5,11 @@
     "role": "admin"
   },
   {
+    "email": "admin1@example.test",
+    "full_name": "Admin One",
+    "role": "admin"
+  },
+  {
     "email": "scheduler1@example.test",
     "full_name": "Scheduler One",
     "role": "scheduler"
@@ -23,5 +28,10 @@
     "email": "therapist2@example.test",
     "full_name": "Therapist Two",
     "role": "therapist"
+  },
+  {
+    "email": "newuser1@example.test",
+    "full_name": "New User One",
+    "role": null
   }
 ]

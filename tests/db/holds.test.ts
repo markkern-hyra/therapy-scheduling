@@ -67,7 +67,8 @@ describe("holds: утримання слоту", () => {
   it("AC-HOLD-10: щойно створеного клієнта можна вибрати й утримати за ним слот", async () => {
     const [created] = await t.asUser<{ id: string }>(
       scheduler1,
-      "insert into public.clients (full_name, email) values ('Client Three', 'client3@example.test') returning id",
+      `insert into public.clients (kind, full_name, email, birth_date, language)
+       values ('adult', 'Client Three', 'client3@example.test', '1990-05-14', 'English') returning id`,
     );
     const s = await slot(therapist1, inAWeek);
     await hold(scheduler1, s, created.id);

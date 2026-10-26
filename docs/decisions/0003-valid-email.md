@@ -16,7 +16,7 @@ PM вимагає «коректний email» (AC-HOLD-15: email без @ ві�
 - Колонка `clients.email` — `not null`, `unique` (`clients_email_key`) і check `clients_email_check`:
   `email = lower(btrim(email))` і `email ~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$'` — рівно один `@`,
   непорожні частини до й після нього, у домені є крапка, без пробілів.
-- Форма лише нормалізує email перед записом (`clientFromForm` у `src/lib/scheduling/clients.ts`: `trim` і нижній
+- Форма лише нормалізує email перед записом (`cardFromForm` у `src/lib/scheduling/clients.ts`: `trim` і нижній
   регістр); формат не перевіряє.
 - Порушення check (`23514`) → код `CLIENT_INVALID` → «Enter the client's name and a valid email.»; порушення unique
   (`23505`) → `CLIENT_EXISTS` → «A client with this email already exists.» (`src/lib/scheduling/messages.ts`).
