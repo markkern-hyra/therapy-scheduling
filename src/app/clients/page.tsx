@@ -2,14 +2,12 @@ import Link from "next/link";
 import { AppNav } from "@/app/_components/app-nav";
 import { Table, TableBody, TableCell, TableHead, TableHeader } from "@/components/ui/table";
 import { requireRole } from "@/lib/auth/require-role";
-import { STAFF_ROLES } from "@/lib/auth/roles";
-import { cardFields } from "@/lib/scheduling/clients";
-import { MESSAGES } from "@/lib/scheduling/messages";
+import { canCreateCards, cardFields, emptyClientsText } from "@/lib/scheduling/clients";
 
-// Список карток (AC-CARD-10): admin і scheduler бачать усі, у картці дитини — опікуна. Терапевту список відкриває
-// задача 2 impl-client-cards (лише свої клієнти).
+// Список карток. Хто що бачить, вирішує RLS: admin і scheduler — усі, у картці дитини — опікуна (AC-CARD-10); терапевт —
+// лише свої клієнти (AC-CARD-04, 08) або текст порожнього стану (AC-CARD-09).
 export default async function ClientsPage() {
-  const { supabase, role } = await requireRole(...STAFF_ROLES);
+  const { supabase, role } = await requireRole();
   const { data: clients, error } = await supabase
     .from("clients")
     .select("id, full_name, kind, email, birth_date, language, guardian_name, guardian_email")
@@ -22,17 +20,19 @@ export default async function ClientsPage() {
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-6">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-2xl font-semibold">Clients</h1>
-          <Link href="/clients/new" className="text-sm font-medium text-primary hover:underline">
-            New client
-          </Link>
+          {canCreateCards(role) && (
+            <Link href="/clients/new" className="text-sm font-medium text-primary hover:underline">
+              New client
+            </Link>
+          )}
         </div>
 
         <section className="flex flex-col gap-4">
           <h2 id="all-clients" className="text-lg font-semibold">
-            All clients
+            {role === "therapist" ? "My clients" : "All clients"}
           </h2>
           {clients.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{MESSAGES.NO_CLIENTS}</p>
+            <p className="text-sm text-muted-foreground">{emptyClientsText(role)}</p>
           ) : (
             <Table aria-labelledby="all-clients">
               <TableHeader>
