@@ -4,6 +4,7 @@ export const MESSAGES = {
   CLIENT_EXISTS: "A client with this email already exists.",
   LOGIN_MISSING: "Enter your email and password.",
   LOGIN_INVALID: "Invalid email or password.",
+  NO_FREE_SLOTS: "No free slots on this day.",
   UNKNOWN: "Something went wrong. Try again.",
 } as const;
 

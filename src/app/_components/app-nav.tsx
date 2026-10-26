@@ -3,8 +3,11 @@ import { signOut } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/lib/auth/roles";
 
-// Посилання за роллю; наступні задачі зрізу додають сюди «Slots», «Holds» і «Schedule».
-const STAFF_LINKS = [{ href: "/clients", label: "Clients" }];
+// Посилання за роллю; наступні задачі зрізу додають сюди «Holds» і «Schedule».
+const STAFF_LINKS = [
+  { href: "/slots", label: "Slots" },
+  { href: "/clients", label: "Clients" },
+];
 const LINKS: Record<Role, { href: string; label: string }[]> = {
   admin: STAFF_LINKS,
   scheduler: STAFF_LINKS,
