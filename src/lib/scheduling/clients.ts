@@ -1,4 +1,4 @@
-import { type Role, STAFF_ROLES } from "@/lib/auth/roles";
+import { isStaff } from "@/lib/auth/roles";
 
 // Рядок clients із форми картки «New client». Лише нормалізація: правила (обов'язкові поля, формат і унікальність
 // email, дані опікуна, дата народження й мова) перевіряє база — check і unique у міграціях roles_and_clients і
@@ -19,10 +19,9 @@ export function cardFromForm(form: FormData) {
   } as const;
 }
 
-// Хто створює картки клієнтів (матриця прав PM; AC-CARD-06). Дія перевіряє це до запису, RLS — ще раз у базі.
-export function canCreateCards(role: Role | null): boolean {
-  return role !== null && (STAFF_ROLES as readonly Role[]).includes(role);
-}
+// Хто створює картки клієнтів — admin і scheduler (матриця прав PM; AC-CARD-06). Дія перевіряє це до запису, RLS —
+// ще раз у базі.
+export const canCreateCards = isStaff;
 
 type CardData = {
   kind: string;
