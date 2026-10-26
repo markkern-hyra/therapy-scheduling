@@ -65,18 +65,18 @@ export function ClientCardForm({ today }: { today: string }) {
         <div className={ADULT_ONLY}>
           <Label>
             Email
-            <Input name="email" type="email" autoComplete="off" defaultValue={v.email} />
+            <Input name="email" type="email" autoComplete="off" defaultValue={v.email} required />
           </Label>
         </div>
         <div className={CHILD_ONLY}>
           <p className="text-sm text-muted-foreground">A child has no email of their own: enter the guardian.</p>
           <Label>
             Guardian name
-            <Input name="guardian_name" autoComplete="off" defaultValue={v.guardian_name} />
+            <Input name="guardian_name" autoComplete="off" defaultValue={v.guardian_name} required />
           </Label>
           <Label>
             Guardian email
-            <Input name="guardian_email" type="email" autoComplete="off" defaultValue={v.guardian_email} />
+            <Input name="guardian_email" type="email" autoComplete="off" defaultValue={v.guardian_email} required />
           </Label>
         </div>
       </Card>
