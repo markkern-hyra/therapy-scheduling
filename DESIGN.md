@@ -7,7 +7,8 @@
 - **Вхід від PM:** розділ «Вигляд і тон» у `requirements/product.md` (знімок 2026-10-26)
 - **Код:** токени — `src/app/globals.css`; компоненти — `src/components/ui/` (власні, на токенах; ADR 0005);
   перевірка — `npm run check:design`
-- **Рішення:** `docs/decisions/0005-design-system-semantic-tokens.md` (замінює ADR 0004)
+- **Рішення:** `docs/decisions/0005-design-system-semantic-tokens.md` (замінює ADR 0004);
+  `docs/decisions/0008-warm-design-direction.md` (теплий напрям, доповнює 0005)
 
 ## 1. Огляд
 
@@ -71,6 +72,7 @@
 | `input` на `background` | 3.2 | 3.9 | ≥ 3 |
 | `ring` на `background` | 5.4 | 9.5 | ≥ 3 |
 | `ring` на `card` | 5.7 | 8.8 | ≥ 3 |
+| `card-foreground` (підпис обраного `Choice`) на `primary-soft` | 14.0 | 11.6 | ≥ 4.5 |
 | `primary` (рамка обраного `Choice`) на `primary-soft` | 5.1 | 6.7 | ≥ 3 |
 
 ## 3. Типографіка
@@ -82,11 +84,12 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 | Роль | Клас | Де |
 |---|---|---|
 | Назва продукту | `text-base font-semibold` + `BrandMark` | шапка, над карткою входу |
-| Заголовок сторінки | `text-3xl font-bold tracking-tight` | один `h1` на сторінку (`PageHeader`) |
+| Заголовок сторінки | `text-3xl font-bold tracking-tight` | один `h1` на сторінку (`PageHeader`); у картці `AuthShell` — `text-2xl font-semibold` («Sign in») чи `text-lg font-semibold` (повідомлення без ролі) |
 | Заголовок розділу | `text-lg font-semibold` | `h2`: заголовок `Card`, заголовок дня на `/slots` |
 | Час слоту | `text-lg font-semibold tabular-nums` | початок слоту; кінець — `text-xs text-muted-foreground` |
 | Основний текст | `text-base` | текст, значення полів, значення `DescriptionList` (`font-medium`) |
-| Рядки списків, повідомлення | `text-sm` | `ListItem`, `Alert` |
+| Рядок списку | `text-base` (ім'я — `font-semibold`/`font-medium`) | `ListItem` |
+| Повідомлення, допоміжний рядок | `text-sm` | `Alert`, контакт під ім'ям у рядку клієнта |
 | Підпис поля, текст кнопки | `text-sm font-medium` / `text-sm font-semibold` | `Label`, `Button` |
 | Бейдж, підпис значення в рядку | `text-xs font-semibold` / `text-xs text-muted-foreground` | статус, `dt` у рядку клієнта |
 | Підпис, допоміжний текст | `text-sm text-muted-foreground` | підпис під `h1`, порожні стани, `dt`, «Not provided» |
@@ -94,23 +97,23 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 
 ## 4. Відступи, радіуси, тінь
 
-- Кроки Tailwind `1`, `2`, `3`, `4`, `6`, `8` (4–32px), інших немає. Рядок списку — `px-4 py-3`; клітинка таблиці —
-  `px-3 py-2`; між полями форми — `gap-4`; між секціями й бічні поля — `gap-6`, `px-6`; верх і низ сторінки — `py-8`;
+- Кроки Tailwind `1`, `2`, `3`, `4`, `6`, `8` (4–32px), інших немає (виняток — внутрішні відступи пігулки `Badge` у `ui`: `px-2.5 py-0.5 gap-1.5`). Рядок списку — `px-4 py-3`; між полями форми — `gap-4`; між секціями й бічні поля — `gap-6`, `px-6`; верх і низ сторінки — `py-8`;
   усередині `Card` — `p-6`.
 - Висота елементів керування одна: поле, `Select`, `Choice` і кнопка — `h-10` (40px; поле `px-3`, кнопка `px-4`), тож
   поля й кнопка стоять в один ряд (фільтр на `/slots`); у рядку списку й у шапці — `h-8` (`Button` і `Select`
   `size="sm"`, `NavLink`).
-- Розміри — не відступи, тож кроки вище до них не застосовні: висоти `h-8`/`h-10`, коло аватара `size-8`/`size-12`, коло
-  іконки `size-10`, колонка часу слоту `w-20`, вибір клієнта в рядку слоту `sm:w-56`, сітка підписів у рядку клієнта
+- Розміри — не відступи, тож кроки вище до них не застосовні: висоти `h-8`/`h-10`, коло аватара й знак продукту
+  `size-8`/`size-12`, крапка статусу `size-1.5`, коло іконки `size-10`, колонка часу слоту `w-20`, вибір клієнта в рядку слоту `sm:w-56`, сітка підписів у рядку клієнта
   `sm:w-96`, плитки `LinkCard` — від `18rem` (`auto-fit`), колонки фільтра `20rem`/`14rem`.
 - Вміст — одна колонка `max-w-5xl` (1024px): списки й розклад дихають, контакт не переноситься; форма з розділами в
   `Card` — `max-w-xl` (576px); вхід і «доступу ще немає» — `max-w-sm` (384px) по центру (`AuthShell`).
 - Радіуси (`@theme`): `rounded-sm` (8px) — кнопки, поля, `Choice`, пункт навігації, знак продукту; `rounded-md` (12px)
-  — `Card`, `List`, `Alert`, `LinkCard`, `EmptyState`, таблиця; `rounded-full` — бейджі, аватари, кола іконок.
-- Тінь — лише `shadow-card` на поверхнях (`Card`, `List`, `LinkCard`, `EmptyState`, таблиця), разом із рамкою 1px
+  — `Card`, `List`, `Alert`, `LinkCard`, `EmptyState`; `rounded-full` — бейджі, аватари, кола іконок.
+- Тінь — лише `shadow-card` на поверхнях (`Card`, `List`, `LinkCard`, `EmptyState`), разом із рамкою 1px
   `border`. Кнопки, поля й бейджі — без тіні.
-- Вузький екран (< 640px): розділи шапки — другим рядком, аватар і ім'я в шапці — з `sm`/`md`; рядок списку переносить
-  частини (дія слоту — на всю ширину під часом), горизонтальної прокрутки немає.
+- Вузький екран (< 640px): розділи шапки — другим рядком; аватар у шапці — з `sm`, ім'я й роль видно з `md`, а вужче —
+  лише для зчитувача екрана (`sr-only`); рядок списку переносить частини (дія слоту — на всю ширину під часом, підписи
+  полів клієнта — під ім'ям до `lg`), горизонтальної прокрутки немає.
 
 ## 5. Компоненти й варіанти
 
@@ -119,27 +122,27 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 
 | Компонент | Варіанти | Правило |
 |---|---|---|
-| `Button` | `primary`, `secondary`, `ghost`; `size`: `md` (h-10), `sm` (h-8) | `primary` — одна основна дія на екран («Create client», «Sign in»); `secondary` — «Show», «Cancel», дії в рядках («Hold», «Confirm»); `ghost` — тихі дії без рамки («Sign out», кроки днями). Під час надсилання — текст стану («Creating…») і `disabled` |
-| `ButtonLink` (у `button.tsx`) | ті самі, що `Button` | перехід, що виглядає як кнопка: «New client» (`primary`), «Cancel», кроки днями «‹ Mon 26 · Wed 28 ›» (`ghost`) |
-| `Input` + `Label` | — | `Label` обгортає поле (`<Label>Email<Input … /></Label>`) — зв'язок без `htmlFor`; placeholder не замість підпису; обов'язкові поля — `required` (форми `noValidate`, перевіряє сервер) |
+| `Button` | `primary`, `secondary`, `ghost`; `size`: `md` (h-10), `sm` (h-8) | `primary` — одна основна дія на екран («Create client», «Sign in»); `secondary` — «Show», «Cancel», дії в рядках («Hold», «Confirm»); `ghost` — тихі дії без рамки («Sign out» у шапці, кроки днями; на `/no-access` «Sign out» — `secondary`, бо це єдина дія картки). Під час надсилання — текст стану («Creating…») і `disabled` |
+| `ButtonLink` (у `button.tsx`) | ті самі, що `Button` | перехід, що виглядає як кнопка: «New client» (`primary`), «Cancel», кроки днями «‹ Mon 26 · Wed 28 ›» (`ghost`, `aria-label` «Previous day, Mon 26» / «Next day, Wed 28»; повна дата — у заголовку дня) |
+| `Input` + `Label` | — | `Label` обгортає поле (`<Label>Email<Input … /></Label>`) — зв'язок без `htmlFor`; placeholder не замість підпису; обов'язкові поля — `required`; форма картки — `noValidate` (перевіряє сервер, текст помилки — з AC) |
 | `Select` | `size`: `md`, `sm` | той самий вигляд, що `Input`; `sm` — у рядку списку поруч із `Button sm` |
 | `Choice` | — | радіокнопка в рамці для 2–3 варіантів замість `Select` («Adult» / «Child»); групу обгортає `<fieldset>` з `<legend>`; обраний — рамка `primary` і тло `primary-soft` |
 | `Card` | `title` | поверхня розділу: `card`, рамка, `shadow-card`, `p-6`; заголовок — `h2` |
-| `List` + `ListItem` | — | список рядків на поверхні з роздільниками — розклад дня, клієнти; `aria-labelledby` на заголовок, що його називає; рядок переносить частини на вузькому екрані |
-| `Table` (`TableHeader`, `TableBody`, `TableHead`, `TableCell`) | — | дані з колонками, які не вміщуються в рядок списку; зараз сторінки обходяться `List` |
+| `List` + `ListItem` | — | список рядків на поверхні з роздільниками — розклад дня, клієнти; `role="list"` (Safari прибирає семантику списку без `list-style`), `aria-labelledby` на заголовок, що його називає; рядок переносить частини на вузькому екрані |
 | `PageHeader` | `back`, `leading`, `description`, `actions` | верх кожної сторінки застосунку: шлях назад («‹ Clients»), ведучий аватар (картка клієнта), `h1`, підпис, дії праворуч (головна — одна) |
 | `DescriptionList` | `numeric`, `muted` у пункті | пари «підпис — значення» (`<dl>`) сіткою 1–3 колонки: дані картки клієнта; дата — `numeric`, відсутнє («Not provided») — `muted` |
 | `Badge` | `held`, `confirmed`, `muted` (з крапкою); `neutral` | статус — пігулка з крапкою кольору статусу, завжди зі словом; `neutral` — ознака без статусу (тип клієнта, мова) |
 | `Avatar` | `size`: `sm`, `lg` | коло з ініціалами (`initials`) на `primary-soft`; ім'я завжди поруч текстом, саме коло — `aria-hidden` |
 | `BrandMark` | — | знак продукту: монограма «TS» на `primary`, `aria-hidden` (назва — поруч текстом) |
 | `LinkCard` | — | розділ застосунку плиткою на головній: іконка в колі `primary-soft`, назва (`primary`) і для чого розділ; наведення — межа `input` |
-| `EmptyState` | `action` | порожній список: іконка в колі `muted`, текст AC дослівно; дія — лише там, де роль має право |
+| `EmptyState` | — | порожній список: іконка в колі `muted`, текст AC дослівно |
 | `Alert` | помилка | `role="alert"`, тло `destructive-soft`, іконка й текст дослівно з AC, над формою чи списком |
 | `NavLink` | — | пункт шапки з іконкою; поточний розділ — `aria-current="page"` і тло `primary-soft`, інші — `muted-foreground`; єдиний клієнтський (`"use client"`) компонент в `ui` — потребує `usePathname` |
 | Іконки (`icons.tsx`) | `SlotsIcon`, `ClientsIcon`, `SignOutIcon`, `AddIcon`, `BackIcon`, `PreviousIcon`, `NextIcon`, `AlertIcon`, `TimeIcon`, `ClientIcon` | лінійні іконки `lucide-react`, 16px, товщина 1.9, `aria-hidden`; лише цей набір і завжди поруч із підписом — сенс несе текст |
 
 Компоненти застосунку (`AppNav` — знак і назва, розділи ролі з іконками, аватар з ім'ям і роллю, «Sign out»;
-`AuthShell` — вхід і «доступу ще немає»; `ErrorMessage`; `StatusBadge`, що перетворює статус на варіант `Badge`;
+`AuthShell` — вхід (з призначенням продукту) і «доступу ще немає» (лише знак і назва); назва й призначення — `PRODUCT`
+у `src/lib/product.ts`; `ErrorMessage`; `StatusBadge`, що перетворює статус на варіант `Badge`;
 `ClientCardForm`) — у `src/app/_components/` і складаються з компонентів `ui` без власних кольорів.
 
 ## 6. Стани

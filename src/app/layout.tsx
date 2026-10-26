@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
+import { PRODUCT } from "@/lib/product";
 import "./globals.css";
 
 // Figtree — теплий гуманістичний гротеск (DESIGN.md, розділ 3); час і дати — його табличні цифри (tabular-nums).
@@ -9,8 +10,8 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: "Therapy Scheduling",
-  description: "Hold therapist slots for clients and confirm sessions.",
+  title: PRODUCT.name,
+  description: PRODUCT.tagline,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

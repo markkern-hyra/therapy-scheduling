@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ClientsIcon, SignOutIcon, SlotsIcon } from "@/components/ui/icons";
 import { NavLink } from "@/components/ui/nav-link";
 import { ROLE_LABELS, type Role } from "@/lib/auth/roles";
+import { PRODUCT } from "@/lib/product";
 
 // Посилання за роллю; наступні задачі додають сюди «Holds» і «Schedule».
 type Section = { href: string; label: string; icon: ReactNode };
@@ -26,7 +27,7 @@ export function AppNav({ role, name }: { role: Role | null; name?: string | null
       <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3">
         <Link href="/" className="flex items-center gap-2 text-base font-semibold whitespace-nowrap">
           <BrandMark />
-          Therapy Scheduling
+          {PRODUCT.name}
         </Link>
         <nav aria-label="Main" className="order-last flex w-full gap-1 sm:order-none sm:w-auto">
           {(role ? LINKS[role] : []).map((link) => (
@@ -37,11 +38,18 @@ export function AppNav({ role, name }: { role: Role | null; name?: string | null
         </nav>
         <div className="ml-auto flex items-center gap-3">
           {name && role && (
-            <span className="hidden items-center gap-2 sm:flex">
-              <Avatar name={name} />
-              <span className="hidden flex-col text-sm md:flex">
-                <span className="font-medium">{name}</span>
-                <span className="text-xs text-muted-foreground">{ROLE_LABELS[role]}</span>
+            <span className="flex items-center gap-2">
+              <span className="hidden sm:flex">
+                <Avatar name={name} />
+              </span>
+              {/* Хто увійшов — текстом завжди: на вузькому екрані лише для зчитувача екрана. */}
+              <span className="sr-only flex-col text-sm md:not-sr-only md:flex">
+                <span data-testid="user-name" className="font-medium">
+                  {name}
+                </span>
+                <span data-testid="user-role" className="text-xs text-muted-foreground">
+                  {ROLE_LABELS[role]}
+                </span>
               </span>
             </span>
           )}

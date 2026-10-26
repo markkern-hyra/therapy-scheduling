@@ -32,7 +32,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-8">
         <PageHeader title="Home" description="Choose where to start." />
         <ErrorMessage code={error} />
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(18rem,1fr))] gap-4">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(18rem,100%),1fr))] gap-4">
           {SECTIONS[role].map((section) => (
             <LinkCard key={section.href} {...section} />
           ))}

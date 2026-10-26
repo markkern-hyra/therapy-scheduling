@@ -6,6 +6,7 @@ export function List(props: Omit<ComponentProps<"ul">, "className">) {
   return (
     <ul
       {...props}
+      role="list"
       className="divide-y divide-border overflow-hidden rounded-md border border-border bg-card text-card-foreground shadow-card"
     />
   );

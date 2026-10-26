@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/select";
 import { requireRole } from "@/lib/auth/require-role";
 import { STAFF_ROLES } from "@/lib/auth/roles";
 import { contactEmail } from "@/lib/scheduling/clients";
+import { slotsHref } from "@/lib/scheduling/links";
 import { daySlotsView, isHoldable } from "@/lib/scheduling/status";
 import {
   formatDayStep,
@@ -54,8 +55,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
   const view = daySlotsView(slots, now);
 
   // Кроки днями — звичайні посилання на ту саму сторінку з ?day= (і обраним терапевтом).
-  const dayHref = (d: string) =>
-    `/slots?${new URLSearchParams({ ...(therapist ? { therapist: therapist.id } : {}), day: d })}`;
+  const dayHref = (d: string) => slotsHref(therapist?.id, d);
   const previous = shiftPracticeDay(day, -1);
   const next = shiftPracticeDay(day, 1);
 
@@ -94,11 +94,11 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
               {therapist ? `${therapist.full_name ?? therapist.email} — ${day}` : day}
             </h2>
             <nav aria-label="Days" className="flex items-center gap-1">
-              <ButtonLink href={dayHref(previous)} variant="ghost" size="sm">
+              <ButtonLink href={dayHref(previous)} variant="ghost" size="sm" aria-label={`Previous day, ${formatDayStep(previous)}`}>
                 <PreviousIcon />
                 {formatDayStep(previous)}
               </ButtonLink>
-              <ButtonLink href={dayHref(next)} variant="ghost" size="sm">
+              <ButtonLink href={dayHref(next)} variant="ghost" size="sm" aria-label={`Next day, ${formatDayStep(next)}`}>
                 {formatDayStep(next)}
                 <NextIcon />
               </ButtonLink>
@@ -122,7 +122,10 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
                     {slot.status === "Held" && slot.hold && (
                       <span className="inline-flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
                         <TimeIcon />
-                        Held until {formatPracticeDateTime(new Date(slot.hold.expires_at))}
+                        <span>
+                          Held until{" "}
+                          <span className="whitespace-nowrap">{formatPracticeDateTime(new Date(slot.hold.expires_at))}</span>
+                        </span>
                       </span>
                     )}
                   </span>

@@ -54,7 +54,7 @@ export default async function ClientsPage() {
                     </Link>
                     <span className="text-sm break-words text-muted-foreground">{fields.contact}</span>
                   </span>
-                  <dl className="grid w-full grid-cols-3 gap-4 text-sm sm:w-96">
+                  <dl className="grid w-full grid-cols-3 gap-4 text-sm lg:w-96">
                     <div className="flex flex-col">
                       <dt className="text-xs text-muted-foreground">Type</dt>
                       <dd>{fields.type}</dd>
