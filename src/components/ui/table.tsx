@@ -19,14 +19,10 @@ export function TableBody(props: Omit<ComponentProps<"tbody">, "className">) {
   return <tbody {...props} className="divide-y divide-border" />;
 }
 
-// hideOnMobile — другорядна колонка: на вузькому екрані її немає (і заголовка, і клітинок), щоб таблиця вмістилась.
-type Cell = { hideOnMobile?: boolean };
-const cell = ({ hideOnMobile }: Cell) => `px-3 py-2 ${hideOnMobile ? "hidden sm:table-cell" : ""}`;
-
-export function TableHead({ hideOnMobile, ...props }: Omit<ComponentProps<"th">, "className"> & Cell) {
-  return <th {...props} className={`${cell({ hideOnMobile })} font-medium`} />;
+export function TableHead(props: Omit<ComponentProps<"th">, "className">) {
+  return <th {...props} className="px-3 py-2 font-medium" />;
 }
 
-export function TableCell({ hideOnMobile, ...props }: Omit<ComponentProps<"td">, "className"> & Cell) {
-  return <td {...props} className={cell({ hideOnMobile })} />;
+export function TableCell(props: Omit<ComponentProps<"td">, "className">) {
+  return <td {...props} className="px-3 py-2" />;
 }

@@ -37,9 +37,9 @@ export default async function ClientsPage() {
               <TableHeader>
                 <tr>
                   <TableHead>Name</TableHead>
-                  <TableHead hideOnMobile>Type</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Date of birth</TableHead>
-                  <TableHead hideOnMobile>Language</TableHead>
+                  <TableHead>Language</TableHead>
                   <TableHead>Contact</TableHead>
                 </tr>
               </TableHeader>
@@ -53,13 +53,13 @@ export default async function ClientsPage() {
                           {client.full_name}
                         </Link>
                       </TableCell>
-                      <TableCell hideOnMobile>{fields.type}</TableCell>
+                      <TableCell>{fields.type}</TableCell>
                       <TableCell>
                         <span className={client.birth_date ? "font-mono whitespace-nowrap" : "text-muted-foreground"}>
                           {fields.birthDate}
                         </span>
                       </TableCell>
-                      <TableCell hideOnMobile>
+                      <TableCell>
                         <span className={client.language ? "" : "text-muted-foreground"}>{fields.language}</span>
                       </TableCell>
                       <TableCell>{fields.contact}</TableCell>

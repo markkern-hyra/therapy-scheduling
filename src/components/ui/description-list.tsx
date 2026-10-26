@@ -15,9 +15,7 @@ export function DescriptionList({ items }: { items: Description[] }) {
       {items.map((item) => (
         <div key={item.term} className="grid gap-1 py-3 first:pt-0 last:pb-0 sm:grid-cols-[12rem_1fr] sm:gap-4">
           <dt className="text-muted-foreground">{item.term}</dt>
-          <dd className={`${item.mono && !item.muted ? "font-mono" : ""} ${item.muted ? "text-muted-foreground" : ""}`}>
-            {item.detail}
-          </dd>
+          <dd className={item.muted ? "text-muted-foreground" : item.mono ? "font-mono" : undefined}>{item.detail}</dd>
         </div>
       ))}
     </dl>

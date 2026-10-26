@@ -15,7 +15,7 @@ export default async function NoAccessPage() {
 
   return (
     <AuthShell>
-      <p className="text-base">{MESSAGES.NO_ROLE}</p>
+      <h1 className="text-lg font-semibold">{MESSAGES.NO_ROLE}</h1>
       <form action={signOut}>
         <Button variant="secondary">Sign out</Button>
       </form>
