@@ -44,3 +44,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Тестові акаунти для PM: лише зашифрований accounts.zip у git, відкритий текст — ніколи.
+accounts.txt
