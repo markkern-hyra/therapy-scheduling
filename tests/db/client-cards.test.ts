@@ -37,17 +37,11 @@ const child = (fullName: string, guardianName: string | null, guardianEmail: str
 });
 
 const INSERT = `insert into public.clients (kind, full_name, email, birth_date, language, guardian_name, guardian_email)
-                values ($1, $2, $3, $4, $5, $6, $7) returning id`;
-const insertAs = (user: string, c: Card) =>
-  t.asUser<{ id: string }>(user, INSERT, [
-    c.kind,
-    c.full_name,
-    c.email,
-    c.birth_date,
-    c.language,
-    c.guardian_name,
-    c.guardian_email,
-  ]);
+                values ($1, $2, $3, $4, $5, $6, $7)`;
+const params = (c: Card) => [c.kind, c.full_name, c.email, c.birth_date, c.language, c.guardian_name, c.guardian_email];
+const insertAs = (user: string, c: Card) => t.asUser<{ id: string }>(user, `${INSERT} returning id`, params(c));
+// Відмова ролі — без returning: інакше вставку відхилила б політика select (рядок не видно), а не clients_insert_staff.
+const tryInsertAs = (user: string, c: Card) => t.asUser(user, INSERT, params(c));
 
 const count = async () => (await t.asService<{ n: number }>("select count(*)::int as n from public.clients"))[0].n;
 
@@ -141,7 +135,7 @@ describe("хто створює й бачить картки", () => {
   it("AC-CARD-06: therapist1 не створює картку — відмова, кількість карток та сама", async () => {
     const before = await count();
     await expect(
-      insertAs(t.users["therapist1@example.test"], adult("Client Ten", "client10@example.test")),
+      tryInsertAs(t.users["therapist1@example.test"], adult("Client Ten", "client10@example.test")),
     ).rejects.toThrow(/row-level security/);
     expect(await count()).toBe(before);
   });
@@ -176,7 +170,7 @@ describe("хто створює й бачить картки", () => {
     expect(profile.role).toBeNull();
     const before = await count();
     expect(await t.asUser(newuser, "select id from public.clients")).toEqual([]);
-    await expect(insertAs(newuser, adult("Client Ten", "client10@example.test"))).rejects.toThrow(/row-level security/);
+    await expect(tryInsertAs(newuser, adult("Client Ten", "client10@example.test"))).rejects.toThrow(/row-level security/);
     expect(await count()).toBe(before);
   });
 
