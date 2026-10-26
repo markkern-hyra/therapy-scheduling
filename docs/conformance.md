@@ -34,17 +34,17 @@
 | AC | Що перевіряє | Код | Тест | Статус |
 |---|---|---|---|---|
 | AC-HOLD-10 | новий клієнт з ім'ям та email створюється й доступний для утримання | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `src/lib/scheduling/messages.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | відкладено (вибір клієнта під час утримання — задача 3.1) |
-| AC-HOLD-11 | порожнє ім'я — клієнта не створено, «Enter the client's name and a valid email.» | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `src/lib/scheduling/messages.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | реалізовано |
-| AC-HOLD-15 | email без @ — клієнта не створено, «Enter the client's name and a valid email.» | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `src/lib/scheduling/messages.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | реалізовано |
-| AC-HOLD-16 | той самий email — «A client with this email already exists.» | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `src/lib/scheduling/messages.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | реалізовано |
-| AC-HOLD-34 | той самий email іншим регістром і з пробілами — дублікат | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `src/lib/scheduling/messages.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | реалізовано |
+| AC-HOLD-11 | порожнє ім'я — клієнта не створено, «Enter the client's name and a valid email.» | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `src/lib/scheduling/messages.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts`, `tests/db/clients.test.ts` | реалізовано |
+| AC-HOLD-15 | email без @ — клієнта не створено, «Enter the client's name and a valid email.» | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `src/lib/scheduling/messages.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts`, `tests/db/clients.test.ts` | реалізовано |
+| AC-HOLD-16 | той самий email — «A client with this email already exists.» | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `src/lib/scheduling/messages.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts`, `tests/db/clients.test.ts` | реалізовано |
+| AC-HOLD-34 | той самий email іншим регістром і з пробілами — дублікат | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `src/lib/scheduling/messages.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts`, `tests/db/clients.test.ts` | реалізовано |
 | AC-HOLD-35 | email зберігається й показується малими літерами без пробілів | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `src/lib/scheduling/messages.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/scheduling/clients.test.ts` | відкладено (показ email під час утримання — задача 3.1) |
-| AC-HOLD-39 | інші некоректні email (без крапки після «@», два «@», порожня частина до «@», пробіл) — «Enter the client's name and a valid email.» | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-41 | ім'я з пробілів — не створено; « Client Four » збережено як «Client Four» | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-39 | інші некоректні email (без крапки після «@», два «@», порожня частина до «@», пробіл) — «Enter the client's name and a valid email.» | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/db/clients.test.ts` | реалізовано |
+| AC-HOLD-41 | ім'я з пробілів — не створено; « Client Four » збережено як «Client Four» | `src/app/clients/actions.ts` (createClientCard), `src/lib/scheduling/clients.ts`, `supabase/migrations/20261021155328_roles_and_clients.sql` | `tests/db/clients.test.ts` | реалізовано |
 | AC-HOLD-01 | слоти дня зі статусами вільний / «Held» / «Confirmed»; утримати можна лише вільний | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-32 | слоти, що вже почалися без активного утримання, — «Past», не утримуються | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-18 | день без вільних слотів — «No free slots on this day.» і всі слоти зі статусами | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-24 | день без жодного слоту — лише «No free slots on this day.» | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-24 | день без жодного слоту — лише «No free slots on this day.» | `src/lib/scheduling/status.ts` (daySlotsView), `src/app/slots/page.tsx` | `tests/scheduling/status.test.ts` | реалізовано |
 | AC-HOLD-33 | слоти «Past» не рахуються вільними для «No free slots on this day.» | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-02 | утримання — статус «Held», клієнт і «Held until» +24 години | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-03 | слот уже утримано — «This slot is no longer available.» | — | — | відкладено (чекає реалізації) |
@@ -72,7 +72,7 @@
 | AC-HOLD-14 | терапевт не підтверджує — «Only schedulers and admins can confirm holds.» | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-30 | розклад терапевта — поточний тиждень пн–нд зі статусами слотів | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-31 | перемикання розкладу на наступний тиждень | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-09 | терапевт бачить лише власний розклад | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-09 | терапевт бачить лише власний розклад | — | `tests/db/slots.test.ts` | відкладено (чекає реалізації) |
 | AC-HOLD-21 | прострочене утримання не показано в розкладі терапевта | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-40 | у розкладі терапевта — ім'я клієнта без email | — | — | відкладено (чекає реалізації) |
 | AC-CARD-01 | картка дорослого з анкети (тип, ім'я, email, дата народження, мова) — створено, можна вибрати під час утримання | — | — | відкладено (чекає реалізації) |

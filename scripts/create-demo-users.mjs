@@ -109,4 +109,12 @@ if (failed) {
   );
   process.exit(1);
 }
+
+// Демо-слоти терапевтів (міграція slots): пн–пт 09:00–16:00 за LA на поточний і 3 наступні тижні; без дублікатів.
+const { error: slotsError } = await supabase.rpc("generate_demo_slots");
+if (slotsError) {
+  console.error(`✖ демо-слоти: ${slotsError.message}`);
+  process.exit(1);
+}
+console.log("✔ демо-слоти терапевтів");
 console.log(`\nГотово, користувачів: ${users.length}. Пароль — значення DEMO_USER_PASSWORD (у консоль не виводимо).`);

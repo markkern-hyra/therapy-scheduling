@@ -51,13 +51,35 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"slots": {
+                  Row: {
+                    "ends_at": string,"id": string,"starts_at": string,"therapist_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "ends_at": string,"id"?: string,"starts_at": string,"therapist_id": string
+                  }
+                  Update: {
+                    "ends_at"?: string,"id"?: string,"starts_at"?: string,"therapist_id"?: string
+                  }
+                  Relationships: [
+                    {
+                      foreignKeyName: "slots_therapist_id_fkey"
+                      columns: ["therapist_id"]
+                      isOneToOne: false
+                      referencedRelation: "profiles"
+                      referencedColumns: ["id"]
+                    }
+                  ]
                 }
           }
           Views: {
             [_ in never]: never
           }
           Functions: {
-            [_ in never]: never
+            "generate_demo_slots":
+{ Args: never; Returns: undefined
+                           }
           }
           Enums: {
             [_ in never]: never

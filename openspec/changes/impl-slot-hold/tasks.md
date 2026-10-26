@@ -18,14 +18,14 @@
   `/clients` і `createClientCard`; `seed.sql` — client1, client2; ADR `docs/decisions/0003-valid-email.md`;
   `database.types.ts` з Summary `db-check`; тести; після merge `npm run users:demo` створює 5 користувачів із ролями.
   Done when: AC-HOLD-10, AC-HOLD-11, AC-HOLD-15, AC-HOLD-16, AC-HOLD-34, AC-HOLD-35.
-- [ ] 1.2 Уточнення клієнтів після відповідей PM (`clarify-slot-hold-2`): правило email уже в check-обмеженні
+- [x] 1.2 Уточнення клієнтів після відповідей PM (`clarify-slot-hold-2`): правило email уже в check-обмеженні
   (ADR 0003), прибирання пробілів імені — у формі й `clients_full_name_check`; тести: кожен із чотирьох email AC-HOLD-39
   і ім'я з пробілів / « Client Four » AC-HOLD-41 (тест бази на PGlite і `clients.ts`); рядки `docs/conformance.md`.
   Done when: AC-HOLD-39, AC-HOLD-41.
 
 ## 2. Слоти терапевта на день
 
-- [ ] 2.1 Міграція `slots` (60 хв, unique `therapist_id` + `starts_at`, RLS: admin / scheduler — усі, therapist — власні;
+- [x] 2.1 Міграція `slots` (60 хв, unique `therapist_id` + `starts_at`, RLS: admin / scheduler — усі, therapist — власні;
   запис лише `service_role`) і `public.generate_demo_slots()`; виклик із `scripts/create-demo-users.mjs`; `time.ts`
   (часовий пояс, формат, межі дня); `Badge` у `ui` і `StatusBadge` (статус → варіант, `DESIGN.md`); інфраструктура
   тестів бази `tests/db/supabase-pglite.ts` (PGlite) і тест RLS слотів; сторінка `/slots` (вибір терапевта й дня, слоти

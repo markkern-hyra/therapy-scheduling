@@ -19,3 +19,7 @@
 insert into public.clients (full_name, email)
 values ('Client One', 'client1@example.test'), ('Client Two', 'client2@example.test')
 on conflict (email) do nothing;
+
+-- Демо-слоти терапевтів (міграція slots). На чистій базі терапевтів ще немає — нічого не створює; у хмарі слоти
+-- створює npm run users:demo після користувачів.
+select public.generate_demo_slots();
