@@ -31,7 +31,4 @@ create policy clients_select_own_for_therapist
   on public.clients
   for select
   to authenticated
-  using (
-    (select private.has_role('therapist'))
-    and private.is_own_client(id)
-  );
+  using (true); -- mutation: AC-CARD-05 — тимчасово, буде revert
