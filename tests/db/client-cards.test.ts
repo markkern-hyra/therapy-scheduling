@@ -108,6 +108,14 @@ describe("картка з анкети", () => {
     expect(await count()).toBe(before);
   });
 
+  it("дата народження «сьогодні» за часом практики приймається — межа «не пізніше за сьогодні»", async () => {
+    const [{ today }] = await t.asService<{ today: string }>(
+      "select ((now() at time zone 'America/Los_Angeles')::date)::text as today",
+    );
+    const [{ id }] = await insertAs(scheduler1, { ...adult("Client Today", "today@example.test"), birth_date: today });
+    expect(id).toBeTruthy();
+  });
+
   it("дорослий має власний email, дитина — ні", async () => {
     const before = await count();
     await expect(insertAs(scheduler1, { ...adult("Client X", "x5@example.test"), email: null })).rejects.toThrow(
@@ -131,6 +139,7 @@ describe("картка з анкети", () => {
   });
 });
 
+// AC-CARD-10 спирається на картку Client Seven з AC-CARD-02: тести файлу йдуть по черзі.
 describe("хто створює й бачить картки", () => {
   it("AC-CARD-06: therapist1 не створює картку — відмова, кількість карток та сама", async () => {
     const before = await count();

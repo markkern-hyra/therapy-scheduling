@@ -42,8 +42,8 @@ for (const u of users) {
     process.exit(1);
   }
   // role: null — користувач без ролі (AC-CARD-11): входить, але бачить лише повідомлення, що доступу ще немає.
-  if (!("role" in u)) {
-    console.error(`Для ${u.email} не вказано role (null — без ролі).`);
+  if (![null, "admin", "scheduler", "therapist"].includes(u.role)) {
+    console.error(`Для ${u.email} role — admin, scheduler, therapist або null (без ролі), а не ${JSON.stringify(u.role)}.`);
     process.exit(1);
   }
 }

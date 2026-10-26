@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canCreateCards, cardFields, cardFromForm } from "@/lib/scheduling/clients";
+import { canCreateCards, cardFields, cardFromForm, contactEmail } from "@/lib/scheduling/clients";
 import { errorCode, messageFor } from "@/lib/scheduling/messages";
 
 // Правила картки (обов'язкові поля, формат і унікальність email, дані опікуна) перевіряє база — тут лише нормалізація
@@ -66,6 +66,11 @@ describe("картка з анкети", () => {
   it("AC-CARD-02: у картці дитини контакт — ім'я й email опікуна", () => {
     expect(cardFields({ ...CHILD, email: null }).contact).toBe("Guardian Seven — guardian7@example.test");
     expect(cardFields({ ...CHILD, email: null }).type).toBe("Child");
+  });
+
+  it("AC-CARD-02: у виборі клієнта під час утримання біля дитини — email опікуна, біля дорослого — власний", () => {
+    expect(contactEmail({ kind: "child", email: null, guardian_email: "guardian7@example.test" })).toBe("guardian7@example.test");
+    expect(contactEmail({ kind: "adult", email: "client6@example.test", guardian_email: null })).toBe("client6@example.test");
   });
 
   it("картки зрізу 1 (лише ім'я та email) — тип «Adult», відсутні поля «Not provided»", () => {

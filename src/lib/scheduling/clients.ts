@@ -19,6 +19,13 @@ export function cardFromForm(form: FormData) {
   } as const;
 }
 
+const CARD_FIELDS = ["kind", "full_name", "email", "birth_date", "language", "guardian_name", "guardian_email"] as const;
+
+// Введене у форму картки як є — дія повертає його після відмови, щоб воно лишилось у формі (AC-CARD-03). Лише поля
+// картки: службові поля React форми сюди не потрапляють.
+export const cardValues = (form: FormData) =>
+  Object.fromEntries(CARD_FIELDS.map((name) => [name, String(form.get(name) ?? "")]));
+
 // Хто створює картки клієнтів — admin і scheduler (матриця прав PM; AC-CARD-06). Дія перевіряє це до запису, RLS —
 // ще раз у базі.
 export const canCreateCards = isStaff;
@@ -34,6 +41,10 @@ type CardData = {
 
 const NOT_PROVIDED = "Not provided";
 
+// Контакт клієнта: дорослий — власний email, дитина — email опікуна (AC-CARD-02; картка й вибір під час утримання).
+export const contactEmail = (c: Pick<CardData, "kind" | "email" | "guardian_email">) =>
+  c.kind === "child" ? c.guardian_email : c.email;
+
 // Поля картки для показу (список і картка). Картки зрізу 1 — «Adult», відсутні поля — «Not provided» (Припущення PM);
 // контакт дитини — опікун (AC-CARD-02).
 export function cardFields(card: CardData) {
@@ -41,6 +52,6 @@ export function cardFields(card: CardData) {
     type: card.kind === "child" ? "Child" : "Adult",
     birthDate: card.birth_date ?? NOT_PROVIDED,
     language: card.language ?? NOT_PROVIDED,
-    contact: card.kind === "child" ? `${card.guardian_name} — ${card.guardian_email}` : (card.email ?? NOT_PROVIDED),
+    contact: card.kind === "child" ? `${card.guardian_name} — ${contactEmail(card)}` : (contactEmail(card) ?? NOT_PROVIDED),
   };
 }

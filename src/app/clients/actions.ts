@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth/require-role";
-import { canCreateCards, cardFromForm } from "@/lib/scheduling/clients";
+import { canCreateCards, cardFromForm, cardValues } from "@/lib/scheduling/clients";
 import { errorCode, type MessageCode } from "@/lib/scheduling/messages";
 
 export type CardFormState = { error: MessageCode | null; values: Record<string, string> };
@@ -13,7 +13,7 @@ export type CardFormState = { error: MessageCode | null; values: Record<string, 
 // на прямий запит в обхід дії. Помилка повертає введене, щоб воно лишилось у формі (AC-CARD-03).
 export async function createClientCard(_previous: CardFormState, form: FormData): Promise<CardFormState> {
   const { supabase, role } = await requireRole();
-  const values = Object.fromEntries([...form.entries()].map(([name, value]) => [name, String(value)]));
+  const values = cardValues(form);
   if (!canCreateCards(role)) return { error: "CARD_FORBIDDEN", values };
 
   const { data, error } = await supabase.from("clients").insert(cardFromForm(form)).select("id").single();
