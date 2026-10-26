@@ -158,7 +158,7 @@
 | `status.ts` | `holdStatus`, `slotStatus` (вільний, «Held», «Confirmed», «Expired», «Past»), `isHoldable`, `daySlotsView` («No free slots on this day.») | 01, 02, 05, 06, 12, 18, 24, 26, 32, 33 |
 | `visibility.ts` | `schedulerHolds` (лише «Held» і «Expired», слот яких ще не почався, за часом слоту від найближчого; прострочене зникає, коли слот знову утримали за тим самим клієнтом), `therapistWeek` (без прострочених, лише власне; клієнт — лише ім'я) | 09, 20, 21, 28–31, 37, 38, 40, 42 |
 | `clients.ts` | `normalizeEmail` (форма перед записом; правило формату — check бази й ADR 0003) | 34, 35 |
-| `messages.ts` | одна мапа код → текст PM дослівно; `errorCode(error)` — код із помилки Postgres (`raise exception '<КОД>'`, `23505` → `CLIENT_EXISTS`, `23514` на `clients` → `CLIENT_INVALID`, `42501` → `*_FORBIDDEN`) | 03, 04, 07, 08, 11, 13–17, 22, 25, 36 |
+| `messages.ts` | одна мапа код → текст PM дослівно; `errorCode(error)` читає `error.message` помилки Postgres: для `P0001` — дозволений код із `raise exception '<КОД>'` тригера правил; для `23505` і `23514` — дозволену назву обмеження, бо той самий код у різних таблиць означає різне (`clients_email_key` → `CLIENT_EXISTS`, `clients_full_name_check` / `clients_email_check` → `CLIENT_INVALID`); решта, зокрема `42501`, — `UNKNOWN` (відмову утримання дає тригер: `HOLD_FORBIDDEN`) | 03, 04, 07, 08, 11, 13–17, 22, 25, 36 |
 
 Коди й тексти: `SLOT_TAKEN` «This slot is no longer available.»; `SLOT_STARTED` «This slot has already started and cannot
 be held.»; `HOLD_FORBIDDEN` «Only schedulers and admins can hold slots.»; `CLIENT_BUSY` «This client already has a hold or
