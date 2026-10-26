@@ -95,7 +95,7 @@ America/Los_Angeles, `2026-11-03 14:30`; дата — `2026-11-03`.
 
 | Компонент | Варіанти | Правило |
 |---|---|---|
-| `Button` | `primary`, `secondary` | `primary` — одна основна дія на екран («Create client», «Sign in», «Hold»); решта — `secondary` («Sign out») |
+| `Button` | `primary`, `secondary` | `primary` — одна основна дія на екран («Create client», «Sign in»); решта — `secondary`: «Sign out», «Show» і дії в рядках таблиці («Hold», «Confirm»), бо їх на екрані багато |
 | `Input` + `Label` | — | `Label` обгортає поле (`<Label>Email<Input … /></Label>`) — зв'язок без `htmlFor`; placeholder не замість підпису |
 | `Table` (`TableHeader`, `TableBody`, `TableHead`, `TableCell`) | — | `aria-labelledby` на заголовок розділу; рядки — звичайні `<tr>` |
 | `Alert` | помилка | `role="alert"`, текст дослівно з AC, над формою чи таблицею |

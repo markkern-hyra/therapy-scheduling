@@ -2,6 +2,10 @@
 export const MESSAGES = {
   CLIENT_INVALID: "Enter the client's name and a valid email.",
   CLIENT_EXISTS: "A client with this email already exists.",
+  SLOT_TAKEN: "This slot is no longer available.",
+  SLOT_STARTED: "This slot has already started and cannot be held.",
+  HOLD_FORBIDDEN: "Only schedulers and admins can hold slots.",
+  CLIENT_BUSY: "This client already has a hold or session at this time.",
   LOGIN_MISSING: "Enter your email and password.",
   LOGIN_INVALID: "Invalid email or password.",
   NO_FREE_SLOTS: "No free slots on this day.",
@@ -10,16 +14,25 @@ export const MESSAGES = {
 
 export type MessageCode = keyof typeof MESSAGES;
 
+// Коди, які база кидає як raise exception '<КОД>' (тригери правил утримання).
+const RAISED = ["SLOT_TAKEN", "SLOT_STARTED", "HOLD_FORBIDDEN", "CLIENT_BUSY"] as const satisfies readonly MessageCode[];
+
+// Порушення обмежень — за назвою обмеження: той самий код Postgres у різних таблиць означає різне.
+const CONSTRAINTS: Record<string, MessageCode> = {
+  clients_email_key: "CLIENT_EXISTS",
+  clients_full_name_check: "CLIENT_INVALID",
+  clients_email_check: "CLIENT_INVALID",
+};
+
 // Помилка Postgres (як її повертає PostgREST) → код повідомлення. Текст Postgres користувачу не показуємо.
-export function errorCode(error: { code: string }): MessageCode {
-  switch (error.code) {
-    case "23505": // unique_violation: єдиний unique, який пише користувач, — clients.email
-      return "CLIENT_EXISTS";
-    case "23514": // check_violation: єдині check, які пише користувач, — clients.full_name і clients.email
-      return "CLIENT_INVALID";
-    default:
-      return "UNKNOWN";
+export function errorCode(error: { code: string; message?: string }): MessageCode {
+  const message = error.message ?? "";
+  if (error.code === "P0001") return RAISED.find((code) => code === message) ?? "UNKNOWN";
+  if (error.code === "23505" || error.code === "23514") {
+    const name = /constraint "([^"]+)"/.exec(message)?.[1];
+    return (name && CONSTRAINTS[name]) || "UNKNOWN";
   }
+  return "UNKNOWN";
 }
 
 // Текст для коду з адреси (?error=…); невідомий код — нічого не показуємо.

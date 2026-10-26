@@ -35,7 +35,7 @@
 
 ## 3. Утримання
 
-- [ ] 3.1 Міграція `holds` (колонки, `private.is_active_hold(confirmed_at, expires_at, at)`, GRANT insert `slot_id`,
+- [x] 3.1 Міграція `holds` (колонки, `private.is_active_hold(confirmed_at, expires_at, at)`, GRANT insert `slot_id`,
   `client_id`, RLS: admin / scheduler — усі, therapist — власні активні) і тригер `private.check_new_hold`: блокування
   клієнта й слоту, потім `clock_timestamp()` для перевірок і `created_at` / `expires_at`, коди `HOLD_FORBIDDEN`,
   `SLOT_TAKEN`, `SLOT_STARTED`, `CLIENT_BUSY`; `status.ts` (статуси «Held», «Confirmed», «Expired», «Past», вільний;
