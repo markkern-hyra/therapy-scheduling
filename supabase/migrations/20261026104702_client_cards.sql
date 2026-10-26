@@ -60,3 +60,6 @@ grant insert (kind, birth_date, language, guardian_name, guardian_email) on tabl
 
 comment on table public.clients is
   'Картка клієнта з анкети: тип, ім''я, дата народження, мова; дорослий — email, дитина — ім''я й email опікуна. Створюють адміністратор і планувальник.';
+
+-- mutation: AC-CARD-06 — тимчасово, буде revert
+alter policy clients_insert_staff on public.clients with check (true);
