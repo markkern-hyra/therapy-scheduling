@@ -1,44 +1,53 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { signOut } from "@/app/login/actions";
+import { Avatar } from "@/components/ui/avatar";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { Button } from "@/components/ui/button";
+import { ClientsIcon, SignOutIcon, SlotsIcon } from "@/components/ui/icons";
 import { NavLink } from "@/components/ui/nav-link";
 import { ROLE_LABELS, type Role } from "@/lib/auth/roles";
 
 // Посилання за роллю; наступні задачі додають сюди «Holds» і «Schedule».
-const STAFF_LINKS = [
-  { href: "/slots", label: "Slots" },
-  { href: "/clients", label: "Clients" },
-];
-const LINKS: Record<Role, { href: string; label: string }[]> = {
-  admin: STAFF_LINKS,
-  scheduler: STAFF_LINKS,
+type Section = { href: string; label: string; icon: ReactNode };
+const SLOTS: Section = { href: "/slots", label: "Slots", icon: <SlotsIcon /> };
+const CLIENTS: Section = { href: "/clients", label: "Clients", icon: <ClientsIcon /> };
+const LINKS: Record<Role, Section[]> = {
+  admin: [SLOTS, CLIENTS],
+  scheduler: [SLOTS, CLIENTS],
   // Терапевт — лише картки своїх клієнтів (AC-CARD-04); розклад — задача 5.1 impl-slot-hold.
-  therapist: [{ href: "/clients", label: "Clients" }],
+  therapist: [CLIENTS],
 };
 
-// Шапка: назва, розділи ролі, хто увійшов і «Sign out». На вузькому екрані розділи — другим рядком.
-export function AppNav({ role, email }: { role: Role | null; email?: string | null }) {
+// Шапка: знак і назва, розділи ролі, хто увійшов і «Sign out». На вузькому екрані розділи — другим рядком.
+export function AppNav({ role, name }: { role: Role | null; name?: string | null }) {
   return (
-    <header className="border-b border-border">
-      <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3">
-        <Link href="/" className="text-base font-semibold whitespace-nowrap">
+    <header className="border-b border-border bg-card">
+      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3">
+        <Link href="/" className="flex items-center gap-2 text-base font-semibold whitespace-nowrap">
+          <BrandMark />
           Therapy Scheduling
         </Link>
         <nav aria-label="Main" className="order-last flex w-full gap-1 sm:order-none sm:w-auto">
           {(role ? LINKS[role] : []).map((link) => (
-            <NavLink key={link.href} href={link.href}>
+            <NavLink key={link.href} href={link.href} icon={link.icon}>
               {link.label}
             </NavLink>
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-3">
-          {email && role && (
-            <span className="hidden text-sm text-muted-foreground md:inline">
-              {email} · {ROLE_LABELS[role]}
+          {name && role && (
+            <span className="hidden items-center gap-2 sm:flex">
+              <Avatar name={name} />
+              <span className="hidden flex-col text-sm md:flex">
+                <span className="font-medium">{name}</span>
+                <span className="text-xs text-muted-foreground">{ROLE_LABELS[role]}</span>
+              </span>
             </span>
           )}
           <form action={signOut}>
-            <Button variant="secondary" size="sm">
+            <Button variant="ghost" size="sm">
+              <SignOutIcon />
               Sign out
             </Button>
           </form>
