@@ -78,8 +78,9 @@ definer`, `set search_path = ''`, `stable`) — чи є в цього клієн
 (`slots.therapist_id = (select auth.uid())`), активне за `private.is_active_hold(…, now())` («Held» або «Confirmed»).
 Політика `clients_select_own_for_therapist` (`for select to authenticated using (private.has_role('therapist') and
 private.is_own_client(id))`). Хелпер — `security definer`, бо політика `holds` для терапевта сама читає `clients` (без
-нього — рекурсія політик, 42P17). Прострочене утримання не активне — картка зникає сама, без задачі за розкладом
-(AC-CARD-08).
+нього — рекурсія політик, 42P17). Права — як у `private.has_role`: `revoke execute … from public, anon`, `grant execute
+… to authenticated` (`usage` на схему `private` для `authenticated` уже видано в `20261012000000_profiles_and_roles.sql`).
+Прострочене утримання не активне — картка зникає сама, без задачі за розкладом (AC-CARD-08).
 
 | Таблиця | select | insert | update | delete |
 |---|---|---|---|---|
