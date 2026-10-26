@@ -106,8 +106,8 @@ America/Los_Angeles, `2026-11-03 14:30`; дата — `2026-11-03`.
 
 ## 6. Стани
 
-Тексти — дослівно з AC PM. Рядки з AC-CARD — зріз 2 (вимога PM Sofiia-pm/therapy-scheduling-spec#19): цільовий
-стан, який з'явиться в задачах `impl-client-cards`; до того, наприклад, `requireRole` перенаправляє на `/`.
+Тексти — дослівно з AC PM. Рядки з AC-CARD — зріз 2 (вимога PM Sofiia-pm/therapy-scheduling-spec#19), задачі 1.1 і
+2.1 `impl-client-cards`.
 
 | Стан | Як виглядає | Приклад тексту |
 |---|---|---|

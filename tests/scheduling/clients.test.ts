@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canCreateCards, cardFields, cardFromForm, contactEmail } from "@/lib/scheduling/clients";
+import { canCreateCards, cardFields, cardFromForm, contactEmail, emptyClientsText } from "@/lib/scheduling/clients";
 import { errorCode, messageFor } from "@/lib/scheduling/messages";
 
 // Правила картки (обов'язкові поля, формат і унікальність email, дані опікуна) перевіряє база — тут лише нормалізація
@@ -83,6 +83,19 @@ describe("картка з анкети", () => {
     expect(text(violation("23514", "clients_intake_check"))).toBe(
       "Enter a date of birth that is not in the future and choose a session language.",
     );
+  });
+});
+
+describe("список клієнтів", () => {
+  it("AC-CARD-09: у терапевта без своїх клієнтів — «No clients yet. Clients appear here when a scheduler holds a slot with you.»", () => {
+    expect(emptyClientsText("therapist")).toBe(
+      "No clients yet. Clients appear here when a scheduler holds a slot with you.",
+    );
+  });
+
+  it("у планувальника й адміністратора без карток — «No clients yet.» (тимчасово, до відповіді на #27)", () => {
+    expect(emptyClientsText("scheduler")).toBe("No clients yet.");
+    expect(emptyClientsText("admin")).toBe("No clients yet.");
   });
 });
 

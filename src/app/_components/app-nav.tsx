@@ -3,7 +3,7 @@ import { signOut } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
 import type { Role } from "@/lib/auth/roles";
 
-// Посилання за роллю; наступні задачі зрізу додають сюди «Holds» і «Schedule».
+// Посилання за роллю; наступні задачі додають сюди «Holds» і «Schedule».
 const STAFF_LINKS = [
   { href: "/slots", label: "Slots" },
   { href: "/clients", label: "Clients" },
@@ -11,7 +11,8 @@ const STAFF_LINKS = [
 const LINKS: Record<Role, { href: string; label: string }[]> = {
   admin: STAFF_LINKS,
   scheduler: STAFF_LINKS,
-  therapist: [],
+  // Терапевт — лише картки своїх клієнтів (AC-CARD-04); розклад — задача 5.1 impl-slot-hold.
+  therapist: [{ href: "/clients", label: "Clients" }],
 };
 
 export function AppNav({ role }: { role: Role | null }) {

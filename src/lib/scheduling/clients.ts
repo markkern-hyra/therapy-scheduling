@@ -1,4 +1,5 @@
-import { isStaff } from "@/lib/auth/roles";
+import { isStaff, type Role } from "@/lib/auth/roles";
+import { MESSAGES } from "./messages";
 
 // Рядок clients із форми картки «New client». Лише нормалізація: правила (обов'язкові поля, формат і унікальність
 // email, дані опікуна, дата народження й мова) перевіряє база — check і unique у міграціях roles_and_clients і
@@ -54,4 +55,10 @@ export function cardFields(card: CardData) {
     language: card.language ?? NOT_PROVIDED,
     contact: card.kind === "child" ? `${card.guardian_name} — ${contactEmail(card)}` : (contactEmail(card) ?? NOT_PROVIDED),
   };
+}
+
+// Порожній список: терапевт — без своїх клієнтів (AC-CARD-09); планувальник і адміністратор — карток ще немає
+// (тимчасово, до відповіді на Sofiia-pm/therapy-scheduling-spec#27).
+export function emptyClientsText(role: Role): string {
+  return role === "therapist" ? MESSAGES.NO_OWN_CLIENTS : MESSAGES.NO_CLIENTS;
 }
