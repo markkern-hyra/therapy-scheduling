@@ -77,8 +77,9 @@
 definer`, `set search_path = ''`, `stable`) — чи є в цього клієнта утримання на слоті поточного терапевта
 (`slots.therapist_id = (select auth.uid())`), активне за `private.is_active_hold(…, now())` («Held» або «Confirmed»).
 Політика `clients_select_own_for_therapist` (`for select to authenticated using (private.has_role('therapist') and
-private.is_own_client(id))`). Хелпер — `security definer`, бо політика `holds` для терапевта сама читає `clients` (без
-нього — рекурсія політик, 42P17). Права — як у `private.has_role`: `revoke execute … from public, anon`, `grant execute
+private.is_own_client(id))`). Хелпер — `security definer`, щоб «свій» залежав лише від його умов, а не від того, що
+політики `holds` і `slots` показують терапевту; зараз вони `clients` не читають, але політика на них, що колись
+прочитає `clients`, з `security invoker` дала б рекурсію (42P17) (ADR 0007). Права — як у `private.has_role`: `revoke execute … from public, anon`, `grant execute
 … to authenticated` (`usage` на схему `private` для `authenticated` уже видано в `20261012000000_profiles_and_roles.sql`).
 Прострочене утримання не активне — картка зникає сама, без задачі за розкладом (AC-CARD-08).
 
@@ -104,16 +105,20 @@ private.is_own_client(id))`). Хелпер — `security definer`, бо полі
 
 ### Тести
 
+- **База (PGlite, `tests/db/own-clients.test.ts`):** AC-CARD-04 (лише client6, client7 з усіма даними анкети),
+  AC-CARD-05 і 08 (therapist1 — 0 рядків чужого чи простроченого клієнта; картка не змінилась; підтверджений понад добу
+  тому сеанс — картка видна), AC-CARD-09 (без утримань — 0 рядків), AC-CARD-11 (терапевту зняли роль — 0 рядків).
 - **База (PGlite, `tests/db/client-cards.test.ts`):** AC-CARD-03 (дитина без опікуна — `23514`, карток не додалось),
-  AC-CARD-05 і 08 (therapist1 — 0 рядків чужого чи простроченого клієнта; картка не змінилась), AC-CARD-04 (лише
-  client6, client7), AC-CARD-06 (insert від therapist — `42501`, кількість карток та сама), AC-CARD-07 (`anon` — `permission
+  AC-CARD-06 (insert від therapist — `42501`, кількість карток та сама), AC-CARD-07 (`anon` — `permission
   denied` на select і insert), AC-CARD-10 (scheduler2, admin — усі три з опікуном), AC-CARD-11 (без ролі — 0 рядків,
   insert відмовлено, кількість та сама), пастка ролі (update власного `role` — `permission denied`, роль та сама).
 - **Логіка (Vitest):** `cardFromForm`, `canCreateCards` (AC-CARD-06 на рівні дії), `errorCode` за назвою обмеження,
   вибір тексту порожнього стану за роллю (AC-CARD-09).
 - **Мутаційна перевірка:** таблиця «AC → що тимчасово прибрали → який тест упав» в описі кожного PR; у CI — червоні
-  прогони щонайменше для AC-CARD-06 (`with check (true)` у `clients_insert_staff`) і AC-CARD-05 (`using (true)` у
-  `clients_select_own_for_therapist`), потім revert.
+  прогони щонайменше для AC-CARD-06 (`alter policy clients_insert_staff … with check (true)` у кінці ще не застосованої
+  міграції `client_cards`: застосовану міграцію не змінюємо, інакше впаде `db-check`, а не тест) і AC-CARD-05
+  (`using (true)` у `clients_select_own_for_therapist`), потім revert. Відмовну вставку тест робить без `returning`,
+  інакше її відхилила б політика select, а не `clients_insert_staff`.
 
 ## Risks / Trade-offs
 
