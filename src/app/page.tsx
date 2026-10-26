@@ -12,9 +12,9 @@ export default async function Home() {
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-6">
         <h1 className="text-2xl font-semibold">Home</h1>
         <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm">
-          <dt className="text-ink-muted">Email</dt>
+          <dt className="text-muted-foreground">Email</dt>
           <dd data-testid="user-email">{email ?? "—"}</dd>
-          <dt className="text-ink-muted">Role</dt>
+          <dt className="text-muted-foreground">Role</dt>
           <dd data-testid="user-role">{role ?? "No profile found"}</dd>
         </dl>
       </main>

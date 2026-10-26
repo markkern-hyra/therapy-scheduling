@@ -1,8 +1,8 @@
 import type { ComponentProps } from "react";
 
 const VARIANTS = {
-  primary: "bg-brand text-on-brand hover:bg-brand-strong",
-  secondary: "border border-line-strong bg-surface text-ink hover:bg-surface-muted",
+  primary: "bg-primary text-primary-foreground hover:bg-primary/90",
+  secondary: "border border-input bg-background text-foreground hover:bg-muted",
 };
 
 // Одна головна дія на екран — primary; решта — secondary.
