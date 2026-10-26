@@ -10,6 +10,8 @@ export async function runAction(
 ): Promise<never> {
   const { error } = await write;
   const url = new URL(back, "http://local");
+  // «//host» — уже інший сайт: повертаємо лише на свої сторінки.
+  if (url.pathname.startsWith("//")) url.pathname = "/";
   url.searchParams.delete("error");
   if (error) url.searchParams.set("error", errorCode(error));
   else revalidatePath(url.pathname);

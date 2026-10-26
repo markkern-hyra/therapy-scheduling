@@ -113,7 +113,7 @@ create policy holds_select_staff_or_own_active
       private.is_active_hold(confirmed_at, expires_at, now())
       and exists (
         select 1 from public.slots as s
-        where s.id = slot_id and s.therapist_id = (select auth.uid())
+        where s.id = holds.slot_id and s.therapist_id = (select auth.uid())
       )
     )
   );

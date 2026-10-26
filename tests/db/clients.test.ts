@@ -2,6 +2,7 @@
 // вставляють рядок так, як це робить createClientCard (clientFromForm → insert), і перевіряють відмову й незмінні дані.
 import { beforeAll, describe, expect, it } from "vitest";
 import { clientFromForm } from "@/lib/scheduling/clients";
+import { errorCode } from "@/lib/scheduling/messages";
 import { createTestDb, type TestDb } from "./supabase-pglite";
 
 let t: TestDb;
@@ -68,5 +69,16 @@ describe("clients: правила картки зрізу 1 у базі", () => 
       "client4@example.test",
     ]);
     expect(rows).toEqual([{ full_name: "Client Four" }]);
+  });
+
+  it("errorCode розпізнає справжні помилки бази за назвою обмеження", async () => {
+    const codeOf = (row: { full_name: string; email: string }) =>
+      insert(row).then(
+        () => "inserted",
+        (e: { code: string; message: string }) => errorCode(e),
+      );
+    expect(await codeOf(form("Client One", "client1@example.test"))).toBe("CLIENT_EXISTS");
+    expect(await codeOf(form("Client Three", "client3example.test"))).toBe("CLIENT_INVALID");
+    expect(await codeOf(form("", "client9@example.test"))).toBe("CLIENT_INVALID");
   });
 });

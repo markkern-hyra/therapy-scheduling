@@ -115,7 +115,16 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
                           <input type="hidden" name="slot_id" value={slot.id} />
                           <input type="hidden" name="therapist" value={therapist.id} />
                           <input type="hidden" name="day" value={day} />
-                          <Select name="client_id" aria-label="Client" required>
+                          <Select
+                            name="client_id"
+                            aria-label={`Client for ${formatPracticeTime(new Date(slot.starts_at))}`}
+                            defaultValue=""
+                            required
+                          >
+                            {/* Без клієнта за замовчуванням: помилковий клік не утримає слот на 24 години. */}
+                            <option value="" disabled>
+                              Choose a client
+                            </option>
                             {clients.map((c) => (
                               <option key={c.id} value={c.id}>
                                 {c.full_name} — {c.email}

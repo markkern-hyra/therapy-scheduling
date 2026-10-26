@@ -138,6 +138,29 @@ describe("holds: утримання слоту", () => {
     expect(row.expires_at.getTime()).toBeGreaterThan(Date.now());
   });
 
+  it("підтверджений сеанс тримає слот і після «Held until» (SLOT_TAKEN)", async () => {
+    const s = await slot(therapist1, inAWeek);
+    const [session] = await hold(scheduler1, s, client1);
+    await t.asService(
+      "update public.holds set confirmed_at = now() - interval '2 hours', expires_at = now() - interval '1 hour' where id = $1",
+      [session.id],
+    );
+    await expect(hold(scheduler2, s, client2)).rejects.toThrow("SLOT_TAKEN");
+    expect(await holdsOf(s)).toHaveLength(1);
+  });
+
+  it("AC-HOLD-25: підтверджений сеанс клієнта в цей час теж заважає (CLIENT_BUSY)", async () => {
+    const s1 = await slot(therapist1, inAWeek);
+    const s2 = await slot(therapist2, inAWeek);
+    const [session] = await hold(scheduler1, s1, client1);
+    await t.asService(
+      "update public.holds set confirmed_at = now() - interval '2 hours', expires_at = now() - interval '1 hour' where id = $1",
+      [session.id],
+    );
+    await expect(hold(scheduler2, s2, client1)).rejects.toThrow("CLIENT_BUSY");
+    expect(await holdsOf(s2)).toEqual([]);
+  });
+
   it("суміжні слоти клієнта не перетинаються — обидва утримуються", async () => {
     const s1 = await slot(therapist1, inAWeek);
     const s2 = await slot(therapist2, new Date(inAWeek.getTime() + HOUR));
