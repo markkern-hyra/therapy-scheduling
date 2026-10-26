@@ -34,9 +34,10 @@ async function holdFor(therapist: string, client: string, startsAt: Date) {
 }
 
 const visibleTo = (therapist: string) =>
-  t.asUser<{ full_name: string; guardian_email: string | null; email: string | null }>(
+  t.asUser<Record<string, string | null>>(
     therapist,
-    "select full_name, email, guardian_email from public.clients order by full_name",
+    `select kind, full_name, email, birth_date::text, language, guardian_name, guardian_email
+     from public.clients order by full_name`,
   );
 
 const cardOf = async (key: string) =>
@@ -68,11 +69,28 @@ beforeAll(async () => {
   await holdFor(therapist2, ids.client9, inDays(7));
 }, 60_000);
 
+// Тести йдуть по черзі й спираються на стан попередніх: AC-CARD-08 прострочує client6, AC-CARD-09 видаляє утримання client9.
 describe("свої клієнти терапевта", () => {
   it("AC-CARD-04: therapist1 бачить картки client6 і client7 з даними анкети й опікуна, client9 — ні", async () => {
     expect(await visibleTo(therapist1)).toEqual([
-      { full_name: "Client Seven", email: null, guardian_email: "guardian7@example.test" },
-      { full_name: "Client Six", email: "client6@example.test", guardian_email: null },
+      {
+        kind: "child",
+        full_name: "Client Seven",
+        email: null,
+        birth_date: "2015-03-02",
+        language: "Spanish",
+        guardian_name: "Guardian Seven",
+        guardian_email: "guardian7@example.test",
+      },
+      {
+        kind: "adult",
+        full_name: "Client Six",
+        email: "client6@example.test",
+        birth_date: "1990-05-14",
+        language: "English",
+        guardian_name: null,
+        guardian_email: null,
+      },
     ]);
   });
 
@@ -94,6 +112,13 @@ describe("свої клієнти терапевта", () => {
        where client_id = $1`,
       [ids.client6],
     );
+    // Сеанс client7 підтверджено понад добу тому: «Confirmed» не прострочується — client7 і далі свій.
+    await t.asService(
+      `update public.holds set created_at = now() - interval '50 hours', confirmed_at = now() - interval '49 hours',
+         expires_at = now() - interval '26 hours'
+       where client_id = $1`,
+      [ids.client7],
+    );
     expect((await visibleTo(therapist1)).map((c) => c.full_name)).toEqual(["Client Seven"]);
     expect(await t.asUser(therapist1, "select id from public.clients where id = $1", [ids.client6])).toEqual([]);
     expect(await cardOf("client6")).toEqual(before);
@@ -104,8 +129,19 @@ describe("свої клієнти терапевта", () => {
     expect(await visibleTo(therapist2)).toEqual([]);
   });
 
-  it("планувальник і далі бачить усі картки", async () => {
-    const rows = await t.asUser(t.users["scheduler2@example.test"], "select id from public.clients");
-    expect(rows.length).toBeGreaterThanOrEqual(3);
+  it("AC-CARD-11: у therapist1 зняли роль — не бачить і своїх клієнтів, картки не змінились", async () => {
+    const before = await cardOf("client7");
+    await t.asService("update public.profiles set role = null where id = $1", [therapist1]);
+    expect(await visibleTo(therapist1)).toEqual([]);
+    await t.asService("update public.profiles set role = 'therapist' where id = $1", [therapist1]);
+    expect((await visibleTo(therapist1)).map((c) => c.full_name)).toEqual(["Client Seven"]);
+    expect(await cardOf("client7")).toEqual(before);
+  });
+
+  it("планувальник і адміністратор і далі бачать усі картки", async () => {
+    for (const email of ["scheduler2@example.test", "admin1@example.test"]) {
+      const rows = await t.asUser<{ id: string }>(t.users[email], "select id from public.clients");
+      expect(rows.map((r) => r.id)).toEqual(expect.arrayContaining([ids.client6, ids.client7, ids.client9]));
+    }
   });
 });
