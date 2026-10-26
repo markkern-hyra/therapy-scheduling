@@ -6,9 +6,11 @@ import { createClientCard } from "@/app/clients/actions";
 const h = vi.hoisted(() => ({
   role: "scheduler",
   dbError: null as { code: string; message: string } | null,
+  data: null as { id: string } | null,
   insert: vi.fn(),
+  revalidatePath: vi.fn(),
 }));
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("next/cache", () => ({ revalidatePath: h.revalidatePath }));
 vi.mock("@/lib/auth/require-role", () => ({
   requireRole: async () => ({
     role: h.role,
@@ -35,10 +37,42 @@ const form = () => {
 
 beforeEach(() => {
   h.insert.mockReset();
-  h.insert.mockReturnValue({ select: () => ({ single: async () => ({ data: null, error: h.dbError }) }) });
+  h.revalidatePath.mockReset();
+  h.data = null;
+  h.insert.mockReturnValue({ select: () => ({ single: async () => ({ data: h.data, error: h.dbError }) }) });
 });
 
 describe("createClientCard", () => {
+  it("AC-CARD-01: картку записано з даних форми — список оновлено, перехід на сторінку нової картки", async () => {
+    h.role = "scheduler";
+    h.dbError = null;
+    h.data = { id: "card-6" };
+    const f = new FormData();
+    for (const [name, value] of Object.entries({
+      kind: "adult",
+      full_name: "Client Six",
+      email: "client6@example.test",
+      birth_date: "1990-05-14",
+      language: "English",
+    }))
+      f.set(name, value);
+    const landing = await createClientCard({ error: null, values: {} }, f).then(
+      () => null,
+      (e: { digest?: string }) => String(e.digest).split(";")[2],
+    );
+    expect(landing).toBe("/clients/card-6");
+    expect(h.revalidatePath).toHaveBeenCalledWith("/clients");
+    expect(h.insert).toHaveBeenCalledWith({
+      kind: "adult",
+      full_name: "Client Six",
+      email: "client6@example.test",
+      birth_date: "1990-05-14",
+      language: "English",
+      guardian_name: null,
+      guardian_email: null,
+    });
+  });
+
   it("AC-CARD-03: база відхилила дані опікуна — «Enter the guardian's name and a valid email.», введене лишається у формі", async () => {
     h.role = "scheduler";
     h.dbError = {

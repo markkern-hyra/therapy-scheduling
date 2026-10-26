@@ -139,7 +139,6 @@ describe("картка з анкети", () => {
   });
 });
 
-// AC-CARD-10 спирається на картку Client Seven з AC-CARD-02: тести файлу йдуть по черзі.
 describe("хто створює й бачить картки", () => {
   it("AC-CARD-06: therapist1 не створює картку — відмова, кількість карток та сама", async () => {
     const before = await count();
@@ -160,6 +159,7 @@ describe("хто створює й бачить картки", () => {
   });
 
   it("AC-CARD-10: scheduler2 і admin1 бачать усі картки, у картці дитини — дані опікуна", async () => {
+    await insertAs(scheduler1, child("Client Eleven", "Guardian Eleven", "guardian11@example.test"));
     const all = await count();
     for (const email of ["scheduler2@example.test", "admin1@example.test"]) {
       const rows = await t.asUser<{ full_name: string; guardian_email: string | null }>(
@@ -167,7 +167,7 @@ describe("хто створює й бачить картки", () => {
         "select full_name, guardian_email from public.clients",
       );
       expect(rows).toHaveLength(all);
-      expect(rows.find((r) => r.full_name === "Client Seven")?.guardian_email).toBe("guardian7@example.test");
+      expect(rows.find((r) => r.full_name === "Client Eleven")?.guardian_email).toBe("guardian11@example.test");
     }
   });
 
