@@ -61,7 +61,7 @@
 |---|---|
 | `kind` | `not null default 'adult'`, `in ('adult', 'child')` — картки зрізу 1 стають «Adult» |
 | `email` | `drop not null`; наявні `clients_email_check` і `clients_email_key` (нормалізований, коректний, унікальний) |
-| `birth_date`, `language` | `clients_intake_check` — `birth_date is not null and birth_date <= (now() at time zone 'America/Los_Angeles')::date and language in ('English', 'Spanish')`, **`not valid`**: діє на нові рядки, картки зрізу 1 лишаються дійсними («Not provided») |
+| `birth_date`, `language` | `clients_intake_check` — `birth_date is not null and language is not null and birth_date <= (now() at time zone 'America/Los_Angeles')::date and language in ('English', 'Spanish')`, **`not valid`** (CHECK пропускає NULL, тож обов'язковість — явним `is not null` і в `clients_guardian_check` теж): діє на нові рядки, картки зрізу 1 лишаються дійсними («Not provided») |
 | `guardian_name`, `guardian_email` | `clients_guardian_check` — для `child`: непорожнє ім'я, email нормалізований і коректний (те саме правило, що ADR 0003); для `adult` — обидва `null` |
 | — | `clients_contact_check` — `adult` має власний email, `child` — ні |
 
@@ -91,7 +91,8 @@ private.is_own_client(id))`). Хелпер — `security definer`, бо полі
 - **Proxy — лише UX:** `src/proxy.ts` перенаправляє без сесії на `/login` (AC-CARD-07), але дані захищає не він.
 - **Кожна сторінка й Server Action** починається з `requireRole` (`getClaims()`, не `getSession()`; роль — з
   `profiles.role`, ніколи з `user_metadata`): без claims → `/login` (AC-CARD-07); роль `null` → `/no-access`
-  (AC-CARD-11).
+  (AC-CARD-11). Сама сторінка `/no-access` `requireRole` не викликає (інакше — цикл перенаправлень): вона перевіряє
+  лише вхід (`getClaims()`), а користувача з роллю відправляє на `/`.
 - **`createClientCard`** (привілейована дія — запис чужих даних): `requireRole()` → `canCreateCards(role)` **до**
   запису; не admin / scheduler → `CARD_FORBIDDEN` без запису (AC-CARD-06). Запис — клієнтом користувача, тож RLS і
   GRANT відмовляють і на прямий запит до Data API в обхід дії (той самий `CARD_FORBIDDEN`).
