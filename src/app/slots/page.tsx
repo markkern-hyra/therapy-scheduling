@@ -28,7 +28,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
 
   const [{ data: therapists, error: therapistsError }, { data: clients, error: clientsError }] = await Promise.all([
     supabase.from("profiles").select("id, full_name, email").eq("role", "therapist").order("full_name"),
-    supabase.from("clients").select("id, full_name, email").order("full_name"),
+    supabase.from("clients").select("id, full_name, email, guardian_email").order("full_name"),
   ]);
   if (therapistsError) throw new Error(therapistsError.message);
   if (clientsError) throw new Error(clientsError.message);
@@ -127,7 +127,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
                             </option>
                             {clients.map((c) => (
                               <option key={c.id} value={c.id}>
-                                {c.full_name} — {c.email}
+                                {c.full_name} — {c.email ?? c.guardian_email}
                               </option>
                             ))}
                           </Select>

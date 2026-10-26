@@ -15,9 +15,12 @@
 --   values ('MATH', 'Кафедра математики'), ('LANG', 'Кафедра мов')
 --   on conflict (code) do update set name = excluded.name;
 
--- Клієнти зрізу 1 (AC-HOLD-16, AC-HOLD-34 спираються на client1@example.test).
-insert into public.clients (full_name, email)
-values ('Client One', 'client1@example.test'), ('Client Two', 'client2@example.test')
+-- Клієнти (AC-HOLD-16, AC-HOLD-34 спираються на client1@example.test). З міграції client_cards нова картка має дату
+-- народження й мову (clients_intake_check).
+insert into public.clients (kind, full_name, email, birth_date, language)
+values
+  ('adult', 'Client One', 'client1@example.test', '1985-04-12', 'English'),
+  ('adult', 'Client Two', 'client2@example.test', '1979-09-30', 'Spanish')
 on conflict (email) do nothing;
 
 -- Демо-слоти терапевтів (міграція slots). На чистій базі терапевтів ще немає — нічого не створює; у хмарі слоти

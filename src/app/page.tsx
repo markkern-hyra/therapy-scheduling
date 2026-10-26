@@ -19,7 +19,7 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           <dt className="text-muted-foreground">Email</dt>
           <dd data-testid="user-email">{email ?? "—"}</dd>
           <dt className="text-muted-foreground">Role</dt>
-          <dd data-testid="user-role">{role ?? "No profile found"}</dd>
+          <dd data-testid="user-role">{role}</dd>
         </dl>
       </main>
     </>

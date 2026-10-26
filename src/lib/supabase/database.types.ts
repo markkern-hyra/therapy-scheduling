@@ -25,14 +25,14 @@ export type Database = {
           Tables: {
             "clients": {
                   Row: {
-                    "created_at": string,"email": string,"full_name": string,"id": string
+                    "birth_date": string | null,"created_at": string,"email": string | null,"full_name": string,"guardian_email": string | null,"guardian_name": string | null,"id": string,"kind": string,"language": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"email": string,"full_name": string,"id"?: string
+                    "birth_date"?: string | null,"created_at"?: string,"email"?: string | null,"full_name": string,"guardian_email"?: string | null,"guardian_name"?: string | null,"id"?: string,"kind"?: string,"language"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"email"?: string,"full_name"?: string,"id"?: string
+                    "birth_date"?: string | null,"created_at"?: string,"email"?: string | null,"full_name"?: string,"guardian_email"?: string | null,"guardian_name"?: string | null,"id"?: string,"kind"?: string,"language"?: string | null
                   }
                   Relationships: [
                     
@@ -66,14 +66,14 @@ export type Database = {
                   ]
                 },"profiles": {
                   Row: {
-                    "created_at": string,"email": string | null,"full_name": string | null,"id": string,"role": string
+                    "created_at": string,"email": string | null,"full_name": string | null,"id": string,"role": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"email"?: string | null,"full_name"?: string | null,"id": string,"role"?: string
+                    "created_at"?: string,"email"?: string | null,"full_name"?: string | null,"id": string,"role"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"email"?: string | null,"full_name"?: string | null,"id"?: string,"role"?: string
+                    "created_at"?: string,"email"?: string | null,"full_name"?: string | null,"id"?: string,"role"?: string | null
                   }
                   Relationships: [
                     
