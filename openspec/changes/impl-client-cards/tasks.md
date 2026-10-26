@@ -7,7 +7,7 @@
 
 ## 1. Картка з анкети й користувач без ролі
 
-- [ ] 1.1 Міграція `client_cards`: набір ролей drop-first (`role` без ролі, `default null`), колонки анкети `clients`
+- [x] 1.1 Міграція `client_cards`: набір ролей drop-first (`role` без ролі, `default null`), колонки анкети `clients`
   (`kind`, `birth_date`, `language`, `guardian_name`, `guardian_email`) з check-обмеженнями й `insert`-GRANT;
   `supabase/demo-users.json` — `newuser1@example.test` без ролі; `create-demo-users.mjs` приймає `role: null`;
   `requireRole` — роль `null` → `/no-access`; сторінки `/no-access`, `/clients` (усі картки), `/clients/new`
