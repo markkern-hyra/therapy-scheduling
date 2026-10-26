@@ -2,6 +2,9 @@
 export const ROLES = ["admin", "scheduler", "therapist"] as const;
 export type Role = (typeof ROLES)[number];
 
+// Назва ролі в інтерфейсі (шапка, головна).
+export const ROLE_LABELS: Record<Role, string> = { admin: "Admin", scheduler: "Scheduler", therapist: "Therapist" };
+
 // Хто створює клієнтів, утримує слоти й підтверджує утримання (матриця прав PM).
 export const STAFF_ROLES = ["admin", "scheduler"] as const satisfies readonly Role[];
 

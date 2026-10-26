@@ -1,11 +1,16 @@
 import type { ComponentProps } from "react";
 
-// Випадний список з тим самим виглядом, що й Input.
-export function Select(props: Omit<ComponentProps<"select">, "className">) {
+const SIZES = { md: "h-10 px-3 text-base", sm: "h-8 px-2 text-sm" };
+
+// Випадний список з тим самим виглядом, що й Input; sm — у рядку таблиці поруч із Button sm.
+export function Select({
+  size = "md",
+  ...props
+}: Omit<ComponentProps<"select">, "className" | "size"> & { size?: keyof typeof SIZES }) {
   return (
     <select
       {...props}
-      className="rounded-sm border border-input bg-card px-3 py-2 text-base text-card-foreground"
+      className={`w-full min-w-0 rounded-sm border border-input bg-card text-card-foreground ${SIZES[size]}`}
     />
   );
 }
