@@ -1,4 +1,5 @@
 import { AppNav } from "@/app/_components/app-nav";
+import { ErrorMessage } from "@/app/_components/error-message";
 import { StatusBadge } from "@/app/_components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,31 +8,38 @@ import { Select } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader } from "@/components/ui/table";
 import { requireRole } from "@/lib/auth/require-role";
 import { STAFF_ROLES } from "@/lib/auth/roles";
-import { daySlotsView } from "@/lib/scheduling/status";
-import { formatPracticeTime, isPracticeDay, practiceDayRange, practiceToday } from "@/lib/scheduling/time";
+import { daySlotsView, isHoldable } from "@/lib/scheduling/status";
+import {
+  formatPracticeDateTime,
+  formatPracticeTime,
+  isPracticeDay,
+  practiceDayRange,
+  practiceToday,
+} from "@/lib/scheduling/time";
+import { holdSlot } from "./actions";
 
-// Слоти терапевта на день зі статусами (AC-HOLD-24; «Held», «Confirmed» і «Hold» — задача 3.1).
+// Слоти терапевта на день зі статусами, клієнтом і «Held until»; «Hold» — лише для вільного слоту
+// (AC-HOLD-01–03, 07, 17, 18, 24, 32, 33). Правила утримання тримає база, сторінка лише показує.
 export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
   const { supabase, role } = await requireRole(...STAFF_ROLES);
   const params = await searchParams;
   const now = new Date();
   const day = isPracticeDay(params.day) ? params.day : practiceToday(now);
 
-  const { data: therapists, error: therapistsError } = await supabase
-    .from("profiles")
-    .select("id, full_name, email")
-    .eq("role", "therapist")
-    .order("full_name");
+  const [{ data: therapists, error: therapistsError }, { data: clients, error: clientsError }] = await Promise.all([
+    supabase.from("profiles").select("id, full_name, email").eq("role", "therapist").order("full_name"),
+    supabase.from("clients").select("id, full_name, email").order("full_name"),
+  ]);
   if (therapistsError) throw new Error(therapistsError.message);
+  if (clientsError) throw new Error(clientsError.message);
   const therapist = therapists.find((t) => t.id === params.therapist) ?? therapists[0];
-  const therapistId = therapist?.id;
 
   const { start, end } = practiceDayRange(day);
-  const { data: slots, error: slotsError } = therapistId
+  const { data: slots, error: slotsError } = therapist
     ? await supabase
         .from("slots")
-        .select("id, starts_at, ends_at")
-        .eq("therapist_id", therapistId)
+        .select("id, starts_at, ends_at, holds(id, confirmed_at, expires_at, clients(full_name, email))")
+        .eq("therapist_id", therapist.id)
         .gte("starts_at", start.toISOString())
         .lt("starts_at", end.toISOString())
         .order("starts_at")
@@ -44,11 +52,12 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
       <AppNav role={role} />
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-6 py-6">
         <h1 className="text-2xl font-semibold">Slots</h1>
+        <ErrorMessage code={params.error} />
 
         <form className="flex flex-wrap items-end gap-4">
           <Label>
             Therapist
-            <Select name="therapist" defaultValue={therapistId}>
+            <Select name="therapist" defaultValue={therapist?.id}>
               {therapists.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.full_name ?? t.email}
@@ -76,6 +85,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
                 <tr>
                   <TableHead>Time</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Client</TableHead>
                 </tr>
               </TableHeader>
               <TableBody>
@@ -88,6 +98,35 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={slot.status} />
+                    </TableCell>
+                    <TableCell>
+                      {slot.hold?.clients && (
+                        <span className="flex flex-col">
+                          <span>{slot.hold.clients.full_name}</span>
+                          {slot.status === "Held" && (
+                            <span className="font-mono text-muted-foreground">
+                              Held until {formatPracticeDateTime(new Date(slot.hold.expires_at))}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                      {therapist && isHoldable(slot.status) && clients.length > 0 && (
+                        <form action={holdSlot} className="flex flex-wrap items-center gap-2">
+                          <input type="hidden" name="slot_id" value={slot.id} />
+                          <input type="hidden" name="therapist" value={therapist.id} />
+                          <input type="hidden" name="day" value={day} />
+                          <Select name="client_id" aria-label="Client" required>
+                            {clients.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.full_name} — {c.email}
+                              </option>
+                            ))}
+                          </Select>
+                          <Button type="submit" variant="secondary">
+                            Hold
+                          </Button>
+                        </form>
+                      )}
                     </TableCell>
                   </tr>
                 ))}

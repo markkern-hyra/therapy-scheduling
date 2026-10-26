@@ -37,6 +37,33 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"holds": {
+                  Row: {
+                    "client_id": string,"confirmed_at": string | null,"created_at": string,"expires_at": string,"id": string,"slot_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "client_id": string,"confirmed_at"?: string | null,"created_at"?: string,"expires_at"?: string,"id"?: string,"slot_id": string
+                  }
+                  Update: {
+                    "client_id"?: string,"confirmed_at"?: string | null,"created_at"?: string,"expires_at"?: string,"id"?: string,"slot_id"?: string
+                  }
+                  Relationships: [
+                    {
+                      foreignKeyName: "holds_client_id_fkey"
+                      columns: ["client_id"]
+                      isOneToOne: false
+                      referencedRelation: "clients"
+                      referencedColumns: ["id"]
+                    },
+                    {
+                      foreignKeyName: "holds_slot_id_fkey"
+                      columns: ["slot_id"]
+                      isOneToOne: false
+                      referencedRelation: "slots"
+                      referencedColumns: ["id"]
+                    }
+                  ]
                 },"profiles": {
                   Row: {
                     "created_at": string,"email": string | null,"full_name": string | null,"id": string,"role": string
