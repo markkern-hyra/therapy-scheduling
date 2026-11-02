@@ -22,6 +22,7 @@ export default async function HoldsPage({ searchParams }: PageProps<"/holds">) {
 
   const params = await searchParams;
   const now = new Date();
+  // shortcut: бачимо лише перші 1000 рядків (max_rows), а майбутніх утримань у практиці набагато менше; більше — посторінково.
   const { data, error } = await supabase
     .from("holds")
     .select(
