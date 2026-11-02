@@ -29,6 +29,7 @@ describe("classifyDbProbe (/api/health)", () => {
       reason: "status-401-PGRST301",
     });
     expect(classifyDbProbe({ status: 500, error: { code: "PGRST300", message: "JWT secret" } }).db).toBe("down");
+    expect(classifyDbProbe({ status: 500, error: { code: "PGRSTX00", message: "connection" } }).db).toBe("down");
     expect(classifyDbProbe({ status: 401, error: { code: "PGRST100", message: "Invalid API key" } })).toEqual({
       db: "down",
       reason: "invalid-api-key",

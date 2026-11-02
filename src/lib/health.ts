@@ -3,8 +3,8 @@
 
 /** Код SQLSTATE Postgres, напр. 42501 «permission denied»: запит дійшов до бази. */
 const SQLSTATE = /^[0-9A-Z]{5}$/;
-/** PostgREST не може під'єднатися до бази (000–003) або відхилив JWT (300, 301): запит не дійшов до бази. */
-const PGRST_DB_DOWN = /^PGRST(00[0-3]|30[01])$/;
+/** PostgREST не може під'єднатися до бази (000–003, X00) або відхилив JWT (300, 301): запит не дійшов до бази. */
+const PGRST_DB_DOWN = /^PGRST(00[0-3]|30[01]|X00)$/;
 /** Supabase відповідає 540, коли безкоштовний проєкт призупинено (Dashboard → Resume project). */
 const SUPABASE_PAUSED = 540;
 
