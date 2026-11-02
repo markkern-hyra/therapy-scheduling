@@ -6,7 +6,7 @@
 
 ## 1. Свій клієнт і дані без ролі
 
-- [ ] 1.1 Міграція: новий `private.is_own_client` і перевірка ролі в «own»-гілках політик `slots` і `holds`; тести бази
+- [x] 1.1 Міграція: новий `private.is_own_client` і перевірка ролі в «own»-гілках політик `slots` і `holds`; тести бази
   (PGlite): AC-CARD-14 через зсув `slots.starts_at`, розширений AC-CARD-11 запитами до `slots` і `holds`; мутація: повернути
   стару умову — тест червоний.
   Done when: AC-CARD-04, AC-CARD-11, AC-CARD-14.
