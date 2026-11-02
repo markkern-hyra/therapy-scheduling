@@ -25,14 +25,19 @@ export function ClientCardForm({ today }: { today: string }) {
   const [state, action, pending] = useActionState(createClientCard, INITIAL);
   const v = state.values;
   const message = messageFor(state.error);
-  const fieldError = (name: keyof CardFormState["errors"]) => <FieldError>{messageFor(state.errors[name])}</FieldError>;
+  const fieldError = (name: keyof CardFormState["errors"]) => (
+    <FieldError id={`${name}-error`}>{messageFor(state.errors[name])}</FieldError>
+  );
+  // Поле з помилкою: зчитувач екрана позначає його й читає текст під час навігації формою.
+  const invalid = (name: keyof CardFormState["errors"]) =>
+    state.errors[name] ? { "aria-invalid": true, "aria-describedby": `${name}-error` } : {};
 
   return (
     // noValidate: порожні й некоректні поля відхиляє дія, і планувальник бачить текст PM, а не підказку браузера.
     <form key={JSON.stringify(v)} action={action} noValidate className="flex max-w-xl flex-col gap-6">
       {message && <Alert>{message}</Alert>}
       <Card title="Client">
-        <fieldset className="flex flex-col gap-1">
+        <fieldset className="flex flex-col gap-1" {...invalid("kind")}>
           <legend className="mb-1 text-sm font-medium">Client type</legend>
           <div className="grid grid-cols-2 gap-2">
             <Choice id="kind-adult" name="kind" value="adult" defaultChecked={v.kind === "adult"}>
@@ -47,7 +52,7 @@ export function ClientCardForm({ today }: { today: string }) {
         <div className="flex flex-col gap-1">
           <Label>
             Full name
-            <Input name="full_name" autoComplete="off" defaultValue={v.full_name} required />
+            <Input name="full_name" autoComplete="off" defaultValue={v.full_name} required {...invalid("full_name")} />
           </Label>
           {fieldError("full_name")}
         </div>
@@ -55,14 +60,14 @@ export function ClientCardForm({ today }: { today: string }) {
           <div className="flex flex-col gap-1">
             <Label>
               Date of birth
-              <Input name="birth_date" type="date" max={today} defaultValue={v.birth_date} required />
+              <Input name="birth_date" type="date" max={today} defaultValue={v.birth_date} required {...invalid("birth_date")} />
             </Label>
             {fieldError("birth_date")}
           </div>
           <div className="flex flex-col gap-1">
             <Label>
               Session language
-              <Select name="language" defaultValue={v.language ?? ""} required>
+              <Select name="language" defaultValue={v.language ?? ""} required {...invalid("language")}>
                 <option value="" disabled>
                   Choose a language
                 </option>
@@ -79,7 +84,7 @@ export function ClientCardForm({ today }: { today: string }) {
           <div className="flex flex-col gap-1">
             <Label>
               Email
-              <Input name="email" type="email" autoComplete="off" defaultValue={v.email} required />
+              <Input name="email" type="email" autoComplete="off" defaultValue={v.email} required {...invalid("email")} />
             </Label>
             {fieldError("email")}
           </div>
@@ -89,14 +94,14 @@ export function ClientCardForm({ today }: { today: string }) {
           <div className="flex flex-col gap-1">
             <Label>
               Guardian name
-              <Input name="guardian_name" autoComplete="off" defaultValue={v.guardian_name} required />
+              <Input name="guardian_name" autoComplete="off" defaultValue={v.guardian_name} required {...invalid("guardian_name")} />
             </Label>
             {fieldError("guardian_name")}
           </div>
           <div className="flex flex-col gap-1">
             <Label>
               Guardian email
-              <Input name="guardian_email" type="email" autoComplete="off" defaultValue={v.guardian_email} required />
+              <Input name="guardian_email" type="email" autoComplete="off" defaultValue={v.guardian_email} required {...invalid("guardian_email")} />
             </Label>
             {fieldError("guardian_email")}
           </div>
