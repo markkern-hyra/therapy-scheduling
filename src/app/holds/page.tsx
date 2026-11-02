@@ -2,6 +2,7 @@ import { AppNav } from "@/app/_components/app-nav";
 import { ErrorMessage } from "@/app/_components/error-message";
 import { StaffPageRefusal } from "@/app/_components/staff-page-refusal";
 import { StatusBadge } from "@/app/_components/status-badge";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { HoldsIcon, TimeIcon } from "@/components/ui/icons";
 import { List, ListItem } from "@/components/ui/list";
@@ -9,9 +10,11 @@ import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/require-role";
 import { formatPracticeDateTime } from "@/lib/scheduling/time";
 import { schedulerHolds, staffPageRefusal } from "@/lib/scheduling/visibility";
+import { confirmHold } from "./actions";
 
 // Список утримань планувальника й адміністратора: клієнт, терапевт, слот, статус і «Held until»
-// (AC-HOLD-05, 06, 20, 28, 29, 37, 38, 42, 43); терапевту — лише відмова (AC-HOLD-44).
+// (AC-HOLD-05, 06, 20, 28, 29, 37, 38, 42, 43), «Confirm» лише для «Held» (AC-HOLD-12); терапевту — лише відмова
+// (AC-HOLD-44).
 export default async function HoldsPage({ searchParams }: PageProps<"/holds">) {
   const { supabase, role, name } = await requireRole();
   const refusal = staffPageRefusal(role);
@@ -59,6 +62,14 @@ export default async function HoldsPage({ searchParams }: PageProps<"/holds">) {
                   )}
                 </span>
                 <StatusBadge status={hold.status} />
+                {hold.status === "Held" && (
+                  <form action={confirmHold}>
+                    <input type="hidden" name="hold_id" value={hold.id} />
+                    <Button type="submit" variant="secondary" size="sm">
+                      Confirm
+                    </Button>
+                  </form>
+                )}
               </ListItem>
             ))}
           </List>

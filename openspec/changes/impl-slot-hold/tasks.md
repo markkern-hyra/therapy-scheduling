@@ -54,7 +54,7 @@
 
 ## 4. Підтвердження
 
-- [ ] 4.1 Міграція: GRANT update `confirmed_at`, політика update `holds` для рядків, видимих у select, і тригер
+- [x] 4.1 Міграція: GRANT update `confirmed_at`, політика update `holds` для рядків, видимих у select, і тригер
   `private.check_hold_confirm` (`clock_timestamp()` після блокування рядка; `CONFIRM_FORBIDDEN`, `ALREADY_CONFIRMED`,
   `HOLD_EXPIRED`, `CONFIRM_STARTED`); коди підтвердження в `messages.ts`; кнопка «Confirm» на `/holds`, `confirmHold`
   (лише вхід, дозвіл — база) через `runAction`; тести, зокрема тести бази на PGlite для тригера; ручна перевірка: два

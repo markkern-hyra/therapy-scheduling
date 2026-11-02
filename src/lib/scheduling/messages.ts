@@ -19,6 +19,10 @@ export const MESSAGES = {
   SLOT_STARTED: "This slot has already started and cannot be held.",
   HOLD_FORBIDDEN: "Only schedulers and admins can hold slots.",
   CLIENT_BUSY: "This client already has a hold or session at this time.",
+  HOLD_EXPIRED: "This hold has expired. Hold the slot again.",
+  CONFIRM_FORBIDDEN: "Only schedulers and admins can confirm holds.",
+  CONFIRM_STARTED: "This slot has already started and cannot be confirmed.",
+  ALREADY_CONFIRMED: "This hold is already confirmed.",
   LOGIN_MISSING: "Enter your email and password.",
   LOGIN_INVALID: "Invalid email or password.",
   NO_FREE_SLOTS: "No free slots on this day.",
@@ -28,7 +32,16 @@ export const MESSAGES = {
 export type MessageCode = keyof typeof MESSAGES;
 
 // Коди, які база кидає як raise exception '<КОД>' (тригери правил утримання).
-const RAISED = ["SLOT_TAKEN", "SLOT_STARTED", "HOLD_FORBIDDEN", "CLIENT_BUSY"] as const satisfies readonly MessageCode[];
+const RAISED = [
+  "SLOT_TAKEN",
+  "SLOT_STARTED",
+  "HOLD_FORBIDDEN",
+  "CLIENT_BUSY",
+  "HOLD_EXPIRED",
+  "CONFIRM_FORBIDDEN",
+  "CONFIRM_STARTED",
+  "ALREADY_CONFIRMED",
+] as const satisfies readonly MessageCode[];
 
 // Порушення обмежень — за назвою обмеження: той самий код Postgres у різних таблиць означає різне.
 const CONSTRAINTS: Record<string, MessageCode> = {
