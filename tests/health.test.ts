@@ -23,6 +23,18 @@ describe("classifyDbProbe (/api/health)", () => {
     });
   });
 
+  it("не рахує базу живою, коли PostgREST відхилив ключ чи JWT, навіть із кодом PGRST", () => {
+    expect(classifyDbProbe({ status: 401, error: { code: "PGRST301", message: "JWSError" } })).toEqual({
+      db: "down",
+      reason: "status-401-PGRST301",
+    });
+    expect(classifyDbProbe({ status: 500, error: { code: "PGRST300", message: "JWT secret" } }).db).toBe("down");
+    expect(classifyDbProbe({ status: 401, error: { code: "PGRST100", message: "Invalid API key" } })).toEqual({
+      db: "down",
+      reason: "invalid-api-key",
+    });
+  });
+
   it("повідомляє код, коли PostgREST не дістає до бази або мережі немає", () => {
     expect(classifyDbProbe({ status: 503, error: { code: "PGRST002", message: "schema cache" } })).toEqual({
       db: "down",

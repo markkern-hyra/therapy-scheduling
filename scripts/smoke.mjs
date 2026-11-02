@@ -12,7 +12,12 @@ const base = (/^https?:\/\//.test(rawBase) ? rawBase : rawBase ? `https://${rawB
 
 const get = async (path) => {
   try {
-    const r = await fetch(base + path, { redirect: "manual", headers: { "user-agent": "smoke/1.0 (D0)" } });
+    const r = await fetch(base + path, {
+      redirect: "manual",
+      headers: { "user-agent": "smoke/1.0 (D0)" },
+      // Без таймауту завислий запит з'їв би timeout-minutes job-а без рядка ::error::.
+      signal: AbortSignal.timeout(15_000),
+    });
     return {
       status: r.status,
       location: r.headers.get("location") ?? "",
