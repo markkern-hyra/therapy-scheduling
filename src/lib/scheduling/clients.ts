@@ -83,7 +83,23 @@ export function cardFields(card: CardData) {
 }
 
 // Порожній список: терапевт — без своїх клієнтів (AC-CARD-09); планувальник і адміністратор — карток ще немає
-// (тимчасово, до відповіді на Sofiia-pm/therapy-scheduling-spec#27).
+// (AC-CARD-15).
 export function emptyClientsText(role: Role): string {
   return role === "therapist" ? MESSAGES.NO_OWN_CLIENTS : MESSAGES.NO_CLIENTS;
+}
+
+// Картки немає в результаті запиту. Планувальник і адміністратор бачать усі картки, тож це справді неіснуюча картка;
+// терапевт бачить той самий текст, що й для чужої, щоб перебором посилань не дізнатися, які картки існують (AC-CARD-16).
+export function missingCardText(role: Role): string {
+  return role === "therapist" ? MESSAGES.CLIENT_NO_ACCESS : MESSAGES.CARD_NOT_FOUND;
+}
+
+// Пошук клієнта під час утримання: ім'я або контактний email, для дитини — email опікуна (AC-CARD-02). Порожній запит —
+// усі клієнти.
+export function matchesClient(
+  client: { full_name: string } & Pick<CardData, "kind" | "email" | "guardian_email">,
+  query: string,
+): boolean {
+  const q = query.trim().toLowerCase();
+  return `${client.full_name} ${contactEmail(client) ?? ""}`.toLowerCase().includes(q);
 }

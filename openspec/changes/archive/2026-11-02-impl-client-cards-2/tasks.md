@@ -19,7 +19,7 @@
 
 ## 3. Тексти за роллю й пошук
 
-- [ ] 3.1 `missingCardText`, `emptyClientsText` із текстом PM, `matchesClient`, поле пошуку на `/slots`; тести.
+- [x] 3.1 `missingCardText`, `emptyClientsText` із текстом PM, `matchesClient`, поле пошуку на `/slots`; тести.
   Done when: AC-CARD-02, AC-CARD-15, AC-CARD-16.
 
 ## Workflow follow-up

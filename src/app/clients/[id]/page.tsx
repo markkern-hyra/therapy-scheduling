@@ -6,15 +6,13 @@ import { Card } from "@/components/ui/card";
 import { DescriptionList } from "@/components/ui/description-list";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/require-role";
-import { cardFields } from "@/lib/scheduling/clients";
-import { MESSAGES } from "@/lib/scheduling/messages";
+import { cardFields, missingCardText } from "@/lib/scheduling/clients";
 
 const BACK = { href: "/clients", label: "Clients" };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Картка клієнта. Хто що бачить, вирішує RLS: admin і scheduler — усі картки (AC-CARD-10), терапевт — лише своїх
-// клієнтів (задача 2). Немає рядка — чужа, прострочена чи неіснуюча картка — лише відмова без даних (AC-CARD-05, 08;
-// для неіснуючої — тимчасово, до відповіді на Sofiia-pm/therapy-scheduling-spec#28).
+// клієнтів. Немає рядка — чужа, прострочена чи неіснуюча картка — лише текст за роллю, без даних (AC-CARD-05, 08, 14, 16).
 export default async function ClientPage({ params }: PageProps<"/clients/[id]">) {
   const { supabase, role, name } = await requireRole();
   const { id } = await params;
@@ -64,7 +62,7 @@ export default async function ClientPage({ params }: PageProps<"/clients/[id]">)
         ) : (
           <>
             <PageHeader title="Client" back={BACK} />
-            <Alert>{MESSAGES.CLIENT_NO_ACCESS}</Alert>
+            <Alert>{missingCardText(role)}</Alert>
           </>
         )}
       </main>

@@ -12,8 +12,8 @@ export const MESSAGES = {
   CLIENT_NO_ACCESS: "You don't have access to this client.",
   NO_ROLE: "Your account has no access yet. Contact an administrator.",
   NO_OWN_CLIENTS: "No clients yet. Clients appear here when a scheduler holds a slot with you.",
-  // Тимчасово, до відповіді PM на Sofiia-pm/therapy-scheduling-spec#27 (порожній список планувальника й адміністратора).
-  NO_CLIENTS: "No clients yet.",
+  NO_CLIENTS: "No clients yet. Create a client card from an intake form.",
+  CARD_NOT_FOUND: "This client card doesn't exist.",
   SLOT_TAKEN: "This slot is no longer available.",
   SLOT_STARTED: "This slot has already started and cannot be held.",
   HOLD_FORBIDDEN: "Only schedulers and admins can hold slots.",

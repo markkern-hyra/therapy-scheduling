@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { canCreateCards, cardFields, cardFromForm, contactEmail, emptyClientsText, validateCard } from "@/lib/scheduling/clients";
+import {
+  canCreateCards,
+  cardFields,
+  cardFromForm,
+  contactEmail,
+  emptyClientsText,
+  matchesClient,
+  missingCardText,
+  validateCard,
+} from "@/lib/scheduling/clients";
 import { errorCode, messageFor } from "@/lib/scheduling/messages";
 
 // Правила картки (обов'язкові поля, формат і унікальність email, дані опікуна) перевіряє база — тут лише нормалізація
@@ -152,9 +161,39 @@ describe("список клієнтів", () => {
     );
   });
 
-  it("у планувальника й адміністратора без карток — «No clients yet.» (тимчасово, до відповіді на #27)", () => {
-    expect(emptyClientsText("scheduler")).toBe("No clients yet.");
-    expect(emptyClientsText("admin")).toBe("No clients yet.");
+  it("AC-CARD-15: у планувальника й адміністратора без карток — «No clients yet. Create a client card from an intake form.»", () => {
+    expect(emptyClientsText("scheduler")).toBe("No clients yet. Create a client card from an intake form.");
+    expect(emptyClientsText("admin")).toBe("No clients yet. Create a client card from an intake form.");
+  });
+});
+
+describe("картка за посиланням, якої немає", () => {
+  it("AC-CARD-16: планувальник і адміністратор — «This client card doesn't exist.», терапевт — відмова як для чужої картки", () => {
+    expect(missingCardText("scheduler")).toBe("This client card doesn't exist.");
+    expect(missingCardText("admin")).toBe("This client card doesn't exist.");
+    expect(missingCardText("therapist")).toBe("You don't have access to this client.");
+  });
+});
+
+describe("пошук клієнта під час утримання", () => {
+  const seven = { full_name: "Client Seven", kind: "child", email: null, guardian_email: "guardian7@example.test" };
+  const six = { full_name: "Client Six", kind: "adult", email: "client6@example.test", guardian_email: null };
+
+  it("AC-CARD-02: дитину знаходять за email опікуна guardian7@example.test і за її ім'ям", () => {
+    expect(matchesClient(seven, "guardian7@example.test")).toBe(true);
+    expect(matchesClient(seven, " Client Seven ")).toBe(true);
+    expect(matchesClient(six, "guardian7@example.test")).toBe(false);
+  });
+
+  it("AC-CARD-01: дорослого знаходять за ім'ям або email без урахування регістру", () => {
+    expect(matchesClient(six, "CLIENT6@example.test")).toBe(true);
+    expect(matchesClient(six, "six")).toBe(true);
+    expect(matchesClient(seven, "client6")).toBe(false);
+  });
+
+  it("AC-CARD-02: порожній запит показує всіх клієнтів", () => {
+    expect(matchesClient(seven, "")).toBe(true);
+    expect(matchesClient(six, "   ")).toBe(true);
   });
 });
 
