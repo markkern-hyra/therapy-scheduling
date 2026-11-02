@@ -71,6 +71,7 @@ describe("картка з анкети", () => {
     await insertAs(scheduler1, twin);
     const before = await count();
     await expect(insertAs(scheduler1, { ...twin, full_name: " client thirteen " })).rejects.toThrow(/clients_child_dedup_key/);
+    await expect(insertAs(scheduler1, { ...twin, full_name: "\tClient Thirteen\n" })).rejects.toThrow(/clients_child_dedup_key/);
     expect(await count()).toBe(before);
     // Близнюки з одним опікуном і різними іменами створюються без перешкод.
     await insertAs(scheduler1, { ...twin, full_name: "Client Fourteen" });

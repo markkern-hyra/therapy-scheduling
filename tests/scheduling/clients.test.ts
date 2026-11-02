@@ -123,7 +123,7 @@ describe("перевірка форми картки", () => {
   });
 
   it("AC-CARD-12: дата не у форматі РРРР-ММ-ДД чи неможлива — та сама помилка біля поля", () => {
-    for (const birth_date of ["12026-11-04", "1990-13-45", "not-a-date"]) {
+    for (const birth_date of ["12026-11-04", "1990-13-45", "2026-02-30", "not-a-date"]) {
       expect(texts({ ...ADULT, birth_date })).toEqual({ birth_date: "Enter a date of birth that is not in the future." });
     }
   });

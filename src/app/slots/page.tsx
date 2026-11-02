@@ -41,6 +41,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
   if (clientsError) throw new Error(clientsError.message);
   const therapist = therapists.find((t) => t.id === params.therapist) ?? therapists[0];
   // Пошук клієнта для утримання: за ім'ям або email, дитину — за email опікуна (AC-CARD-02).
+  // shortcut: фільтр по вже прочитаних клієнтах бачить лише перші 1000 рядків (max_rows); з такою кількістю — у запит.
   const clientQuery = typeof params.client === "string" ? params.client : "";
   const foundClients = clients.filter((c) => matchesClient(c, clientQuery));
 
