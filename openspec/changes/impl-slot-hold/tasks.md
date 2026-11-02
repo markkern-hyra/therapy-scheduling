@@ -46,9 +46,11 @@
   Done when: AC-HOLD-01, AC-HOLD-02, AC-HOLD-03, AC-HOLD-04, AC-HOLD-07, AC-HOLD-08, AC-HOLD-17, AC-HOLD-18, AC-HOLD-25,
   AC-HOLD-26, AC-HOLD-32, AC-HOLD-33.
 - [ ] 3.2 Прострочення й список утримань: `visibility.ts` (`schedulerHolds` — лише «Held» і «Expired», слот яких ще не
-  почався, за часом слоту від найближчого; прострочене зникає, коли слот знову утримали за тим самим клієнтом), сторінка
-  `/holds` (клієнт, терапевт, слот, статус, «Held until»); слот простроченого утримання знову вільний на `/slots`; тести.
-  Done when: AC-HOLD-05, AC-HOLD-06, AC-HOLD-20, AC-HOLD-28, AC-HOLD-29, AC-HOLD-37, AC-HOLD-38, AC-HOLD-42.
+  почався, за часом слоту від найближчого; прострочене зникає, коли слот знову утримали за тим самим клієнтом, а за іншим — лишається до початку слоту), сторінка
+  `/holds` (клієнт, терапевт, слот, статус, «Held until»); слот простроченого утримання знову вільний на `/slots`;
+  терапевт на `/holds` і `/slots` бачить «Only schedulers and admins can view this page.»; тести.
+  Done when: AC-HOLD-05, AC-HOLD-06, AC-HOLD-20, AC-HOLD-28, AC-HOLD-29, AC-HOLD-37, AC-HOLD-38, AC-HOLD-42, AC-HOLD-43,
+  AC-HOLD-44.
 
 ## 4. Підтвердження
 
@@ -69,8 +71,14 @@
   therapist2.
   Done when: AC-HOLD-09, AC-HOLD-21, AC-HOLD-30, AC-HOLD-31, AC-HOLD-40.
 
+## 6. Сид доступності
+
+- [ ] 6.1 Міграція: `generate_demo_slots` за припущенням PM — пн–пт, перший слот о 09:00, останній о 16:00, на 8 тижнів
+  уперед від сьогодні; після `db-deploy` — `npm run users:demo` на проді.
+  Done when: сид збігається з «Припущеннями» PM; окремого AC немає.
+
 ## Workflow follow-up
 
-- В останньому PR зрізу, до merge: `/opsx:verify`, `npm run ac:coverage` — усі 42 рядки `docs/conformance.md`
+- В останньому PR зрізу, до merge: `/opsx:verify`, `npm run ac:coverage` — усі 44 рядки `docs/conformance.md`
   «реалізовано» з кодом і тестом, потім `npx openspec archive impl-slot-hold -y`.
 - Нові відповіді PM після `/requirements-sync` — нова зміна специфікації, потім окрема зміна реалізації.
