@@ -44,6 +44,14 @@ describe("список утримань планувальника", () => {
     expect(seen([row("h1", "client1"), again], "2026-11-03T23:00:00Z")).toEqual([["client1", "Held"]]);
   });
 
+  it("AC-HOLD-28: новіше утримання того самого клієнта на іншому слоті не прибирає прострочений запис", () => {
+    const elsewhere = row("h2", "client1", { slot_id: "slot-2", starts_at: "2026-11-06T18:00:00Z", created_at: "2026-11-03T23:00:00Z", expires_at: "2026-11-04T23:00:00Z" });
+    expect(seen([row("h1", "client1"), elsewhere], "2026-11-03T23:00:00Z")).toEqual([
+      ["client1", "Expired"],
+      ["client1", "Held"],
+    ]);
+  });
+
   it("AC-HOLD-38: лише «Held» і «Expired» за часом слоту від найближчого, без сеансів", () => {
     const rows = [
       row("h1", "client1"),
@@ -65,12 +73,11 @@ describe("список утримань планувальника", () => {
 
   it("AC-HOLD-43: запис client1 «Expired» лишається поруч із «Held» client2 на тому самому слоті", () => {
     const other = row("h2", "client2", { created_at: "2026-11-03T22:45:00Z", expires_at: "2026-11-04T22:45:00Z" });
-    expect(seen([row("h1", "client1"), other], "2026-11-03T23:00:00Z")).toEqual(
-      expect.arrayContaining([
-        ["client2", "Held"],
-        ["client1", "Expired"],
-      ]),
-    );
+    // Той самий слот: новіше утримання — вище, порядок не змінюється між завантаженнями.
+    expect(seen([row("h1", "client1"), other], "2026-11-03T23:00:00Z")).toEqual([
+      ["client2", "Held"],
+      ["client1", "Expired"],
+    ]);
     expect(seen([row("h1", "client1"), other], SLOT)).toEqual([]);
   });
 });

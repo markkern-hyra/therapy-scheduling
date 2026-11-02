@@ -24,6 +24,7 @@ export default async function HoldsPage({ searchParams }: PageProps<"/holds">) {
     .select(
       "id, client_id, slot_id, created_at, confirmed_at, expires_at, clients(full_name), slots!inner(starts_at, profiles(full_name, email))",
     )
+    .is("confirmed_at", null)
     .gt("slots.starts_at", now.toISOString());
   if (error) throw new Error(error.message);
   const holds = schedulerHolds(data, now);
@@ -43,7 +44,8 @@ export default async function HoldsPage({ searchParams }: PageProps<"/holds">) {
                 <span className="flex min-w-0 flex-1 flex-col gap-1">
                   <span className="font-medium">{hold.clients.full_name}</span>
                   <span className="text-sm text-muted-foreground tabular-nums">
-                    {hold.slots.profiles.full_name ?? hold.slots.profiles.email} ·{" "}
+                    {/* Політика profiles показує планувальнику лише роль therapist; колишній терапевт — без імені. */}
+                    {hold.slots.profiles?.full_name ?? hold.slots.profiles?.email ?? "—"} ·{" "}
                     {formatPracticeDateTime(new Date(hold.slots.starts_at))}
                   </span>
                   {hold.status === "Held" && (

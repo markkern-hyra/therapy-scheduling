@@ -25,7 +25,12 @@ export function schedulerHolds<H extends HoldRow>(holds: H[], now: Date) {
   return holds
     .map((hold) => ({ ...hold, status: holdStatus(hold, now) }))
     .filter((hold) => hold.status !== "Confirmed" && new Date(hold.slots.starts_at) > now && !heldAgain(hold))
-    .sort((a, b) => Date.parse(a.slots.starts_at) - Date.parse(b.slots.starts_at));
+    // Той самий слот (AC-HOLD-43): новіше утримання вище, щоб порядок не мінявся між завантаженнями.
+    .sort(
+      (a, b) =>
+        Date.parse(a.slots.starts_at) - Date.parse(b.slots.starts_at) ||
+        Date.parse(b.created_at) - Date.parse(a.created_at),
+    );
 }
 
 // Сторінки слотів і утримань лише для планувальника й адміністратора; терапевт за прямим посиланням бачить текст PM

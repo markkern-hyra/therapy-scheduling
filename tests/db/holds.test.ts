@@ -150,6 +150,16 @@ describe("holds: утримання слоту", () => {
     expect((await holdsOf(slotId)).map((h) => h.client_id)).toEqual([client1, client1]);
   });
 
+  it("AC-HOLD-06: прострочений слот утримують за іншим клієнтом", async () => {
+    const slotId = await slot(therapist1, hourFromNow(11 * 24));
+    await hold(scheduler1, slotId, client1);
+    await t.asService("update public.holds set expires_at = now() - interval '1 minute' where slot_id = $1", [slotId]);
+
+    const [next] = await hold(scheduler2, slotId, client2);
+    expect(next.confirmed_at).toBeNull();
+    expect((await holdsOf(slotId)).map((h) => h.client_id)).toEqual(expect.arrayContaining([client1, client2]));
+  });
+
   it("AC-HOLD-44: therapist1 не бачить утримань і слотів therapist2, утримання не змінилось", async () => {
     const slotId = await slot(therapist2, hourFromNow(10 * 24));
     await hold(scheduler1, slotId, client1);
