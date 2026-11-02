@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createClientCard } from "@/app/clients/actions";
 
-// Дія createClientCard без Next і бази: роль і відповідь бази підставляємо, перевіряємо, що дія робить до й після запису.
+// Дія createClientCard без бази: роль і відповідь бази підставляємо через клієнт Supabase, перевіряємо, що дія робить до й після запису.
 // Відмови самої бази (RLS, check) — у tests/db/client-cards.test.ts.
 const h = vi.hoisted(() => ({
   role: "scheduler",
@@ -11,11 +11,14 @@ const h = vi.hoisted(() => ({
   revalidatePath: vi.fn(),
 }));
 vi.mock("next/cache", () => ({ revalidatePath: h.revalidatePath }));
-vi.mock("@/lib/auth/require-role", () => ({
-  requireRole: async () => ({
-    role: h.role,
-    email: null,
-    supabase: { from: () => ({ insert: h.insert }) },
+// Мокаємо лише клієнт Supabase: requireRole лишається справжнім.
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({
+    auth: { getClaims: async () => ({ data: { claims: { sub: "user-1", email: "scheduler1@example.test" } } }) },
+    from: (table: string) =>
+      table === "profiles"
+        ? { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role: h.role }, error: null }) }) }) }
+        : { insert: h.insert },
   }),
 }));
 
