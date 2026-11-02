@@ -186,7 +186,7 @@ already started and cannot be confirmed.»; `ALREADY_CONFIRMED` «This hold is a
 | `/holds` | admin, scheduler | утримання «Held» і «Expired» (без сеансів) за часом слоту: клієнт, терапевт, слот, статус, «Held until»; «Confirm» для `Held` | `confirmHold` → `update holds` | 05, 06, 12, 13, 19, 20, 22, 23, 27–29, 36–38, 42 |
 | `/schedule?week=…` | therapist | власний тиждень пн–нд зі статусами слотів і ім'ям клієнта (без email), перемикання тижнів | — | 09, 21, 30, 31, 40 |
 
-- Терапевт сторінок `/clients`, `/slots`, `/holds` не відкриває (`requireRole`), а прямий виклик `holdSlot` /
+- Терапевт на `/slots` і `/holds` бачить лише «Only schedulers and admins can view this page.» (AC-HOLD-44), а прямий виклик `holdSlot` /
   `confirmHold` чи Data API отримує від бази `HOLD_FORBIDDEN` / `CONFIRM_FORBIDDEN`, і `runAction` показує текст PM
   (AC-HOLD-08, 14).
 
