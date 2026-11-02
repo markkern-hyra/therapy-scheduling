@@ -125,6 +125,7 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 | `Button` | `primary`, `secondary`, `ghost`; `size`: `md` (h-10), `sm` (h-8) | `primary` — одна основна дія на екран («Create client», «Sign in»); `secondary` — «Show», «Cancel», дії в рядках («Hold», «Confirm»); `ghost` — тихі дії без рамки («Sign out» у шапці, кроки днями; на `/no-access` «Sign out» — `secondary`, бо це єдина дія картки). Під час надсилання — текст стану («Creating…») і `disabled` |
 | `ButtonLink` (у `button.tsx`) | ті самі, що `Button` | перехід, що виглядає як кнопка: «New client» (`primary`), «Cancel», кроки днями «‹ Mon 26 · Wed 28 ›» (`ghost`, `aria-label` «Previous day, Mon 26» / «Next day, Wed 28»; повна дата — у заголовку дня) |
 | `Input` + `Label` | — | `Label` обгортає поле (`<Label>Email<Input … /></Label>`) — зв'язок без `htmlFor`; placeholder не замість підпису; обов'язкові поля — `required`; форма картки — `noValidate` (перевіряє сервер, текст помилки — з AC) |
+| `FieldError` | — | помилка одного поля форми: під полем, `text-sm text-destructive`, `role="alert"`, текст дослівно з AC; без тексту нічого не показує. Загальні відмови — `Alert` над формою |
 | `Select` | `size`: `md`, `sm` | той самий вигляд, що `Input`; `sm` — у рядку списку поруч із `Button sm` |
 | `Choice` | — | радіокнопка в рамці для 2–3 варіантів замість `Select` («Adult» / «Child»); групу обгортає `<fieldset>` з `<legend>`; обраний — рамка `primary` і тло `primary-soft` |
 | `Card` | `title` | поверхня розділу: `card`, рамка, `shadow-card`, `p-6`; заголовок — `h2` |
@@ -154,7 +155,8 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 |---|---|---|
 | Порожній список | `EmptyState` замість списку: іконка в колі й одне-два речення | «No clients yet. Clients appear here when a scheduler holds a slot with you.» (AC-CARD-09) |
 | Немає вільних слотів | `text-sm text-muted-foreground` над списком дня | «No free slots on this day.» (AC-HOLD-24) |
-| Помилка дії | `Alert` над формою; введене лишається у формі, запису немає | «Enter the guardian's name and a valid email.» (AC-CARD-03), «This slot is no longer available.» (AC-HOLD-03) |
+| Помилка дії | `Alert` над формою; введене лишається у формі, запису немає | «A client with these details already exists.» (AC-CARD-13), «This slot is no longer available.» (AC-HOLD-03) |
+| Помилки полів форми | `FieldError` під кожним полем, одразу всі; введене лишається у формі, запису немає | «Enter a date of birth that is not in the future.» (AC-CARD-12), «Enter the guardian's name and a valid email.» (AC-CARD-03) |
 | Відмова в доступі | сторінка лише з `PageHeader` і `Alert`, без даних | «You don't have access to this client.» (AC-CARD-05), «Only schedulers and admins can create client cards.» (AC-CARD-06) |
 | Без ролі | `AuthShell` з повідомленням як `h1`, без навігації й даних | «Your account has no access yet. Contact an administrator.» (AC-CARD-11) |
 | Не увійшов | перенаправлення на сторінку входу | — (AC-CARD-07) |

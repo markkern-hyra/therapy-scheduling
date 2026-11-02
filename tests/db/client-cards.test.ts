@@ -66,6 +66,17 @@ describe("картка з анкети", () => {
     });
   });
 
+  it("AC-CARD-13: « client seven » з тією самою датою й email опікуна — дублікат, друга картка не створена", async () => {
+    const twin = { ...child("Client Thirteen", "Guardian Thirteen", "guardian13@example.test") };
+    await insertAs(scheduler1, twin);
+    const before = await count();
+    await expect(insertAs(scheduler1, { ...twin, full_name: " client thirteen " })).rejects.toThrow(/clients_child_dedup_key/);
+    expect(await count()).toBe(before);
+    // Близнюки з одним опікуном і різними іменами створюються без перешкод.
+    await insertAs(scheduler1, { ...twin, full_name: "Client Fourteen" });
+    expect(await count()).toBe(before + 1);
+  });
+
   it("AC-CARD-02: scheduler1 створює картку дитини з опікуном — без власного email, з даними опікуна", async () => {
     const [{ id }] = await insertAs(scheduler1, child("Client Seven", "Guardian Seven", "guardian7@example.test"));
     const [row] = await t.asService<Record<string, unknown>>(
