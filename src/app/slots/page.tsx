@@ -58,7 +58,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
   const view = daySlotsView(slots, now);
 
   // Кроки днями — звичайні посилання на ту саму сторінку з ?day= (і обраним терапевтом).
-  const dayHref = (d: string) => slotsHref(therapist?.id, d);
+  const dayHref = (d: string) => slotsHref(therapist?.id, d, clientQuery);
   const previous = shiftPracticeDay(day, -1);
   const next = shiftPracticeDay(day, 1);
 
@@ -142,6 +142,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
                       <input type="hidden" name="slot_id" value={slot.id} />
                       <input type="hidden" name="therapist" value={therapist.id} />
                       <input type="hidden" name="day" value={day} />
+                      <input type="hidden" name="client" value={clientQuery} />
                       <div className="min-w-0 flex-1 sm:w-56 sm:flex-none">
                         <Select
                           size="sm"

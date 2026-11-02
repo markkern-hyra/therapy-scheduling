@@ -46,7 +46,10 @@ export function validateCard(values: Record<string, string>, today: string): Car
   if (kind === "adult") Object.assign(errors, pair("full_name", "email", "CLIENT_INVALID"));
   else if (!text("full_name")) errors.full_name = "NAME_MISSING";
   const birthDate = text("birth_date");
-  if (!birthDate || birthDate > today) errors.birth_date = "BIRTH_DATE_INVALID";
+  // Рядкове порівняння дат коректне лише для РРРР-ММ-ДД; неможливу дату відсікає Date.parse.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate) || Number.isNaN(Date.parse(birthDate)) || birthDate > today) {
+    errors.birth_date = "BIRTH_DATE_INVALID";
+  }
   if (text("language") !== "English" && text("language") !== "Spanish") errors.language = "LANGUAGE_MISSING";
   if (kind === "child") Object.assign(errors, pair("guardian_name", "guardian_email", "GUARDIAN_INVALID"));
   return errors;
@@ -101,5 +104,5 @@ export function matchesClient(
   query: string,
 ): boolean {
   const q = query.trim().toLowerCase();
-  return `${client.full_name} ${contactEmail(client) ?? ""}`.toLowerCase().includes(q);
+  return [client.full_name, contactEmail(client) ?? ""].some((field) => field.toLowerCase().includes(q));
 }

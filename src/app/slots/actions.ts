@@ -15,7 +15,8 @@ export async function holdSlot(form: FormData) {
   const therapist = String(form.get("therapist") ?? "");
   const day = form.get("day");
   // Адреса повернення — лише з перевірених параметрів, не з форми як є (без відкритого перенаправлення).
-  const back = isStaff(role) ? slotsHref(therapist, isPracticeDay(day) ? day : undefined) : "/";
+  const client = String(form.get("client") ?? "");
+  const back = isStaff(role) ? slotsHref(therapist, isPracticeDay(day) ? day : undefined, client) : "/";
   await runAction(
     supabase.from("holds").insert({ slot_id: String(form.get("slot_id")), client_id: String(form.get("client_id")) }),
     back,

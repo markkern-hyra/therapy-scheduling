@@ -11,8 +11,8 @@ import {
 } from "@/lib/scheduling/clients";
 import { errorCode, messageFor } from "@/lib/scheduling/messages";
 
-// Правила картки (обов'язкові поля, формат і унікальність email, дані опікуна) перевіряє база — тут лише нормалізація
-// форми, хто може створювати картку, і переклад помилки бази в текст PM (помилки — такі, як їх повертає PostgREST).
+// Нормалізація й перевірка форми, хто може створювати картку, і переклад помилки бази в текст PM (помилки — такі, як їх
+// повертає PostgREST). Відмови самої бази — у tests/db.
 const violation = (code: string, constraint: string) => ({
   code,
   message: `new row for relation "clients" violates check constraint "${constraint}"`,
@@ -122,6 +122,12 @@ describe("перевірка форми картки", () => {
     expect(texts({ ...ADULT, birth_date: "" })).toEqual({ birth_date: "Enter a date of birth that is not in the future." });
   });
 
+  it("AC-CARD-12: дата не у форматі РРРР-ММ-ДД чи неможлива — та сама помилка біля поля", () => {
+    for (const birth_date of ["12026-11-04", "1990-13-45", "not-a-date"]) {
+      expect(texts({ ...ADULT, birth_date })).toEqual({ birth_date: "Enter a date of birth that is not in the future." });
+    }
+  });
+
   it("AC-CARD-12: тип не вибрано — «Select a client type.», поля контакту ще невідомі", () => {
     expect(texts({ full_name: "Client Six", birth_date: "1990-05-14", language: "English" })).toEqual({
       kind: "Select a client type.",
@@ -189,6 +195,10 @@ describe("пошук клієнта під час утримання", () => {
     expect(matchesClient(six, "CLIENT6@example.test")).toBe(true);
     expect(matchesClient(six, "six")).toBe(true);
     expect(matchesClient(seven, "client6")).toBe(false);
+  });
+
+  it("AC-CARD-01: запит не збігається через межу імені й email", () => {
+    expect(matchesClient(six, "six client6")).toBe(false);
   });
 
   it("AC-CARD-02: порожній запит показує всіх клієнтів", () => {

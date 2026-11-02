@@ -76,24 +76,30 @@ export function ClientCardForm({ today }: { today: string }) {
       </Card>
       <Card title="Contact">
         <div className={ADULT_ONLY}>
-          <Label>
-            Email
-            <Input name="email" type="email" autoComplete="off" defaultValue={v.email} required />
-          </Label>
-          {fieldError("email")}
+          <div className="flex flex-col gap-1">
+            <Label>
+              Email
+              <Input name="email" type="email" autoComplete="off" defaultValue={v.email} required />
+            </Label>
+            {fieldError("email")}
+          </div>
         </div>
         <div className={CHILD_ONLY}>
           <p className="text-sm text-muted-foreground">A child has no email of their own: enter the guardian.</p>
-          <Label>
-            Guardian name
-            <Input name="guardian_name" autoComplete="off" defaultValue={v.guardian_name} required />
-          </Label>
-          {fieldError("guardian_name")}
-          <Label>
-            Guardian email
-            <Input name="guardian_email" type="email" autoComplete="off" defaultValue={v.guardian_email} required />
-          </Label>
-          {fieldError("guardian_email")}
+          <div className="flex flex-col gap-1">
+            <Label>
+              Guardian name
+              <Input name="guardian_name" autoComplete="off" defaultValue={v.guardian_name} required />
+            </Label>
+            {fieldError("guardian_name")}
+          </div>
+          <div className="flex flex-col gap-1">
+            <Label>
+              Guardian email
+              <Input name="guardian_email" type="email" autoComplete="off" defaultValue={v.guardian_email} required />
+            </Label>
+            {fieldError("guardian_email")}
+          </div>
         </div>
       </Card>
       <div className="flex gap-2">

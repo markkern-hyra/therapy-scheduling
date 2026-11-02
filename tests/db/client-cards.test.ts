@@ -75,6 +75,10 @@ describe("картка з анкети", () => {
     // Близнюки з одним опікуном і різними іменами створюються без перешкод.
     await insertAs(scheduler1, { ...twin, full_name: "Client Fourteen" });
     expect(await count()).toBe(before + 1);
+    // Те саме ім'я, але інша дата народження чи інший опікун — інша дитина.
+    await insertAs(scheduler1, { ...twin, birth_date: "2016-03-02" });
+    await insertAs(scheduler1, { ...twin, guardian_email: "guardian15@example.test" });
+    expect(await count()).toBe(before + 3);
   });
 
   it("AC-CARD-02: scheduler1 створює картку дитини з опікуном — без власного email, з даними опікуна", async () => {
