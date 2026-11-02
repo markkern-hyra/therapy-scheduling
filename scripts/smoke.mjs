@@ -63,7 +63,7 @@ async function main() {
   } else if (health.status === 404) {
     fail.push(`"/api/health": 404 — додайте src/app/api/health/route.ts`);
   } else if (health.status >= 300 && health.status < 400) {
-    fail.push(`"/api/health": ${health.status} → ${health.location} — додайте "/api/health" у PUBLIC_PATHS (src/lib/supabase/proxy.ts)`);
+    fail.push(`"/api/health": ${health.status} → ${health.location} — додайте "/api/health" у isPublicPath (src/lib/supabase/proxy.ts)`);
   } else if (health.reason === "paused") {
     fail.push(`"/api/health": Supabase призупинено — Dashboard → Resume project (безкоштовний проєкт засинає після тижня без активності)`);
   } else if (health.reason === "invalid-api-key") {
