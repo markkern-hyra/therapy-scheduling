@@ -130,6 +130,13 @@ describe("підтвердження утримання", () => {
     expect(await confirmedAt(holdId)).toEqual(first);
   });
 
+  it("AC-HOLD-36: уже підтверджений сеанс після «Held until» — усе одно «This hold is already confirmed.»", async () => {
+    const { holdId } = await heldSlot();
+    await confirm(scheduler1, holdId);
+    await t.asService("update public.holds set expires_at = now() - interval '1 minute' where id = $1", [holdId]);
+    await expect(confirm(scheduler2, holdId)).rejects.toThrow("ALREADY_CONFIRMED");
+  });
+
   it("AC-HOLD-14: інші колонки утримання через update не змінюються", async () => {
     const { holdId } = await heldSlot();
     await expect(

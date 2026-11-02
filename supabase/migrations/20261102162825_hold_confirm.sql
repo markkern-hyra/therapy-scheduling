@@ -10,7 +10,8 @@ declare
   v_now   timestamptz;
   v_start timestamptz;
 begin
-  -- Сиди й тести ставлять минулі сеанси ключем service_role; через Data API цю роль не вибрати.
+  -- Скрипти й тести ставлять минулі сеанси ключем service_role; через Data API цю роль не вибрати. Міграції (роль postgres)
+  -- сюди не проходять: зміна даних підтвердження в міграції отримає CONFIRM_FORBIDDEN.
   if current_setting('role', true) = 'service_role' then
     return new;
   end if;
@@ -24,13 +25,15 @@ begin
     raise exception 'ALREADY_CONFIRMED';
   end if;
 
-  -- Рядок уже заблоковано самим update; now() — час початку транзакції, а запит міг чекати.
+  -- Той самий порядок блокувань, що в check_new_hold: спершу клієнт, потім слот. Інакше в мить прострочення слот міг би
+  -- отримати і сеанс, і нове утримання. now() — час початку транзакції, а запит міг чекати на блокування.
+  perform 1 from public.clients where id = old.client_id for update;
+  select s.starts_at into v_start from public.slots as s where s.id = old.slot_id for update;
   v_now := clock_timestamp();
   if old.expires_at <= v_now then
     raise exception 'HOLD_EXPIRED'; -- AC-HOLD-13
   end if;
 
-  select s.starts_at into v_start from public.slots as s where s.id = old.slot_id;
   if v_start <= v_now then
     raise exception 'CONFIRM_STARTED'; -- AC-HOLD-22, 23
   end if;
