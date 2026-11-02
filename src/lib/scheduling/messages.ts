@@ -8,6 +8,7 @@ export const MESSAGES = {
   BIRTH_DATE_INVALID: "Enter a date of birth that is not in the future.",
   LANGUAGE_MISSING: "Select a session language.",
   CHILD_EXISTS: "A client with these details already exists.",
+  VIEW_FORBIDDEN: "Only schedulers and admins can view this page.",
   CARD_FORBIDDEN: "Only schedulers and admins can create client cards.",
   CLIENT_NO_ACCESS: "You don't have access to this client.",
   NO_ROLE: "Your account has no access yet. Contact an administrator.",

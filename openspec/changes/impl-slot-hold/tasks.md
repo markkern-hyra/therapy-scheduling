@@ -45,7 +45,7 @@
   вікна одночасно утримують той самий слот, therapist1 викликає `holdSlot` і прямий insert — бачить `HOLD_FORBIDDEN`.
   Done when: AC-HOLD-01, AC-HOLD-02, AC-HOLD-03, AC-HOLD-04, AC-HOLD-07, AC-HOLD-08, AC-HOLD-17, AC-HOLD-18, AC-HOLD-25,
   AC-HOLD-26, AC-HOLD-32, AC-HOLD-33.
-- [ ] 3.2 Прострочення й список утримань: `visibility.ts` (`schedulerHolds` — лише «Held» і «Expired», слот яких ще не
+- [x] 3.2 Прострочення й список утримань: `visibility.ts` (`schedulerHolds` — лише «Held» і «Expired», слот яких ще не
   почався, за часом слоту від найближчого; прострочене зникає, коли слот знову утримали за тим самим клієнтом, а за іншим — лишається до початку слоту), сторінка
   `/holds` (клієнт, терапевт, слот, статус, «Held until»); слот простроченого утримання знову вільний на `/slots`;
   терапевт на `/holds` і `/slots` бачить «Only schedulers and admins can view this page.»; тести.

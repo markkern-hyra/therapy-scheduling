@@ -42,7 +42,7 @@
 | `status-confirmed` / `status-confirmed-foreground` | статус «Confirmed» — бірюзовий, у гамі акценту | `oklch(0.93 0.045 172)` / `oklch(0.38 0.07 172)` | `oklch(0.32 0.05 172)` / `oklch(0.88 0.07 170)` | `bg-status-confirmed`, `text-status-confirmed-foreground` |
 | `card-shadow` | м'яка тінь поверхні (двошарова, теплий відтінок; у темній — глибша) | `0 1px 2px oklch(0.25 0.02 60 / 0.05), 0 4px 14px oklch(0.25 0.02 60 / 0.06)` | `0 1px 2px oklch(0 0 0 / 0.3), 0 4px 14px oklch(0 0 0 / 0.25)` | `shadow-card` (лише в `ui`) |
 
-- «Past» — бейдж `muted`; вільний слот — без бейджа, слово «Free» приглушене.
+- «Past» і «Expired» — бейдж `muted`; вільний слот — без бейджа, слово «Free» приглушене.
 - `secondary`, `accent` і `popover` не заводимо: другорядна кнопка — `border-input bg-card`, тиха — `ghost`
   (наведення `bg-muted`), меню й діалогів немає. З'являться — через розділ 9.
 - У темній темі акцент світлий, тому текст на ньому темний (`primary-foreground`); білим його не заміняємо.
@@ -139,7 +139,7 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 | `EmptyState` | — | порожній список: іконка в колі `muted`, текст AC дослівно |
 | `Alert` | помилка | `role="alert"`, тло `destructive-soft`, іконка й текст дослівно з AC, над формою чи списком |
 | `NavLink` | — | пункт шапки з іконкою; поточний розділ — `aria-current="page"` і тло `primary-soft`, інші — `muted-foreground`; єдиний клієнтський (`"use client"`) компонент в `ui` — потребує `usePathname` |
-| Іконки (`icons.tsx`) | `SlotsIcon`, `ClientsIcon`, `SignOutIcon`, `AddIcon`, `BackIcon`, `PreviousIcon`, `NextIcon`, `AlertIcon`, `TimeIcon`, `ClientIcon` | лінійні іконки `lucide-react`, 16px, товщина 1.9, `aria-hidden`; лише цей набір і завжди поруч із підписом — сенс несе текст |
+| Іконки (`icons.tsx`) | `SlotsIcon`, `ClientsIcon`, `HoldsIcon`, `SignOutIcon`, `AddIcon`, `BackIcon`, `PreviousIcon`, `NextIcon`, `AlertIcon`, `TimeIcon`, `ClientIcon` | лінійні іконки `lucide-react`, 16px, товщина 1.9, `aria-hidden`; лише цей набір і завжди поруч із підписом — сенс несе текст |
 
 Компоненти застосунку (`AppNav` — знак і назва, розділи ролі з іконками, аватар з ім'ям і роллю, «Sign out»;
 `AuthShell` — вхід (з призначенням продукту) і «доступу ще немає» (лише знак і назва); назва й призначення — `PRODUCT`

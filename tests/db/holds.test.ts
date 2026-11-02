@@ -139,6 +139,26 @@ describe("holds: утримання слоту", () => {
     expect(row.expires_at.getTime()).toBeGreaterThan(Date.now());
   });
 
+  it("AC-HOLD-37: прострочене утримання знову утримують за тим самим клієнтом — нове «Held» на 24 години", async () => {
+    const slotId = await slot(therapist1, hourFromNow(9 * 24));
+    await hold(scheduler1, slotId, client1);
+    await t.asService("update public.holds set expires_at = now() - interval '1 minute' where slot_id = $1", [slotId]);
+
+    const [again] = await hold(scheduler1, slotId, client1);
+    expect(again.confirmed_at).toBeNull();
+    expect(again.expires_at.getTime() - again.created_at.getTime()).toBe(24 * HOUR);
+    expect((await holdsOf(slotId)).map((h) => h.client_id)).toEqual([client1, client1]);
+  });
+
+  it("AC-HOLD-44: therapist1 не бачить утримань і слотів therapist2, утримання не змінилось", async () => {
+    const slotId = await slot(therapist2, hourFromNow(10 * 24));
+    await hold(scheduler1, slotId, client1);
+    const before = await holdsOf(slotId);
+    expect(await t.asUser(therapist1, "select id from public.holds where slot_id = $1", [slotId])).toEqual([]);
+    expect(await t.asUser(therapist1, "select id from public.slots where id = $1", [slotId])).toEqual([]);
+    expect(await holdsOf(slotId)).toEqual(before);
+  });
+
   it("підтверджений сеанс тримає слот і після «Held until» (SLOT_TAKEN)", async () => {
     const s = await slot(therapist1, inAWeek);
     const [session] = await hold(scheduler1, s, client1);

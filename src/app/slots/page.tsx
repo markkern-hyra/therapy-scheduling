@@ -1,5 +1,6 @@
 import { AppNav } from "@/app/_components/app-nav";
 import { ErrorMessage } from "@/app/_components/error-message";
+import { StaffPageRefusal } from "@/app/_components/staff-page-refusal";
 import { StatusBadge } from "@/app/_components/status-badge";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,7 +11,6 @@ import { List, ListItem } from "@/components/ui/list";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
 import { requireRole } from "@/lib/auth/require-role";
-import { STAFF_ROLES } from "@/lib/auth/roles";
 import { contactEmail, matchesClient } from "@/lib/scheduling/clients";
 import { slotsHref } from "@/lib/scheduling/links";
 import { daySlotsView, isHoldable } from "@/lib/scheduling/status";
@@ -23,12 +23,17 @@ import {
   practiceToday,
   shiftPracticeDay,
 } from "@/lib/scheduling/time";
+import { staffPageRefusal } from "@/lib/scheduling/visibility";
 import { holdSlot } from "./actions";
 
 // Слоти терапевта на день зі статусами, клієнтом і «Held until»; «Hold» — лише для вільного слоту
-// (AC-HOLD-01–03, 07, 17, 18, 24, 32, 33). Правила утримання тримає база, сторінка лише показує.
+// (AC-HOLD-01–03, 07, 17, 18, 24, 32, 33). Правила утримання тримає база, сторінка лише показує. Терапевту — відмова
+// (AC-HOLD-44).
 export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
-  const { supabase, role, name } = await requireRole(...STAFF_ROLES);
+  const { supabase, role, name } = await requireRole();
+  const refusal = staffPageRefusal(role);
+  if (refusal) return <StaffPageRefusal title="Slots" role={role} name={name} message={refusal} />;
+
   const params = await searchParams;
   const now = new Date();
   const day = isPracticeDay(params.day) ? params.day : practiceToday(now);

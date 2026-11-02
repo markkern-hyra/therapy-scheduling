@@ -4,18 +4,19 @@ import { signOut } from "@/app/login/actions";
 import { Avatar } from "@/components/ui/avatar";
 import { BrandMark } from "@/components/ui/brand-mark";
 import { Button } from "@/components/ui/button";
-import { ClientsIcon, SignOutIcon, SlotsIcon } from "@/components/ui/icons";
+import { ClientsIcon, HoldsIcon, SignOutIcon, SlotsIcon } from "@/components/ui/icons";
 import { NavLink } from "@/components/ui/nav-link";
 import { ROLE_LABELS, type Role } from "@/lib/auth/roles";
 import { PRODUCT } from "@/lib/product";
 
-// Посилання за роллю; наступні задачі додають сюди «Holds» і «Schedule».
+// Посилання за роллю; задача 5.1 impl-slot-hold додає сюди «Schedule».
 type Section = { href: string; label: string; icon: ReactNode };
 const SLOTS: Section = { href: "/slots", label: "Slots", icon: <SlotsIcon /> };
+const HOLDS: Section = { href: "/holds", label: "Holds", icon: <HoldsIcon /> };
 const CLIENTS: Section = { href: "/clients", label: "Clients", icon: <ClientsIcon /> };
 const LINKS: Record<Role, Section[]> = {
-  admin: [SLOTS, CLIENTS],
-  scheduler: [SLOTS, CLIENTS],
+  admin: [SLOTS, HOLDS, CLIENTS],
+  scheduler: [SLOTS, HOLDS, CLIENTS],
   // Терапевт — лише картки своїх клієнтів (AC-CARD-04); розклад — задача 5.1 impl-slot-hold.
   therapist: [CLIENTS],
 };
