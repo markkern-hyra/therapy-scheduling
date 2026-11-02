@@ -78,7 +78,7 @@ describe("createClientCard", () => {
     h.role = "scheduler";
     expect(await createClientCard(INITIAL, form())).toEqual({
       error: null,
-      errors: { guardian_name: "GUARDIAN_INVALID" },
+      errors: { guardian_name: "GUARDIAN_INVALID", guardian_email: "GUARDIAN_INVALID" },
       values: FIELDS,
     });
     expect(h.insert).not.toHaveBeenCalled();

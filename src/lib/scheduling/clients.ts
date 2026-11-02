@@ -33,13 +33,13 @@ export type CardErrors = Partial<Record<CardField, MessageCode>>;
 const VALID_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Усі помилки форми одразу, кожна біля свого поля (AC-CARD-12; ADR 0009): check бази зупиняється на першому порушенні.
-// Спільне повідомлення пари полів — один раз, під першим полем із помилкою (припущення розробника clarify-client-cards).
+// Текст пари полів (ім'я й email) — під кожним хибним полем пари.
 export function validateCard(values: Record<string, string>, today: string): CardErrors {
   const text = (name: CardField) => (values[name] ?? "").trim();
-  const pair = (nameField: CardField, emailField: CardField, code: MessageCode): CardErrors => {
-    if (!text(nameField)) return { [nameField]: code };
-    return VALID_EMAIL.test(text(emailField)) ? {} : { [emailField]: code };
-  };
+  const pair = (nameField: CardField, emailField: CardField, code: MessageCode): CardErrors => ({
+    ...(text(nameField) ? {} : { [nameField]: code }),
+    ...(VALID_EMAIL.test(text(emailField)) ? {} : { [emailField]: code }),
+  });
   const errors: CardErrors = {};
   const kind = values.kind;
   if (kind !== "adult" && kind !== "child") errors.kind = "CLIENT_TYPE_MISSING";

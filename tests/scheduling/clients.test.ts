@@ -134,11 +134,11 @@ describe("перевірка форми картки", () => {
     });
   });
 
-  it("AC-CARD-12: ім'я або email дорослого — одне повідомлення, під першим полем із помилкою", () => {
+  it("AC-CARD-12: ім'я або email дорослого — повідомлення під кожним хибним полем", () => {
     const message = "Enter the client's name and a valid email.";
     expect(texts({ ...ADULT, full_name: "   " })).toEqual({ full_name: message });
     expect(texts({ ...ADULT, email: "client3example.test" })).toEqual({ email: message });
-    expect(texts({ ...ADULT, full_name: "", email: "" })).toEqual({ full_name: message });
+    expect(texts({ ...ADULT, full_name: "", email: "" })).toEqual({ full_name: message, email: message });
   });
 
   it("AC-HOLD-39: некоректний email дорослого — без крапки, два «@», порожня частина, пробіл", () => {
@@ -148,11 +148,11 @@ describe("перевірка форми картки", () => {
     expect(texts({ ...ADULT, email: " Client3@Example.TEST " })).toEqual({});
   });
 
-  it("AC-CARD-03: ім'я або email опікуна — одне повідомлення, під першим полем із помилкою", () => {
+  it("AC-CARD-03: ім'я або email опікуна — повідомлення під кожним хибним полем", () => {
     const message = "Enter the guardian's name and a valid email.";
     expect(texts({ ...CHILD, guardian_name: "" })).toEqual({ guardian_name: message });
     expect(texts({ ...CHILD, guardian_email: "guardian7" })).toEqual({ guardian_email: message });
-    expect(texts({ ...CHILD, guardian_name: "", guardian_email: "" })).toEqual({ guardian_name: message });
+    expect(texts({ ...CHILD, guardian_name: "", guardian_email: "" })).toEqual({ guardian_name: message, guardian_email: message });
   });
 
   it("AC-CARD-02: у дитини власний email не перевіряємо", () => {
