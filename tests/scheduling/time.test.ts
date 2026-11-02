@@ -6,8 +6,7 @@ import {
   isPracticeDay,
   practiceDayRange,
   practiceToday,
-  shiftPracticeDay,
-} from "@/lib/scheduling/time";
+  shiftPracticeDay, practiceWeek, } from "@/lib/scheduling/time";
 
 describe("time: часовий пояс практики America/Los_Angeles", () => {
   it("показує дату й час у форматі РРРР-ММ-ДД ГГ:ХХ за LA", () => {
@@ -63,5 +62,24 @@ describe("time: часовий пояс практики America/Los_Angeles", (
   it("підпис дня для кроків днями — день тижня й число місяця", () => {
     expect(formatDayStep("2026-10-27")).toBe("Tue 27");
     expect(formatDayStep("2026-11-01")).toBe("Sun 1");
+  });
+});
+
+describe("тиждень у часовому поясі практики", () => {
+  it("AC-HOLD-30: середа 2026-11-04 — тиждень 2026-11-02 – 2026-11-08", () => {
+    const week = practiceWeek("2026-11-04");
+    expect([week.monday, week.sunday]).toEqual(["2026-11-02", "2026-11-08"]);
+    expect(week.start.toISOString()).toBe("2026-11-02T08:00:00.000Z");
+    expect(week.end.toISOString()).toBe("2026-11-09T08:00:00.000Z");
+  });
+
+  it("AC-HOLD-30: неділя належить до тижня, що почався в понеділок; понеділок — до свого", () => {
+    expect(practiceWeek("2026-11-08").monday).toBe("2026-11-02");
+    expect(practiceWeek("2026-11-09").monday).toBe("2026-11-09");
+  });
+
+  it("AC-HOLD-31: наступний тиждень — 2026-11-09 – 2026-11-15", () => {
+    const next = practiceWeek(shiftPracticeDay(practiceWeek("2026-11-04").monday, 7));
+    expect([next.monday, next.sunday]).toEqual(["2026-11-09", "2026-11-15"]);
   });
 });

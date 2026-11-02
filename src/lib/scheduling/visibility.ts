@@ -1,6 +1,7 @@
 import { isStaff, type Role } from "@/lib/auth/roles";
 import { MESSAGES } from "./messages";
-import { holdStatus } from "./status";
+import { holdStatus, slotStatus } from "./status";
+import { practiceToday } from "./time";
 
 type HoldRow = {
   client_id: string;
@@ -37,4 +38,18 @@ export function schedulerHolds<H extends HoldRow>(holds: H[], now: Date) {
 // замість перенаправлення на головну (AC-HOLD-44).
 export function staffPageRefusal(role: Role): string | null {
   return isStaff(role) ? null : MESSAGES.VIEW_FORBIDDEN;
+}
+
+type ScheduleRow = { starts_at: string; confirmed_at: string | null; expires_at: string | null };
+
+// Тиждень терапевта за днями зі статусами слотів; функція бази вже віддала лише власні слоти без прострочених утримань.
+// Той самий slotStatus, що й у планувальника: «Past», «Held» до прострочення, «Confirmed», вільний (AC-HOLD-09, 21, 30).
+export function therapistWeek<R extends ScheduleRow>(rows: R[], now: Date) {
+  const days = new Map<string, (R & { status: ReturnType<typeof slotStatus> })[]>();
+  for (const row of [...rows].sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at))) {
+    const holds = row.expires_at ? [{ confirmed_at: row.confirmed_at, expires_at: row.expires_at }] : [];
+    const day = practiceToday(new Date(row.starts_at));
+    days.set(day, [...(days.get(day) ?? []), { ...row, status: slotStatus({ starts_at: row.starts_at, holds }, now) }]);
+  }
+  return [...days].map(([day, slots]) => ({ day, slots }));
 }

@@ -69,3 +69,15 @@ export function formatDayStep(day: string): string {
 export function practiceDayRange(day: string): { start: Date; end: Date } {
   return { start: practiceMidnight(day), end: practiceMidnight(shiftPracticeDay(day, 1)) };
 }
+
+// Тиждень дня `day` за LA: понеділок–неділя, межі [start, end) у UTC (AC-HOLD-30).
+export function practiceWeek(day: string): { monday: string; sunday: string; start: Date; end: Date } {
+  const weekday = new Date(`${day}T00:00:00Z`).getUTCDay();
+  const monday = shiftPracticeDay(day, -((weekday + 6) % 7));
+  return {
+    monday,
+    sunday: shiftPracticeDay(monday, 6),
+    start: practiceMidnight(monday),
+    end: practiceMidnight(shiftPracticeDay(monday, 7)),
+  };
+}
