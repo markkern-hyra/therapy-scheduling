@@ -89,7 +89,7 @@
 | Таблиця | select | insert | update | delete |
 |---|---|---|---|---|
 | `profiles` | власний; admin — усі; scheduler — профілі терапевтів | — (тригер) | `full_name` (як у шаблоні) | — |
-| `clients` | admin, scheduler — усі; therapist — клієнти власних активних утримань і сеансів | admin, scheduler (`full_name`, `email`) | — | — |
+| `clients` | admin, scheduler — усі; therapist — клієнти з «Held», слот якого ще не почався, або «Confirmed» (AC-CARD-14) | admin, scheduler (`full_name`, `email`) | — | — |
 | `slots` | admin, scheduler — усі; therapist — власні | — (лише `service_role`) | — | — |
 | `holds` | admin, scheduler — усі; therapist — на власних слотах і лише активні | admin, scheduler (`slot_id`, `client_id`) | `confirmed_at` — ті самі рядки, що в select (дозвіл перевіряє тригер → `CONFIRM_FORBIDDEN`) | — |
 
@@ -184,7 +184,7 @@ already started and cannot be confirmed.»; `ALREADY_CONFIRMED` «This hold is a
 | `/clients` | admin, scheduler | список клієнтів і форма «ім'я + email» | `createClientCard` → `insert clients` (email через `normalizeEmail`) | 10, 11, 15, 16, 34, 35, 39, 41 |
 | `/slots?therapist=…&day=…` | admin, scheduler | слоти терапевта на день зі статусами, клієнт і «Held until», «Hold» з вибором клієнта лише для `isHoldable` | `holdSlot` → `insert holds` | 01–04, 06, 07, 17, 18, 24–26, 32, 33 |
 | `/holds` | admin, scheduler | утримання «Held» і «Expired» (без сеансів) за часом слоту: клієнт, терапевт, слот, статус, «Held until»; «Confirm» для `Held` | `confirmHold` → `update holds` | 05, 06, 12, 13, 19, 20, 22, 23, 27–29, 36–38, 42 |
-| `/schedule?week=…` | therapist | власний тиждень пн–нд зі статусами слотів і ім'ям клієнта (без email), перемикання тижнів | — | 09, 21, 30, 31, 40 |
+| `/schedule?week=…` | therapist | власний тиждень пн–нд зі статусами слотів і ім'ям клієнта (без email), перемикання тижнів | — | 09, 21, 30, 31, 40; ім'я — окремою функцією бази, бо після початку слоту картка вже недоступна (AC-CARD-14) |
 
 - Терапевт на `/slots` і `/holds` бачить лише «Only schedulers and admins can view this page.» (AC-HOLD-44), а прямий виклик `holdSlot` /
   `confirmHold` чи Data API отримує від бази `HOLD_FORBIDDEN` / `CONFIRM_FORBIDDEN`, і `runAction` показує текст PM
