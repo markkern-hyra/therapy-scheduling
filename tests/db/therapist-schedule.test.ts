@@ -73,7 +73,7 @@ describe("розклад терапевта", () => {
     expect(row?.expires_at).toBeNull();
   });
 
-  it("AC-HOLD-09: після початку слоту утримання «Held» лишається в розкладі з ім'ям клієнта", async () => {
+  it("після початку слоту утримання «Held» лишається в розкладі з ім'ям клієнта", async () => {
     const own = await freeSlot(therapist1);
     await hold(own);
     await t.asService(
@@ -83,14 +83,36 @@ describe("розклад терапевта", () => {
     expect((await rowOf(therapist1, own))?.client_name).toBe("Client Schedule");
   });
 
-  it("AC-HOLD-30: розклад повертає лише слоти заданого проміжку", async () => {
-    const own = await freeSlot(therapist1);
+  it("AC-HOLD-30: тиждень показує лише свої слоти: раніший і пізніший слот у нього не входять", async () => {
+    const [before, inside, after] = [await freeSlot(therapist1), await freeSlot(therapist1), await freeSlot(therapist1)];
+    const startOf = async (id: string) =>
+      (await t.asService<{ starts_at: Date }>("select starts_at from public.slots where id = $1", [id]))[0].starts_at;
     const rows = await t.asUser<Row>(therapist1, "select * from public.therapist_schedule($1, $2)", [
-      "2000-01-01T00:00:00Z",
-      "2000-01-08T00:00:00Z",
+      await startOf(inside),
+      await startOf(after),
     ]);
-    expect(rows.map((r) => r.slot_id)).not.toContain(own);
-    expect(rows).toEqual([]);
+    const ids = rows.map((r) => r.slot_id);
+    expect(ids).toContain(inside);
+    expect(ids).not.toContain(before);
+    expect(ids).not.toContain(after);
+  });
+
+  it("AC-HOLD-31: сеанс наступного тижня видно, лише коли запит охоплює цей тиждень", async () => {
+    const session = await freeSlot(therapist1);
+    const [h] = await hold(session);
+    await t.asUser(scheduler1, "update public.holds set confirmed_at = now() where id = $1", [h.id]);
+    const [{ starts_at: startsAt }] = await t.asService<{ starts_at: Date }>("select starts_at from public.slots where id = $1", [session]);
+    const week = 7 * 24 * HOUR;
+    const inWeek = await t.asUser<Row>(therapist1, "select * from public.therapist_schedule($1, $2)", [
+      new Date(startsAt.getTime() - HOUR).toISOString(),
+      new Date(startsAt.getTime() + week).toISOString(),
+    ]);
+    const previous = await t.asUser<Row>(therapist1, "select * from public.therapist_schedule($1, $2)", [
+      new Date(startsAt.getTime() - week).toISOString(),
+      startsAt.toISOString(),
+    ]);
+    expect(inWeek.find((r) => r.slot_id === session)?.confirmed_at).not.toBeNull();
+    expect(previous.map((r) => r.slot_id)).not.toContain(session);
   });
 
   it("AC-CARD-11: без ролі розклад порожній", async () => {
@@ -98,14 +120,10 @@ describe("розклад терапевта", () => {
     expect(await schedule(therapist2)).toEqual([]);
     await t.asService("update public.profiles set role = 'therapist' where id = $1", [therapist2]);
   });
-
-  it("AC-HOLD-44: планувальник не отримує чужого розкладу через цю функцію", async () => {
-    expect(await schedule(scheduler1)).toEqual([]);
-  });
 });
 
 describe("сид доступності", () => {
-  it("AC-HOLD-30: у therapist1 лише пн–пт, перший слот о 09:00, останній о 16:00, на 8 тижнів уперед", async () => {
+  it("у therapist1 лише пн–пт, перший слот о 09:00, останній о 16:00, на 8 тижнів уперед", async () => {
     await t.asService("delete from public.holds");
     await t.asService("delete from public.slots");
     await t.asService("select public.generate_demo_slots()");

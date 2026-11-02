@@ -66,6 +66,11 @@ describe("time: часовий пояс практики America/Los_Angeles", (
 });
 
 describe("тиждень у часовому поясі практики", () => {
+  it("день з адреси поза межами, які приймає база, — не дата сторінки", () => {
+    expect(isPracticeDay("9999-12-31")).toBe(false);
+    expect(isPracticeDay("2026-11-04")).toBe(true);
+  });
+
   it("AC-HOLD-30: середа 2026-11-04 — тиждень 2026-11-02 – 2026-11-08", () => {
     const week = practiceWeek("2026-11-04");
     expect([week.monday, week.sunday]).toEqual(["2026-11-02", "2026-11-08"]);

@@ -101,7 +101,7 @@ describe("тиждень терапевта", () => {
   });
   const NOW = new Date("2026-11-04T20:00:00Z"); // середа 2026-11-04 12:00 за LA
 
-  it("AC-HOLD-30: тиждень — статуси «Confirmed», «Held», вільні, сеанс 2026-11-12 у цей тиждень не входить", () => {
+  it("AC-HOLD-30: тиждень за днями — статуси «Confirmed», «Held» і вільні за часом", () => {
     const week = therapistWeek(
       [
         slot("2026-11-06T18:00:00Z", { expires_at: "2026-11-05T20:00:00Z", client_name: "client1" }),
@@ -125,7 +125,7 @@ describe("тиждень терапевта", () => {
     expect(week.flatMap((d) => d.slots.map((s) => s.status))).toEqual(["Past", "free"]);
   });
 
-  it("AC-HOLD-09: утримання, слот якого почався, лишається «Held» до прострочення", () => {
+  it("утримання, слот якого почався, лишається «Held» до прострочення", () => {
     const week = therapistWeek([slot("2026-11-04T18:00:00Z", { expires_at: "2026-11-05T20:00:00Z", client_name: "client1" })], NOW);
     expect(week[0].slots[0].status).toBe("Held");
   });
