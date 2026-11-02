@@ -80,7 +80,7 @@ IF терапевт відкриває форму нової картки клі
 
 ### Requirement: Помилки у формі картки показуються одразу всі
 
-IF у формі картки клієнта тип не вибрано, ім'я порожнє, email дорослого некоректний, дата народження порожня або пізніша за сьогодні, мову сеансів не вибрано, ім'я або email опікуна порожні чи некоректні, THEN the system SHALL не створювати картку, лишити всі введені дані у формі й показати одразу всі повідомлення, кожне біля свого поля: «Select a client type.», для імені чи email дорослого — «Enter the client's name and a valid email.», для імені дитини — «Enter the client's name.», «Enter a date of birth that is not in the future.», «Select a session language.», для імені чи email опікуна — «Enter the guardian's name and a valid email.».
+IF у формі картки клієнта поля порожні чи некоректні, THEN the system SHALL не створювати картку, лишити введені дані у формі й показати одразу всі повідомлення, кожне біля свого поля: тип — «Select a client type.», ім'я чи email дорослого — «Enter the client's name and a valid email.», ім'я дитини — «Enter the client's name.», дата народження — «Enter a date of birth that is not in the future.», мова — «Select a session language.», дані опікуна — «Enter the guardian's name and a valid email.».
 
 #### Scenario: AC-CARD-12 Кілька помилок у формі дитини
 
