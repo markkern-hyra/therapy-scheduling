@@ -8,7 +8,7 @@
 
 ### Requirement: Створення картки клієнта
 
-WHEN планувальник або адміністратор створює клієнта з непорожнім ім'ям і коректним email, якого ще немає, the system SHALL створити картку клієнта, яку можна вибрати під час утримання слоту.
+WHEN планувальник або адміністратор створює клієнта повною формою картки з непорожнім ім'ям і коректним email, якого ще немає, а решта полів форми заповнена правильно, the system SHALL створити картку клієнта, яку можна вибрати під час утримання слоту.
 
 #### Scenario: AC-HOLD-10 Новий клієнт
 
@@ -182,7 +182,7 @@ WHEN планувальник або адміністратор відкрива
 
 ### Requirement: Помилки у формі картки показуються одразу всі
 
-IF у формі картки клієнта тип не вибрано, ім'я порожнє, дата народження порожня або пізніша за сьогодні, мову сеансів не вибрано, THEN the system SHALL не створювати картку, лишити всі введені дані у формі й показати одразу всі повідомлення, кожне біля свого поля: «Select a client type.», для дорослого — «Enter the client's name and a valid email.», для дитини — «Enter the client's name.», «Enter a date of birth that is not in the future.», «Select a session language.».
+IF у формі картки клієнта поля порожні чи некоректні, THEN the system SHALL не створювати картку, лишити введені дані у формі й показати одразу всі повідомлення, кожне біля свого поля: тип — «Select a client type.», ім'я чи email дорослого — «Enter the client's name and a valid email.», ім'я дитини — «Enter the client's name.», дата народження — «Enter a date of birth that is not in the future.», мова — «Select a session language.», дані опікуна — «Enter the guardian's name and a valid email.».
 
 #### Scenario: AC-CARD-12 Кілька помилок у формі дитини
 

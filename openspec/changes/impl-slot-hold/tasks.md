@@ -69,14 +69,9 @@
   ім'я для активних утримань на власних слотах терапевта; `time.ts`
   (`practiceWeek`, пн–нд за LA), `visibility.ts` (`therapistWeek`; клієнт — лише ім'я, без email); сторінка `/schedule`
   з перемиканням тижнів; тести, зокрема тест бази на PGlite для політики терапевта; ручна перевірка під therapist1 і
-  therapist2.
-  Done when: AC-HOLD-09, AC-HOLD-21, AC-HOLD-30, AC-HOLD-31, AC-HOLD-40.
-
-## 6. Сид доступності
-
-- [ ] 6.1 Міграція: `generate_demo_slots` за припущенням PM — пн–пт, перший слот о 09:00, останній о 16:00, на 8 тижнів
+  therapist2. Міграція: `generate_demo_slots` за припущенням PM — пн–пт, перший слот о 09:00, останній о 16:00, на 8 тижнів
   уперед від сьогодні; після `db-deploy` — `npm run users:demo` на проді.
-  Done when: сид збігається з «Припущеннями» PM; окремого AC немає.
+  Done when: AC-HOLD-09, AC-HOLD-21, AC-HOLD-30, AC-HOLD-31, AC-HOLD-40.
 
 ## Workflow follow-up
 
