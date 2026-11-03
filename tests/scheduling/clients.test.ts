@@ -52,6 +52,12 @@ describe("картка з анкети", () => {
     expect(text(violation("23514", "clients_guardian_check"))).toBe("Enter the guardian's name and a valid email.");
   });
 
+  it("cardFromForm: полів опікуна немає в запиті — порожньо, а не вигадано", () => {
+    expect(
+      cardFromForm(form({ kind: "child", full_name: "Client Eight", birth_date: "2016-01-10", language: "English" })),
+    ).toMatchObject({ guardian_name: "", guardian_email: "" });
+  });
+
   it("AC-CARD-06: створювати картки можуть лише admin і scheduler; терапевт бачить «Only schedulers and admins can create client cards.»", () => {
     expect(canCreateCards("admin")).toBe(true);
     expect(canCreateCards("scheduler")).toBe(true);
@@ -144,6 +150,20 @@ describe("перевірка форми картки", () => {
     }
   });
 
+  it("AC-CARD-12: поля немає в запиті — те саме повідомлення, що й за порожнього", () => {
+    expect(texts({ kind: "child", birth_date: "2015-03-02", language: "Spanish", guardian_email: "guardian7@example.test" })).toEqual({
+      full_name: "Enter the client's name.",
+      guardian_name: "Enter the guardian's name and a valid email.",
+    });
+    expect(texts({ kind: "adult", email: "client6@example.test", birth_date: "1990-05-14", language: "English" })).toEqual({
+      full_name: "Enter the client's name and a valid email.",
+    });
+  });
+
+  it("відмова clients_intake_check — текст про дату; справжню помилку бази перевіряє tests/db/client-cards.test.ts", () => {
+    expect(text(violation("23514", "clients_intake_check"))).toBe("Enter a date of birth that is not in the future.");
+  });
+
   it("AC-CARD-12: тип не вибрано — «Select a client type.», поля контакту ще невідомі", () => {
     expect(texts({ full_name: "Client Six", birth_date: "1990-05-14", language: "English" })).toEqual({
       kind: "Select a client type.",
@@ -162,6 +182,12 @@ describe("перевірка форми картки", () => {
       expect(texts({ ...ADULT, email })).toEqual({ email: "Enter the client's name and a valid email." });
     }
     expect(texts({ ...ADULT, email: " Client3@Example.TEST " })).toEqual({});
+  });
+
+  it("AC-HOLD-39: зайве після коректної адреси — другий «@» чи пробіл усередині", () => {
+    for (const email of ["client3@example.test@example.test", "client3@example.test extra"]) {
+      expect(texts({ ...ADULT, email })).toEqual({ email: "Enter the client's name and a valid email." });
+    }
   });
 
   it("AC-CARD-03: ім'я або email опікуна — повідомлення під кожним хибним полем", () => {
@@ -236,6 +262,12 @@ describe("правила картки зрізу 1 у формі анкети", 
     expect(text(violation("23514", "clients_full_name_check"))).toBe("Enter the client's name and a valid email.");
   });
 
+  it("cardFromForm: поля імені немає в запиті — порожньо, а не вигадано", () => {
+    expect(
+      cardFromForm(form({ kind: "adult", email: "client3@example.test", birth_date: "1990-05-14", language: "English" })).full_name,
+    ).toBe("");
+  });
+
   it("AC-HOLD-15: email без @ — «Enter the client's name and a valid email.»", () => {
     expect(text(violation("23514", "clients_email_check"))).toBe("Enter the client's name and a valid email.");
     expect(text(violation("23514", "clients_contact_check"))).toBe("Enter the client's name and a valid email.");
@@ -260,5 +292,15 @@ describe("правила картки зрізу 1 у формі анкети", 
   it("невідомий код у ?error= не показує нічого", () => {
     expect(messageFor("<b>hi</b>")).toBeUndefined();
     expect(messageFor(null)).toBeUndefined();
+  });
+
+  it("код у ?error= — назва властивості будь-якого об'єкта JS: не показує нічого", () => {
+    for (const code of ["toString", "constructor", "hasOwnProperty", "__proto__"]) {
+      expect(messageFor(code)).toBeUndefined();
+    }
+  });
+
+  it("у ?error= не рядок, навіть якщо він приводиться до відомого коду: не показує нічого", () => {
+    expect(messageFor(["SLOT_TAKEN"])).toBeUndefined();
   });
 });

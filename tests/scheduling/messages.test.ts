@@ -34,4 +34,35 @@ describe("messages: код помилки бази → текст PM", () => {
     expect(errorCode(constraint("23505", "slots_therapist_starts_key"))).toBe("UNKNOWN");
     expect(errorCode(constraint("23514", "slots_duration_check"))).toBe("UNKNOWN");
   });
+
+  // Тексти 42501, 42P01 і 42704 нижче — справжні відмови Postgres, зняті на PGlite зі всіма міграціями; «check violation» і
+  // «duplicate key» — навмисно без назви обмеження.
+  const CARD_FORBIDDEN_TEXT = "Only schedulers and admins can create client cards.";
+
+  it("відмова в запису до іншої таблиці — не текст про картки клієнтів", () => {
+    expect(messageFor(errorCode({ code: "42501", message: "permission denied for table slots" }))).not.toBe(CARD_FORBIDDEN_TEXT);
+  });
+
+  it("помилка іншого коду зі згадкою таблиці clients — не текст про картки клієнтів", () => {
+    expect(messageFor(errorCode({ code: "42P01", message: 'missing FROM-clause entry for table "clients"' }))).not.toBe(
+      CARD_FORBIDDEN_TEXT,
+    );
+  });
+
+  it("помилка, для якої немає правила PM, — UNKNOWN", () => {
+    expect(errorCode({ code: "42501", message: "permission denied for table slots" })).toBe("UNKNOWN");
+    expect(errorCode({ code: "42P01", message: 'missing FROM-clause entry for table "clients"' })).toBe("UNKNOWN");
+  });
+
+  it("назва обмеження в помилці, що не є його порушенням, — UNKNOWN, а не «A client with this email already exists.»", () => {
+    expect(errorCode({ code: "42704", message: 'constraint "clients_email_key" of relation "clients" does not exist' })).toBe(
+      "UNKNOWN",
+    );
+  });
+
+  it("порушення без назви обмеження в тексті чи взагалі без тексту — UNKNOWN, а не виняток", () => {
+    expect(errorCode({ code: "23514", message: "check violation" })).toBe("UNKNOWN");
+    expect(errorCode({ code: "23505", message: "duplicate key" })).toBe("UNKNOWN");
+    for (const code of ["P0001", "42501", "23505", "23514", "XX000"]) expect(errorCode({ code })).toBe("UNKNOWN");
+  });
 });

@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createClientCard } from "@/app/clients/actions";
+import { messageFor } from "@/lib/scheduling/messages";
 
 // Дія createClientCard без бази: роль і відповідь бази підставляємо через клієнт Supabase, перевіряємо, що дія робить до й після запису.
 // Відмови самої бази (RLS, check) — у tests/db/client-cards.test.ts.
@@ -18,7 +19,9 @@ vi.mock("@/lib/supabase/server", () => ({
     from: (table: string) =>
       table === "profiles"
         ? { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role: h.role }, error: null }) }) }) }
-        : { insert: h.insert },
+        : table === "clients"
+          ? { insert: h.insert }
+          : {},
   }),
 }));
 
@@ -44,6 +47,10 @@ beforeEach(() => {
   h.revalidatePath.mockReset();
   h.data = null;
   h.insert.mockReturnValue({ select: () => ({ single: async () => ({ data: h.data, error: h.dbError }) }) });
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe("createClientCard", () => {
@@ -83,6 +90,37 @@ describe("createClientCard", () => {
       error: null,
       errors: { guardian_name: "GUARDIAN_INVALID", guardian_email: "GUARDIAN_INVALID" },
       values: FIELDS,
+    });
+    expect(h.insert).not.toHaveBeenCalled();
+  });
+
+  it("AC-CARD-12: три повідомлення біля полів, картку не створено, введене лишається у формі, а невибране — порожнє", async () => {
+    h.role = "scheduler";
+    vi.setSystemTime("2026-11-03T20:00:00Z"); // 12:00 у America/Los_Angeles
+    // Браузер не надсилає вибраний вимкнений варіант-підказку мови, тому ключа language у FormData немає.
+    const f = new FormData();
+    for (const [name, value] of Object.entries({
+      kind: "child",
+      full_name: "",
+      birth_date: "2026-11-04",
+      guardian_name: "Guardian Eight",
+      guardian_email: "guardian8@example.test",
+    }))
+      f.set(name, value);
+    const state = await createClientCard(INITIAL, f);
+    expect(Object.fromEntries(Object.entries(state.errors).map(([field, code]) => [field, messageFor(code)]))).toEqual({
+      full_name: "Enter the client's name.",
+      birth_date: "Enter a date of birth that is not in the future.",
+      language: "Select a session language.",
+    });
+    expect(state.values).toEqual({
+      kind: "child",
+      full_name: "",
+      email: "",
+      birth_date: "2026-11-04",
+      language: "",
+      guardian_name: "Guardian Eight",
+      guardian_email: "guardian8@example.test",
     });
     expect(h.insert).not.toHaveBeenCalled();
   });
