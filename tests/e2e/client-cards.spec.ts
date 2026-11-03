@@ -10,6 +10,7 @@ const MISSING_CARD = "/clients/00000000-0000-4000-8000-000000000000";
 async function clientCardLinks(playwright: PlaywrightWorkerArgs["playwright"], baseURL: string | undefined): Promise<string[]> {
   const scheduler = await playwright.request.newContext({ baseURL, storageState: SCHEDULER });
   const response = await scheduler.get("/clients");
+  expect(response.ok(), "список клієнтів недоступний: кількість карток не доведено").toBe(true);
   expect(new URL(response.url()).pathname, "сесія планувальника недійсна: сторінка входу замість списку").toBe("/clients");
   const links = (await response.text()).match(/\/clients\/[0-9a-f-]{36}/g);
   await scheduler.dispose();
@@ -20,6 +21,7 @@ async function expectNoClientData(page: Page) {
   const main = page.getByRole("main");
   await expect(main.getByText("Intake")).toHaveCount(0);
   await expect(main.locator("dl")).toHaveCount(0);
+  await expect(main.locator('a[href^="/clients/"]')).toHaveCount(0);
   expect(await page.locator("body").innerText()).not.toContain("@example.test");
 }
 
@@ -49,7 +51,7 @@ test.describe("терапевт", () => {
         {
           clause:
             "форму не показано, therapist1 одразу бачить повідомлення «Only schedulers and admins can create client cards.», і кількість карток клієнтів не змінилася",
-          visible: ["повідомлення «Only schedulers and admins can create client cards.»"],
+          visible: ["у шапці — Therapist One", "повідомлення «Only schedulers and admins can create client cards.»"],
           hidden: [
             "форму не показано: у розмітці немає форми, полів і кнопки «Create client»",
             "кількість карток клієнтів та сама до й після: список планувальника",
@@ -123,7 +125,10 @@ test.describe("планувальник", () => {
           ],
         },
         async () => {
-          await expect(page.getByRole("main").getByRole("alert")).toHaveText([nameError, birthDateError, languageError]);
+          // Єдине твердження, що чекає на відповідь сервера: при retries: 0 повільний прод не має давати хибний FAIL.
+          await expect(page.getByRole("main").getByRole("alert")).toHaveText([nameError, birthDateError, languageError], {
+            timeout: 15_000,
+          });
           await expect(fullName).toHaveAccessibleDescription(nameError);
           await expect(birthDate).toHaveAccessibleDescription(birthDateError);
           await expect(language).toHaveAccessibleDescription(languageError);
