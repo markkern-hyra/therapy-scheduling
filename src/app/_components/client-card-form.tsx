@@ -40,10 +40,10 @@ export function ClientCardForm({ today }: { today: string }) {
         <fieldset className="flex flex-col gap-1" {...invalid("kind")}>
           <legend className="mb-1 text-sm font-medium">Client type</legend>
           <div className="grid grid-cols-2 gap-2">
-            <Choice id="kind-adult" name="kind" value="adult" defaultChecked={v.kind === "adult"}>
+            <Choice id="kind-adult" name="kind" value="adult" defaultChecked={v.kind === "adult"} required>
               Adult
             </Choice>
-            <Choice id="kind-child" name="kind" value="child" defaultChecked={v.kind === "child"}>
+            <Choice id="kind-child" name="kind" value="child" defaultChecked={v.kind === "child"} required>
               Child
             </Choice>
           </div>
