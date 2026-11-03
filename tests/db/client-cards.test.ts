@@ -110,7 +110,7 @@ describe("картка з анкети", () => {
     expect(await count()).toBe(before);
   });
 
-  it("нова картка без дати народження чи мови, або з датою народження в майбутньому — не створено", async () => {
+  it("AC-CARD-12: нова картка без дати народження чи мови, або з датою народження в майбутньому — не створено", async () => {
     const before = await count();
     const tomorrow = new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10);
     for (const c of [
