@@ -124,6 +124,45 @@ describe("свої клієнти терапевта", () => {
     expect(await cardOf("client6")).toEqual(before);
   });
 
+  it("AC-CARD-14: слот почався — client10 у therapist1 більше не свій, а client11 із минулим «Confirmed» лишається", async () => {
+    await card(
+      "client10",
+      `insert into public.clients (kind, full_name, email, birth_date, language)
+       values ('adult', 'Client Ten', 'client10@example.test', '1991-02-03', 'English') returning id`,
+    );
+    await card(
+      "client11",
+      `insert into public.clients (kind, full_name, email, birth_date, language)
+       values ('adult', 'Client Eleven', 'client11@example.test', '1992-03-04', 'English') returning id`,
+    );
+    await holdFor(therapist1, ids.client10, inDays(8));
+    const past = await holdFor(therapist1, ids.client11, inDays(8, 1));
+    await t.asService("update public.holds set confirmed_at = now() where id = $1", [past]);
+
+    const shift = (client: string, startsAt: string) =>
+      t.asService(
+        `update public.slots set starts_at = ${startsAt}, ends_at = ${startsAt} + interval '60 minutes'
+         where id in (select slot_id from public.holds where client_id = $1)`,
+        [client],
+      );
+    // Незадовго до початку слоту утримання «Held» ще робить клієнта своїм.
+    await shift(ids.client10, "date_trunc('hour', now()) + interval '1 hour'");
+    expect((await visibleTo(therapist1)).map((c) => c.full_name)).toContain("Client Ten");
+
+    // Слот почався, а 24 години утримання ще не минули: «Held», але клієнт уже не свій.
+    await shift(ids.client10, "date_trunc('hour', now())");
+    await shift(ids.client11, "date_trunc('hour', now()) - interval '2 days'");
+    const names = (await visibleTo(therapist1)).map((c) => c.full_name);
+    expect(names).not.toContain("Client Ten");
+    expect(names).toContain("Client Eleven");
+
+    // За прямим посиланням — 0 рядків, тобто відмова без даних.
+    const byLink = await t.asUser(therapist1, "select id from public.clients where id = $1", [ids.client10]);
+    expect(byLink).toEqual([]);
+
+    await t.asService("delete from public.holds where client_id = any($1)", [[ids.client10, ids.client11]]);
+  });
+
   it("AC-CARD-09: therapist2 без «Held» і «Confirmed» не бачить жодної картки", async () => {
     await t.asService("delete from public.holds where client_id = $1", [ids.client9]);
     expect(await visibleTo(therapist2)).toEqual([]);
@@ -133,6 +172,9 @@ describe("свої клієнти терапевта", () => {
     const before = await cardOf("client7");
     await t.asService("update public.profiles set role = null where id = $1", [therapist1]);
     expect(await visibleTo(therapist1)).toEqual([]);
+    // Без ролі не видно й власних слотів та утримань: в утриманнях є клієнти.
+    expect(await t.asUser(therapist1, "select id from public.slots")).toEqual([]);
+    expect(await t.asUser(therapist1, "select id from public.holds")).toEqual([]);
     await t.asService("update public.profiles set role = 'therapist' where id = $1", [therapist1]);
     expect((await visibleTo(therapist1)).map((c) => c.full_name)).toEqual(["Client Seven"]);
     expect(await cardOf("client7")).toEqual(before);
