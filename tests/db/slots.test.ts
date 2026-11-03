@@ -109,6 +109,14 @@ describe("generate_demo_slots", () => {
     const last = new Date(today);
     last.setUTCDate(today.getUTCDate() + 55);
     while (last.getUTCDay() === 0 || last.getUTCDay() === 6) last.setUTCDate(last.getUTCDate() - 1);
+    // Межі й години вище не помітять пропущений день посередині: у кожного терапевта — 8 слотів на кожен робочий день вікна.
+    let weekdays = 0;
+    for (const day = new Date(monday); day <= last; day.setUTCDate(day.getUTCDate() + 1)) {
+      if (day.getUTCDay() >= 1 && day.getUTCDay() <= 5) weekdays++;
+    }
+    for (const therapist of [therapist1, therapist2]) {
+      expect(rows.filter((r) => r.therapist_id === therapist)).toHaveLength(weekdays * 8);
+    }
     const [range] = await t.asService<{ first: string; last: string }>(
       `select to_char(min(starts_at at time zone 'America/Los_Angeles'), 'YYYY-MM-DD HH24:MI') as first,
               to_char(max(starts_at at time zone 'America/Los_Angeles'), 'YYYY-MM-DD HH24:MI') as last
