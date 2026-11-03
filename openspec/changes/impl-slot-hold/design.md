@@ -186,7 +186,12 @@ already started and cannot be confirmed.»; `ALREADY_CONFIRMED` «This hold is a
 | `/holds` | admin, scheduler | утримання «Held» і «Expired» (без сеансів) за часом слоту: клієнт, терапевт, слот, статус, «Held until»; «Confirm» для `Held` | `confirmHold` → `update holds` | 05, 06, 12, 13, 19, 20, 22, 23, 27–29, 36–38, 42 |
 | `/schedule?week=…` | therapist | власний тиждень пн–нд зі статусами слотів і ім'ям клієнта (без email), перемикання тижнів | — | 09, 21, 30, 31, 40; ім'я — окремою функцією бази, бо після початку слоту картка вже недоступна (AC-CARD-14) |
 
-- Терапевт на `/slots` і `/holds` бачить лише «Only schedulers and admins can view this page.» (AC-HOLD-44), а прямий виклик `holdSlot` /
+- Ім'я клієнта в розкладі: `private.therapist_schedule(p_from, p_to)` — `security definer`, `set search_path = ''`, `execute` лише
+  в `authenticated`; застосунок викликає обгортку `public.therapist_schedule` (`security invoker`). Межі перевіряє сама функція:
+  роль `therapist`, власний слот (`auth.uid()`), лише активні утримання, із клієнта — лише `full_name`.
+- Терапевт на `/slots` і `/holds` бачить лише «Only schedulers and admins can view this page.» (AC-HOLD-44): сторінка викликає
+  `requireRole()` без переліку ролей і сама показує відмову (`staffPageRefusal`) — без перенаправлення на `/` і до запитів до
+  утримань чи клієнтів. Прямий виклик `holdSlot` /
   `confirmHold` чи Data API отримує від бази `HOLD_FORBIDDEN` / `CONFIRM_FORBIDDEN`, і `runAction` показує текст PM
   (AC-HOLD-08, 14).
 
