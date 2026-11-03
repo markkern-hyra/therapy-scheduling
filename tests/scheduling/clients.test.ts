@@ -52,7 +52,7 @@ describe("картка з анкети", () => {
     expect(text(violation("23514", "clients_guardian_check"))).toBe("Enter the guardian's name and a valid email.");
   });
 
-  it("AC-CARD-03: полів опікуна немає в запиті — ім'я й email опікуна порожні, а не вигадані", () => {
+  it("cardFromForm: полів опікуна немає в запиті — порожньо, а не вигадано", () => {
     expect(
       cardFromForm(form({ kind: "child", full_name: "Client Eight", birth_date: "2016-01-10", language: "English" })),
     ).toMatchObject({ guardian_name: "", guardian_email: "" });
@@ -160,7 +160,7 @@ describe("перевірка форми картки", () => {
     });
   });
 
-  it("AC-CARD-12: база відхилила дату народження, пізнішу за сьогодні, — «Enter a date of birth that is not in the future.»", () => {
+  it("відмова clients_intake_check — текст про дату; справжню помилку бази перевіряє tests/db/client-cards.test.ts", () => {
     expect(text(violation("23514", "clients_intake_check"))).toBe("Enter a date of birth that is not in the future.");
   });
 
@@ -262,7 +262,7 @@ describe("правила картки зрізу 1 у формі анкети", 
     expect(text(violation("23514", "clients_full_name_check"))).toBe("Enter the client's name and a valid email.");
   });
 
-  it("AC-HOLD-11: поля імені немає в запиті — ім'я порожнє, а не вигадане", () => {
+  it("cardFromForm: поля імені немає в запиті — порожньо, а не вигадано", () => {
     expect(
       cardFromForm(form({ kind: "adult", email: "client3@example.test", birth_date: "1990-05-14", language: "English" })).full_name,
     ).toBe("");

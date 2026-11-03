@@ -35,14 +35,15 @@ describe("messages: код помилки бази → текст PM", () => {
     expect(errorCode(constraint("23514", "slots_duration_check"))).toBe("UNKNOWN");
   });
 
-  // Тексти нижче — справжні відмови Postgres, зняті запитами на PGlite зі всіма міграціями (tests/db/supabase-pglite.ts).
+  // Тексти 42501, 42P01 і 42704 нижче — справжні відмови Postgres, зняті на PGlite зі всіма міграціями; «check violation» і
+  // «duplicate key» — навмисно без назви обмеження.
   const CARD_FORBIDDEN_TEXT = "Only schedulers and admins can create client cards.";
 
-  it("AC-CARD-06: відмова в запису до іншої таблиці — не текст про картки клієнтів", () => {
+  it("відмова в запису до іншої таблиці — не текст про картки клієнтів", () => {
     expect(messageFor(errorCode({ code: "42501", message: "permission denied for table slots" }))).not.toBe(CARD_FORBIDDEN_TEXT);
   });
 
-  it("AC-CARD-06: помилка іншого коду зі згадкою таблиці clients — не текст про картки клієнтів", () => {
+  it("помилка іншого коду зі згадкою таблиці clients — не текст про картки клієнтів", () => {
     expect(messageFor(errorCode({ code: "42P01", message: 'missing FROM-clause entry for table "clients"' }))).not.toBe(
       CARD_FORBIDDEN_TEXT,
     );

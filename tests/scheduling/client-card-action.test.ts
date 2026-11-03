@@ -19,7 +19,9 @@ vi.mock("@/lib/supabase/server", () => ({
     from: (table: string) =>
       table === "profiles"
         ? { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { role: h.role }, error: null }) }) }) }
-        : { insert: h.insert },
+        : table === "clients"
+          ? { insert: h.insert }
+          : {},
   }),
 }));
 

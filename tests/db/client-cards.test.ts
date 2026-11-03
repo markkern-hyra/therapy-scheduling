@@ -1,6 +1,7 @@
 // Картка клієнта з анкети й доступ без ролі (зріз 2, задача 1.1 impl-client-cards). Відмови — на рівні бази (RLS,
 // GRANT, check), і кожен тест перевіряє і відмову, і те, що картки не змінились.
 import { beforeAll, describe, expect, it } from "vitest";
+import { errorCode } from "@/lib/scheduling/messages";
 import { createTestDb, type TestDb } from "./supabase-pglite";
 
 let t: TestDb;
@@ -112,7 +113,10 @@ describe("картка з анкети", () => {
 
   it("AC-CARD-12: нова картка без дати народження чи мови, або з датою народження в майбутньому — не створено", async () => {
     const before = await count();
-    const tomorrow = new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10);
+    // Межа з AC: наступний день за часом практики, а не «колись у майбутньому».
+    const [{ tomorrow }] = await t.asService<{ tomorrow: string }>(
+      "select ((now() at time zone 'America/Los_Angeles')::date + 1)::text as tomorrow",
+    );
     for (const c of [
       { ...adult("Client X", "x1@example.test"), birth_date: null },
       { ...adult("Client X", "x2@example.test"), language: null },
@@ -121,7 +125,19 @@ describe("картка з анкети", () => {
     ]) {
       await expect(insertAs(scheduler1, c)).rejects.toThrow(/clients_intake_check/);
     }
+    await expect(insertAs(scheduler1, child("", "Guardian X", "guardianx@example.test"))).rejects.toThrow(/clients_full_name_check/);
     expect(await count()).toBe(before);
+  });
+
+  it("errorCode: справжня відмова clients_intake_check через дату — код тексту про дату", async () => {
+    const [{ tomorrow }] = await t.asService<{ tomorrow: string }>(
+      "select ((now() at time zone 'America/Los_Angeles')::date + 1)::text as tomorrow",
+    );
+    const code = await insertAs(scheduler1, { ...adult("Client X", "x5@example.test"), birth_date: tomorrow }).then(
+      () => "inserted",
+      (e: { code: string; message: string }) => errorCode(e),
+    );
+    expect(code).toBe("BIRTH_DATE_INVALID");
   });
 
   it("дата народження «сьогодні» за часом практики приймається — межа «не пізніше за сьогодні»", async () => {

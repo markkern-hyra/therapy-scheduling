@@ -9,7 +9,8 @@
 //   що робить його еквівалентним (рядок міграції, інший тест). Без reason скрипт мутант не приймає.
 // Новий AC з відмовою, правило якого живе в SQL (політика, grant, функція, тригер), — новий мутант тут.
 //
-// Мутанти на SQL-правила за трьома AC WS8: AC-CARD-06, AC-CARD-12, AC-CARD-16 (docs/qa/proof-pack.md).
+// Мутанти на SQL-правила за AC WS8 (docs/qa/proof-pack.md). У AC-CARD-16 SQL-мутанта немає: рядка неіснуючої картки база
+// не поверне за будь-якої політики. C6 і C7 — сусідній AC-CARD-05: чужа картка, для терапевта той самий текст.
 const ROLES_CLIENTS = "supabase/migrations/20261021155328_roles_and_clients.sql";
 const CLIENT_CARDS = "supabase/migrations/20261026104702_client_cards.sql";
 const OWN_CLIENTS = "supabase/migrations/20261026110054_own_clients.sql";
@@ -37,6 +38,12 @@ export const mutants = [
     replace: "",
   },
   {
+    id: "C8", kind: "sql", ac: "AC-CARD-12", file: CLIENT_CARDS, tests: [CARDS_DB],
+    what: "clients_intake_check: межа зсунута, завтрашня дата народження дозволена",
+    find: "  and birth_date <= (now() at time zone 'America/Los_Angeles')::date\n",
+    replace: "  and birth_date <= (now() at time zone 'America/Los_Angeles')::date + 1\n",
+  },
+  {
     id: "C4", kind: "sql", ac: "AC-CARD-12", file: CLIENT_CARDS, tests: [CARDS_DB],
     what: "clients_intake_check: мова сеансів може бути будь-якою",
     find: "  and language in ('English', 'Spanish')\n",
@@ -49,13 +56,13 @@ export const mutants = [
     replace: "check (true)",
   },
   {
-    id: "C6", kind: "sql", ac: "AC-CARD-05, AC-CARD-16", file: OWN_CLIENTS, tests: [OWN_DB],
+    id: "C6", kind: "sql", ac: "AC-CARD-05", file: OWN_CLIENTS, tests: [OWN_DB],
     what: "clients_select_own_for_therapist: терапевт бачить усі картки, а не лише своїх клієнтів",
     find: "    and private.is_own_client(id)\n",
     replace: "",
   },
   {
-    id: "C7", kind: "sql", ac: "AC-CARD-05, AC-CARD-16", file: OWN_CLIENT_RULE, tests: [OWN_DB],
+    id: "C7", kind: "sql", ac: "AC-CARD-05", file: OWN_CLIENT_RULE, tests: [OWN_DB],
     what: "is_own_client: клієнт із чужим утриманням теж вважається своїм",
     find: "where h.client_id = p_client\n      and s.therapist_id = (select auth.uid())\n",
     replace: "where h.client_id = p_client\n",
