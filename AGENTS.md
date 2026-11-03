@@ -44,7 +44,7 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
 ## Структура
 
 - `src/app/` — сторінки й server actions; `src/proxy.ts` — оновлення сесії (НЕ `middleware.ts`)
-- `src/lib/supabase/{client,server,proxy}.ts` — клієнти Supabase; `database.types.ts` — генерується
+- `src/lib/supabase/{server,proxy}.ts` — клієнти Supabase; `database.types.ts` — генерується
 - UI — за дизайн-системою `DESIGN.md` (ADR 0005, розділ «Дизайн-система» нижче): токени — `src/app/globals.css`;
   компоненти — `src/components/ui` (`Button`, `Input`, `Label`, `Alert`, `Card`, `List`, `Badge` …); компоненти застосунку —
   `src/app/_components/`
