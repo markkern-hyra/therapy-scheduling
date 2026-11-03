@@ -1,9 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { canCreateCards, cardFields, cardFromForm, contactEmail, emptyClientsText } from "@/lib/scheduling/clients";
+import {
+  canCreateCards,
+  cardFields,
+  cardFromForm,
+  contactEmail,
+  emptyClientsText,
+  matchesClient,
+  missingCardText,
+  validateCard,
+} from "@/lib/scheduling/clients";
 import { errorCode, messageFor } from "@/lib/scheduling/messages";
 
-// Правила картки (обов'язкові поля, формат і унікальність email, дані опікуна) перевіряє база — тут лише нормалізація
-// форми, хто може створювати картку, і переклад помилки бази в текст PM (помилки — такі, як їх повертає PostgREST).
+// Нормалізація й перевірка форми, хто може створювати картку, і переклад помилки бази в текст PM (помилки — такі, як їх
+// повертає PostgREST). Відмови самої бази — у tests/db.
 const violation = (code: string, constraint: string) => ({
   code,
   message: `new row for relation "clients" violates check constraint "${constraint}"`,
@@ -79,10 +88,91 @@ describe("картка з анкети", () => {
     ).toEqual({ type: "Adult", birthDate: "Not provided", language: "Not provided", contact: "client1@example.test" });
   });
 
-  it("дата народження чи мова не задані або дата в майбутньому — тимчасовий текст до відповіді PM (#21)", () => {
-    expect(text(violation("23514", "clients_intake_check"))).toBe(
-      "Enter a date of birth that is not in the future and choose a session language.",
+  it("AC-CARD-13: база відхилила дублікат дитини — «A client with these details already exists.»", () => {
+    expect(text({ code: "23505", message: 'duplicate key value violates unique constraint "clients_child_dedup_key"' })).toBe(
+      "A client with these details already exists.",
     );
+  });
+});
+
+describe("відмови підтвердження з бази", () => {
+  const raised = (code: string) => text({ code: "P0001", message: code });
+  it("AC-HOLD-13: HOLD_EXPIRED — «This hold has expired. Hold the slot again.»", () => {
+    expect(raised("HOLD_EXPIRED")).toBe("This hold has expired. Hold the slot again.");
+  });
+  it("AC-HOLD-14: CONFIRM_FORBIDDEN — «Only schedulers and admins can confirm holds.»", () => {
+    expect(raised("CONFIRM_FORBIDDEN")).toBe("Only schedulers and admins can confirm holds.");
+  });
+  it("AC-HOLD-22: CONFIRM_STARTED — «This slot has already started and cannot be confirmed.»", () => {
+    expect(raised("CONFIRM_STARTED")).toBe("This slot has already started and cannot be confirmed.");
+  });
+  it("AC-HOLD-36: ALREADY_CONFIRMED — «This hold is already confirmed.»", () => {
+    expect(raised("ALREADY_CONFIRMED")).toBe("This hold is already confirmed.");
+  });
+});
+
+describe("перевірка форми картки", () => {
+  const TODAY = "2026-11-03";
+  const texts = (values: Record<string, string>) =>
+    Object.fromEntries(Object.entries(validateCard(values, TODAY)).map(([field, code]) => [field, messageFor(code)]));
+
+  it("AC-CARD-12: порожнє ім'я, дата 2026-11-04, без мови — три помилки одразу, кожна біля свого поля", () => {
+    expect(
+      texts({
+        kind: "child",
+        full_name: "",
+        birth_date: "2026-11-04",
+        language: "",
+        guardian_name: "Guardian Eight",
+        guardian_email: "guardian8@example.test",
+      }),
+    ).toEqual({
+      full_name: "Enter the client's name.",
+      birth_date: "Enter a date of birth that is not in the future.",
+      language: "Select a session language.",
+    });
+  });
+
+  it("AC-CARD-12: дата народження, що дорівнює сьогоднішній, коректна, а порожня — ні", () => {
+    expect(texts({ ...ADULT, birth_date: TODAY })).toEqual({});
+    expect(texts({ ...ADULT, birth_date: "" })).toEqual({ birth_date: "Enter a date of birth that is not in the future." });
+  });
+
+  it("AC-CARD-12: дата не у форматі РРРР-ММ-ДД чи неможлива — та сама помилка біля поля", () => {
+    for (const birth_date of ["12026-11-04", "1990-13-45", "2026-02-30", "not-a-date"]) {
+      expect(texts({ ...ADULT, birth_date })).toEqual({ birth_date: "Enter a date of birth that is not in the future." });
+    }
+  });
+
+  it("AC-CARD-12: тип не вибрано — «Select a client type.», поля контакту ще невідомі", () => {
+    expect(texts({ full_name: "Client Six", birth_date: "1990-05-14", language: "English" })).toEqual({
+      kind: "Select a client type.",
+    });
+  });
+
+  it("AC-CARD-12: ім'я або email дорослого — повідомлення під кожним хибним полем", () => {
+    const message = "Enter the client's name and a valid email.";
+    expect(texts({ ...ADULT, full_name: "   " })).toEqual({ full_name: message });
+    expect(texts({ ...ADULT, email: "client3example.test" })).toEqual({ email: message });
+    expect(texts({ ...ADULT, full_name: "", email: "" })).toEqual({ full_name: message, email: message });
+  });
+
+  it("AC-HOLD-39: некоректний email дорослого — без крапки, два «@», порожня частина, пробіл", () => {
+    for (const email of ["client3@example", "client3@@example.test", "@example.test", "client 3@example.test"]) {
+      expect(texts({ ...ADULT, email })).toEqual({ email: "Enter the client's name and a valid email." });
+    }
+    expect(texts({ ...ADULT, email: " Client3@Example.TEST " })).toEqual({});
+  });
+
+  it("AC-CARD-03: ім'я або email опікуна — повідомлення під кожним хибним полем", () => {
+    const message = "Enter the guardian's name and a valid email.";
+    expect(texts({ ...CHILD, guardian_name: "" })).toEqual({ guardian_name: message });
+    expect(texts({ ...CHILD, guardian_email: "guardian7" })).toEqual({ guardian_email: message });
+    expect(texts({ ...CHILD, guardian_name: "", guardian_email: "" })).toEqual({ guardian_name: message, guardian_email: message });
+  });
+
+  it("AC-CARD-02: у дитини власний email не перевіряємо", () => {
+    expect(texts({ ...CHILD, email: "not-an-email" })).toEqual({});
   });
 });
 
@@ -93,9 +183,43 @@ describe("список клієнтів", () => {
     );
   });
 
-  it("у планувальника й адміністратора без карток — «No clients yet.» (тимчасово, до відповіді на #27)", () => {
-    expect(emptyClientsText("scheduler")).toBe("No clients yet.");
-    expect(emptyClientsText("admin")).toBe("No clients yet.");
+  it("AC-CARD-15: у планувальника й адміністратора без карток — «No clients yet. Create a client card from an intake form.»", () => {
+    expect(emptyClientsText("scheduler")).toBe("No clients yet. Create a client card from an intake form.");
+    expect(emptyClientsText("admin")).toBe("No clients yet. Create a client card from an intake form.");
+  });
+});
+
+describe("картка за посиланням, якої немає", () => {
+  it("AC-CARD-16: планувальник і адміністратор — «This client card doesn't exist.», терапевт — відмова як для чужої картки", () => {
+    expect(missingCardText("scheduler")).toBe("This client card doesn't exist.");
+    expect(missingCardText("admin")).toBe("This client card doesn't exist.");
+    expect(missingCardText("therapist")).toBe("You don't have access to this client.");
+  });
+});
+
+describe("пошук клієнта під час утримання", () => {
+  const seven = { full_name: "Client Seven", kind: "child", email: null, guardian_email: "guardian7@example.test" };
+  const six = { full_name: "Client Six", kind: "adult", email: "client6@example.test", guardian_email: null };
+
+  it("AC-CARD-02: дитину знаходять за email опікуна guardian7@example.test і за її ім'ям", () => {
+    expect(matchesClient(seven, "guardian7@example.test")).toBe(true);
+    expect(matchesClient(seven, " Client Seven ")).toBe(true);
+    expect(matchesClient(six, "guardian7@example.test")).toBe(false);
+  });
+
+  it("AC-CARD-01: дорослого знаходять за ім'ям або email без урахування регістру", () => {
+    expect(matchesClient(six, "CLIENT6@example.test")).toBe(true);
+    expect(matchesClient(six, "six")).toBe(true);
+    expect(matchesClient(seven, "client6")).toBe(false);
+  });
+
+  it("AC-CARD-01: запит не збігається через межу імені й email", () => {
+    expect(matchesClient(six, "six client6")).toBe(false);
+  });
+
+  it("AC-CARD-02: порожній запит показує всіх клієнтів", () => {
+    expect(matchesClient(seven, "")).toBe(true);
+    expect(matchesClient(six, "   ")).toBe(true);
   });
 });
 

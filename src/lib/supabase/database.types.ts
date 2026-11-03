@@ -106,6 +106,9 @@ isOneToOne: false
             "generate_demo_slots":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            }
+            "therapist_schedule":
+{ Args: { "p_from": string,"p_to": string }; Returns: { "client_name": string | null,"confirmed_at": string | null,"ends_at": string,"expires_at": string | null,"slot_id": string,"starts_at": string }[]
+                           }
           }
           Enums: {
             [_ in never]: never

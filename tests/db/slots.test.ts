@@ -83,30 +83,40 @@ describe("slots: хто бачить і хто пише", () => {
 });
 
 describe("generate_demo_slots", () => {
-  it("створює терапевтам слоти пн–пт 09:00–16:00 за LA на поточний і 3 наступні тижні, повторний виклик не дублює", async () => {
+  it("створює терапевтам слоти пн–пт, 09:00…16:00 за LA на 8 тижнів уперед, повторний виклик не дублює", async () => {
     await t.asService("delete from public.slots");
     await t.asService("select public.generate_demo_slots()");
+    const count = async () => (await t.asService<{ n: number }>("select count(*)::int as n from public.slots"))[0].n;
+    const first = await count();
     await t.asService("select public.generate_demo_slots()");
+    expect(await count()).toBe(first);
 
     const rows = await t.asService<{ therapist_id: string; local: string; dow: number }>(
       `select therapist_id, to_char(starts_at at time zone 'America/Los_Angeles', 'HH24:MI') as local,
               extract(isodow from starts_at at time zone 'America/Los_Angeles')::int as dow
          from public.slots`,
     );
-    // 2 терапевти × 4 тижні × 5 днів × 7 слотів (09:00…15:00).
-    expect(rows).toHaveLength(2 * 4 * 5 * 7);
     expect(new Set(rows.map((r) => r.therapist_id))).toEqual(new Set([therapist1, therapist2]));
     expect(new Set(rows.map((r) => r.local))).toEqual(
-      new Set(["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00"]),
+      new Set(["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"]),
     );
     expect(rows.every((r) => r.dow >= 1 && r.dow <= 5)).toBe(true);
 
-    // Вікно — від понеділка поточного тижня за LA до п'ятниці третього наступного тижня.
+    // Вікно — від понеділка поточного тижня за LA до останнього робочого дня в межах 8 тижнів від сьогодні.
     const today = new Date(`${practiceToday(new Date())}T00:00:00Z`);
     const monday = new Date(today);
     monday.setUTCDate(today.getUTCDate() - ((today.getUTCDay() + 6) % 7));
-    const lastFriday = new Date(monday);
-    lastFriday.setUTCDate(monday.getUTCDate() + 25);
+    const last = new Date(today);
+    last.setUTCDate(today.getUTCDate() + 55);
+    while (last.getUTCDay() === 0 || last.getUTCDay() === 6) last.setUTCDate(last.getUTCDate() - 1);
+    // Межі й години вище не помітять пропущений день посередині: у кожного терапевта — 8 слотів на кожен робочий день вікна.
+    let weekdays = 0;
+    for (const day = new Date(monday); day <= last; day.setUTCDate(day.getUTCDate() + 1)) {
+      if (day.getUTCDay() >= 1 && day.getUTCDay() <= 5) weekdays++;
+    }
+    for (const therapist of [therapist1, therapist2]) {
+      expect(rows.filter((r) => r.therapist_id === therapist)).toHaveLength(weekdays * 8);
+    }
     const [range] = await t.asService<{ first: string; last: string }>(
       `select to_char(min(starts_at at time zone 'America/Los_Angeles'), 'YYYY-MM-DD HH24:MI') as first,
               to_char(max(starts_at at time zone 'America/Los_Angeles'), 'YYYY-MM-DD HH24:MI') as last
@@ -114,7 +124,7 @@ describe("generate_demo_slots", () => {
     );
     expect(range).toEqual({
       first: `${monday.toISOString().slice(0, 10)} 09:00`,
-      last: `${lastFriday.toISOString().slice(0, 10)} 15:00`,
+      last: `${last.toISOString().slice(0, 10)} 16:00`,
     });
   });
 

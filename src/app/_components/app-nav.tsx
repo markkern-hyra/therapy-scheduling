@@ -4,20 +4,22 @@ import { signOut } from "@/app/login/actions";
 import { Avatar } from "@/components/ui/avatar";
 import { BrandMark } from "@/components/ui/brand-mark";
 import { Button } from "@/components/ui/button";
-import { ClientsIcon, SignOutIcon, SlotsIcon } from "@/components/ui/icons";
+import { ClientsIcon, HoldsIcon, ScheduleIcon, SignOutIcon, SlotsIcon } from "@/components/ui/icons";
 import { NavLink } from "@/components/ui/nav-link";
 import { ROLE_LABELS, type Role } from "@/lib/auth/roles";
 import { PRODUCT } from "@/lib/product";
 
-// Посилання за роллю; наступні задачі додають сюди «Holds» і «Schedule».
+// Посилання за роллю.
 type Section = { href: string; label: string; icon: ReactNode };
 const SLOTS: Section = { href: "/slots", label: "Slots", icon: <SlotsIcon /> };
+const HOLDS: Section = { href: "/holds", label: "Holds", icon: <HoldsIcon /> };
+const SCHEDULE: Section = { href: "/schedule", label: "Schedule", icon: <ScheduleIcon /> };
 const CLIENTS: Section = { href: "/clients", label: "Clients", icon: <ClientsIcon /> };
 const LINKS: Record<Role, Section[]> = {
-  admin: [SLOTS, CLIENTS],
-  scheduler: [SLOTS, CLIENTS],
-  // Терапевт — лише картки своїх клієнтів (AC-CARD-04); розклад — задача 5.1 impl-slot-hold.
-  therapist: [CLIENTS],
+  admin: [SLOTS, HOLDS, CLIENTS],
+  scheduler: [SLOTS, HOLDS, CLIENTS],
+  // Терапевт — власний розклад і картки своїх клієнтів (AC-HOLD-09, AC-CARD-04).
+  therapist: [SCHEDULE, CLIENTS],
 };
 
 // Шапка: знак і назва, розділи ролі, хто увійшов і «Sign out». На вузькому екрані розділи — другим рядком.

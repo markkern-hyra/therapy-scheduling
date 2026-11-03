@@ -45,14 +45,16 @@
   вікна одночасно утримують той самий слот, therapist1 викликає `holdSlot` і прямий insert — бачить `HOLD_FORBIDDEN`.
   Done when: AC-HOLD-01, AC-HOLD-02, AC-HOLD-03, AC-HOLD-04, AC-HOLD-07, AC-HOLD-08, AC-HOLD-17, AC-HOLD-18, AC-HOLD-25,
   AC-HOLD-26, AC-HOLD-32, AC-HOLD-33.
-- [ ] 3.2 Прострочення й список утримань: `visibility.ts` (`schedulerHolds` — лише «Held» і «Expired», слот яких ще не
-  почався, за часом слоту від найближчого; прострочене зникає, коли слот знову утримали за тим самим клієнтом), сторінка
-  `/holds` (клієнт, терапевт, слот, статус, «Held until»); слот простроченого утримання знову вільний на `/slots`; тести.
-  Done when: AC-HOLD-05, AC-HOLD-06, AC-HOLD-20, AC-HOLD-28, AC-HOLD-29, AC-HOLD-37, AC-HOLD-38, AC-HOLD-42.
+- [x] 3.2 Прострочення й список утримань: `visibility.ts` (`schedulerHolds` — лише «Held» і «Expired», слот яких ще не
+  почався, за часом слоту від найближчого; прострочене зникає, коли слот знову утримали за тим самим клієнтом, а за іншим — лишається до початку слоту), сторінка
+  `/holds` (клієнт, терапевт, слот, статус, «Held until»); слот простроченого утримання знову вільний на `/slots`;
+  терапевт на `/holds` і `/slots` бачить «Only schedulers and admins can view this page.»; тести.
+  Done when: AC-HOLD-05, AC-HOLD-06, AC-HOLD-20, AC-HOLD-28, AC-HOLD-29, AC-HOLD-37, AC-HOLD-38, AC-HOLD-42, AC-HOLD-43,
+  AC-HOLD-44.
 
 ## 4. Підтвердження
 
-- [ ] 4.1 Міграція: GRANT update `confirmed_at`, політика update `holds` для рядків, видимих у select, і тригер
+- [x] 4.1 Міграція: GRANT update `confirmed_at`, політика update `holds` для рядків, видимих у select, і тригер
   `private.check_hold_confirm` (`clock_timestamp()` після блокування рядка; `CONFIRM_FORBIDDEN`, `ALREADY_CONFIRMED`,
   `HOLD_EXPIRED`, `CONFIRM_STARTED`); коди підтвердження в `messages.ts`; кнопка «Confirm» на `/holds`, `confirmHold`
   (лише вхід, дозвіл — база) через `runAction`; тести, зокрема тести бази на PGlite для тригера; ручна перевірка: два
@@ -62,15 +64,17 @@
 
 ## 5. Розклад терапевта
 
-- [ ] 5.1 Міграція: хелпер `private` і політика select `clients` для терапевта (клієнти власних активних утримань і
-  сеансів; якщо її вже додала задача зрізу 2 `impl-client-cards` для AC-CARD-04, 05, 08 — беремо її); `time.ts`
+- [x] 5.1 Ім'я клієнта в розкладі не через політику `clients`: після початку слоту утримання лишається «Held», а клієнт
+  уже не свій (AC-CARD-14), тож вкладений `clients(full_name)` дасть null. Потрібна окрема функція `private`, що віддає лише
+  ім'я для активних утримань на власних слотах терапевта; `time.ts`
   (`practiceWeek`, пн–нд за LA), `visibility.ts` (`therapistWeek`; клієнт — лише ім'я, без email); сторінка `/schedule`
   з перемиканням тижнів; тести, зокрема тест бази на PGlite для політики терапевта; ручна перевірка під therapist1 і
-  therapist2.
+  therapist2. Міграція: `generate_demo_slots` за припущенням PM — пн–пт, перший слот о 09:00, останній о 16:00, на 8 тижнів
+  уперед від сьогодні; після `db-deploy` — `npm run users:demo` на проді.
   Done when: AC-HOLD-09, AC-HOLD-21, AC-HOLD-30, AC-HOLD-31, AC-HOLD-40.
 
 ## Workflow follow-up
 
-- В останньому PR зрізу, до merge: `/opsx:verify`, `npm run ac:coverage` — усі 42 рядки `docs/conformance.md`
+- В останньому PR зрізу, до merge: `/opsx:verify`, `npm run ac:coverage` — усі 44 рядки `docs/conformance.md`
   «реалізовано» з кодом і тестом, потім `npx openspec archive impl-slot-hold -y`.
 - Нові відповіді PM після `/requirements-sync` — нова зміна специфікації, потім окрема зміна реалізації.

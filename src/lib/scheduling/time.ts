@@ -42,9 +42,10 @@ function practiceMidnight(day: string): Date {
   return new Date(guess.getTime() - offset);
 }
 
-// День з адреси (?day=…) — лише справжня дата «РРРР-ММ-ДД» не раніше 1970 року; інакше сторінка бере сьогодні.
+// День з адреси (?day=…, ?week=…) — лише справжня дата «РРРР-ММ-ДД» від 1970 до 9000 року (межа тижня 10000 року не
+// доходить до бази); інакше сторінка бере сьогодні.
 export function isPracticeDay(value: unknown): value is string {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value < "1970-01-01") return false;
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value) || value < "1970-01-01" || value >= "9000-01-01") return false;
   const time = Date.parse(`${value}T00:00:00Z`);
   // 2026-02-30 Date «перекочує» на 2026-03-02 — така дата не збігається з собою після перетворення.
   return !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === value;
@@ -68,4 +69,16 @@ export function formatDayStep(day: string): string {
 // Межі дня `day` («РРРР-ММ-ДД») за LA: [start, end).
 export function practiceDayRange(day: string): { start: Date; end: Date } {
   return { start: practiceMidnight(day), end: practiceMidnight(shiftPracticeDay(day, 1)) };
+}
+
+// Тиждень дня `day` за LA: понеділок–неділя, межі [start, end) у UTC (AC-HOLD-30).
+export function practiceWeek(day: string): { monday: string; sunday: string; start: Date; end: Date } {
+  const weekday = new Date(`${day}T00:00:00Z`).getUTCDay();
+  const monday = shiftPracticeDay(day, -((weekday + 6) % 7));
+  return {
+    monday,
+    sunday: shiftPracticeDay(monday, 6),
+    start: practiceMidnight(monday),
+    end: practiceMidnight(shiftPracticeDay(monday, 7)),
+  };
 }

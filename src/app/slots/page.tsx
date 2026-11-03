@@ -1,6 +1,8 @@
 import { AppNav } from "@/app/_components/app-nav";
 import { ErrorMessage } from "@/app/_components/error-message";
+import { StaffPageRefusal } from "@/app/_components/staff-page-refusal";
 import { StatusBadge } from "@/app/_components/status-badge";
+import { SubmitButton } from "@/app/_components/submit-button";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { NextIcon, PreviousIcon, TimeIcon } from "@/components/ui/icons";
@@ -10,8 +12,7 @@ import { List, ListItem } from "@/components/ui/list";
 import { PageHeader } from "@/components/ui/page-header";
 import { Select } from "@/components/ui/select";
 import { requireRole } from "@/lib/auth/require-role";
-import { STAFF_ROLES } from "@/lib/auth/roles";
-import { contactEmail } from "@/lib/scheduling/clients";
+import { contactEmail, matchesClient } from "@/lib/scheduling/clients";
 import { slotsHref } from "@/lib/scheduling/links";
 import { daySlotsView, isHoldable } from "@/lib/scheduling/status";
 import {
@@ -23,12 +24,17 @@ import {
   practiceToday,
   shiftPracticeDay,
 } from "@/lib/scheduling/time";
+import { staffPageRefusal } from "@/lib/scheduling/visibility";
 import { holdSlot } from "./actions";
 
 // Слоти терапевта на день зі статусами, клієнтом і «Held until»; «Hold» — лише для вільного слоту
-// (AC-HOLD-01–03, 07, 17, 18, 24, 32, 33). Правила утримання тримає база, сторінка лише показує.
+// (AC-HOLD-01–03, 07, 17, 18, 24, 32, 33). Правила утримання тримає база, сторінка лише показує. Терапевту — відмова
+// (AC-HOLD-44).
 export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
-  const { supabase, role, name } = await requireRole(...STAFF_ROLES);
+  const { supabase, role, name } = await requireRole();
+  const refusal = staffPageRefusal(role);
+  if (refusal) return <StaffPageRefusal title="Slots" role={role} name={name} message={refusal} />;
+
   const params = await searchParams;
   const now = new Date();
   const day = isPracticeDay(params.day) ? params.day : practiceToday(now);
@@ -40,6 +46,10 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
   if (therapistsError) throw new Error(therapistsError.message);
   if (clientsError) throw new Error(clientsError.message);
   const therapist = therapists.find((t) => t.id === params.therapist) ?? therapists[0];
+  // Пошук клієнта для утримання: за ім'ям або email, дитину — за email опікуна (AC-CARD-02).
+  // shortcut: фільтр по вже прочитаних клієнтах бачить лише перші 1000 рядків (max_rows); з такою кількістю — у запит.
+  const clientQuery = typeof params.client === "string" ? params.client : "";
+  const foundClients = clients.filter((c) => matchesClient(c, clientQuery));
 
   const { start, end } = practiceDayRange(day);
   const { data: slots, error: slotsError } = therapist
@@ -55,7 +65,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
   const view = daySlotsView(slots, now);
 
   // Кроки днями — звичайні посилання на ту саму сторінку з ?day= (і обраним терапевтом).
-  const dayHref = (d: string) => slotsHref(therapist?.id, d);
+  const dayHref = (d: string) => slotsHref(therapist?.id, d, clientQuery);
   const previous = shiftPracticeDay(day, -1);
   const next = shiftPracticeDay(day, 1);
 
@@ -67,7 +77,7 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
         <ErrorMessage code={params.error} />
 
         <Card>
-          <form className="grid items-end gap-4 sm:grid-cols-[minmax(0,20rem)_minmax(0,14rem)_auto] sm:justify-start">
+          <form className="grid items-end gap-4 sm:grid-cols-[minmax(0,20rem)_minmax(0,14rem)_minmax(0,14rem)_auto] sm:justify-start">
             <Label>
               Therapist
               <Select name="therapist" defaultValue={therapist?.id}>
@@ -81,6 +91,10 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
             <Label>
               Day
               <Input name="day" type="date" defaultValue={day} required />
+            </Label>
+            <Label>
+              Find client
+              <Input name="client" type="search" autoComplete="off" defaultValue={clientQuery} placeholder="Name or email" />
             </Label>
             <Button type="submit" variant="secondary">
               Show
@@ -130,11 +144,12 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
                     )}
                   </span>
                   {slot.status !== "free" && <StatusBadge status={slot.status} />}
-                  {therapist && isHoldable(slot.status) && clients.length > 0 && (
+                  {therapist && isHoldable(slot.status) && foundClients.length > 0 && (
                     <form action={holdSlot} className="flex w-full items-center gap-2 sm:w-auto">
                       <input type="hidden" name="slot_id" value={slot.id} />
                       <input type="hidden" name="therapist" value={therapist.id} />
                       <input type="hidden" name="day" value={day} />
+                      <input type="hidden" name="client" value={clientQuery} />
                       <div className="min-w-0 flex-1 sm:w-56 sm:flex-none">
                         <Select
                           size="sm"
@@ -147,16 +162,21 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
                           <option value="" disabled>
                             Choose a client
                           </option>
-                          {clients.map((c) => (
+                          {foundClients.map((c) => (
                             <option key={c.id} value={c.id}>
                               {c.full_name} — {contactEmail(c)}
                             </option>
                           ))}
                         </Select>
                       </div>
-                      <Button type="submit" variant="secondary" size="sm">
+                      <SubmitButton
+                        variant="secondary"
+                        size="sm"
+                        pendingLabel="Holding…"
+                        aria-label={`Hold ${formatPracticeTime(new Date(slot.starts_at))}`}
+                      >
                         Hold
-                      </Button>
+                      </SubmitButton>
                     </form>
                   )}
                 </ListItem>

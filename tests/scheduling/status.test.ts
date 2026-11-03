@@ -16,6 +16,12 @@ describe("status: утримання", () => {
 });
 
 describe("status: слоти дня", () => {
+  it("AC-HOLD-06: о 2026-11-03 14:30 слот 2026-11-05 10:00 із простроченим утриманням знову вільний, і його можна утримати", () => {
+    const status = slotStatus(slot("2026-11-05T18:00:00Z", [held("2026-11-03T22:30:00Z")]), new Date("2026-11-03T22:30:00Z"));
+    expect(status).toBe("free");
+    expect(isHoldable(status)).toBe(true);
+  });
+
   it("AC-HOLD-01: зараз 2026-11-02 09:00 — 10:00 вільний, 11:00 «Held», 12:00 «Confirmed», утримати можна лише 10:00", () => {
     const now = new Date("2026-11-02T17:00:00Z");
     const view = daySlotsView(

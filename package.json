@@ -17,6 +17,7 @@
     "users:demo": "node --env-file=.env.local scripts/create-demo-users.mjs",
     "check:design": "node scripts/check-design-tokens.mjs",
     "check:boundary": "node scripts/check-server-boundary.mjs",
+    "smoke": "node scripts/smoke.mjs",
     "gates": "npm run lint && npm run typecheck && fallow audit --base origin/main",
     "test:coverage": "vitest run --config vitest.coverage.config.mts --coverage",
     "coverage:summary": "node scripts/coverage-summary.mjs"
