@@ -13,13 +13,13 @@
 
 ## 2. Форма картки
 
-- [ ] 2.1 `validateCard`, коди й тексти PM у `messages.ts`, `FieldError`, форма без типу наперед, частковий індекс
+- [x] 2.1 `validateCard`, коди й тексти PM у `messages.ts`, `FieldError`, форма без типу наперед, частковий індекс
   дубліката; ADR 0009; тести: логіка на межах (дата = сьогодні, завтра) і база для дубліката.
   Done when: AC-CARD-12, AC-CARD-13.
 
 ## 3. Тексти за роллю й пошук
 
-- [ ] 3.1 `missingCardText`, `emptyClientsText` із текстом PM, `matchesClient`, поле пошуку на `/slots`; тести.
+- [x] 3.1 `missingCardText`, `emptyClientsText` із текстом PM, `matchesClient`, поле пошуку на `/slots`; тести.
   Done when: AC-CARD-02, AC-CARD-15, AC-CARD-16.
 
 ## Workflow follow-up

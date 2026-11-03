@@ -19,6 +19,7 @@ vi.mock("@/lib/auth/require-role", () => ({
   }),
 }));
 
+const INITIAL = { error: null, errors: {}, values: {} };
 const FIELDS = {
   kind: "child",
   full_name: "Client Eight",
@@ -56,7 +57,7 @@ describe("createClientCard", () => {
       language: "English",
     }))
       f.set(name, value);
-    const landing = await createClientCard({ error: null, values: {} }, f).then(
+    const landing = await createClientCard(INITIAL, f).then(
       () => null,
       (e: { digest?: string }) => String(e.digest).split(";")[2],
     );
@@ -73,21 +74,32 @@ describe("createClientCard", () => {
     });
   });
 
-  it("AC-CARD-03: база відхилила дані опікуна — «Enter the guardian's name and a valid email.», введене лишається у формі", async () => {
+  it("AC-CARD-03: порожні дані опікуна — повідомлення біля поля, без запису, введене лишається у формі", async () => {
     h.role = "scheduler";
-    h.dbError = {
-      code: "23514",
-      message: 'new row for relation "clients" violates check constraint "clients_guardian_check"',
-    };
-    expect(await createClientCard({ error: null, values: {} }, form())).toEqual({
-      error: "GUARDIAN_INVALID",
+    expect(await createClientCard(INITIAL, form())).toEqual({
+      error: null,
+      errors: { guardian_name: "GUARDIAN_INVALID", guardian_email: "GUARDIAN_INVALID" },
       values: FIELDS,
     });
+    expect(h.insert).not.toHaveBeenCalled();
+  });
+
+  it("AC-CARD-13: база відхилила дублікат — «A client with these details already exists.», введене лишається у формі", async () => {
+    h.role = "scheduler";
+    h.dbError = {
+      code: "23505",
+      message: 'duplicate key value violates unique constraint "clients_child_dedup_key"',
+    };
+    const values = { ...FIELDS, guardian_name: "Guardian Seven", guardian_email: "guardian7@example.test" };
+    const f = form();
+    f.set("guardian_name", values.guardian_name);
+    f.set("guardian_email", values.guardian_email);
+    expect(await createClientCard(INITIAL, f)).toEqual({ error: "CHILD_EXISTS", errors: {}, values });
   });
 
   it("AC-CARD-06: терапевт — «Only schedulers and admins can create client cards.» без спроби запису", async () => {
     h.role = "therapist";
-    const state = await createClientCard({ error: null, values: {} }, form());
+    const state = await createClientCard(INITIAL, form());
     expect(state.error).toBe("CARD_FORBIDDEN");
     expect(state.values).toEqual(FIELDS);
     expect(h.insert).not.toHaveBeenCalled();
