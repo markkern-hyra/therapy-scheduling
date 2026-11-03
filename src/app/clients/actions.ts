@@ -3,11 +3,18 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth/require-role";
+import type { Role } from "@/lib/auth/roles";
 import { type CardErrors, canCreateCards, cardFromForm, cardValues, validateCard } from "@/lib/scheduling/clients";
 import { errorCode, type MessageCode } from "@/lib/scheduling/messages";
 import { practiceToday } from "@/lib/scheduling/time";
 
 export type CardFormState = { error: MessageCode | null; errors: CardErrors; values: Record<string, string> };
+
+function cardRefusal(role: Role, values: CardFormState["values"]): CardFormState | null {
+  if (!canCreateCards(role)) return { error: "CARD_FORBIDDEN", errors: {}, values };
+  const errors = validateCard(values, practiceToday(new Date()));
+  return Object.keys(errors).length > 0 ? { error: null, errors, values } : null;
+}
 
 // Створення картки — привілейована дія: getClaims() і роль із profiles (requireRole) — до запису; не admin і не
 // scheduler — CARD_FORBIDDEN без запису (AC-CARD-06). Запис — клієнтом користувача, тож RLS і check бази відмовляють і
@@ -15,10 +22,8 @@ export type CardFormState = { error: MessageCode | null; errors: CardErrors; val
 export async function createClientCard(_previous: CardFormState, form: FormData): Promise<CardFormState> {
   const { supabase, role } = await requireRole();
   const values = cardValues(form);
-  if (!canCreateCards(role)) return { error: "CARD_FORBIDDEN", errors: {}, values };
-
-  const errors = validateCard(values, practiceToday(new Date()));
-  if (Object.keys(errors).length > 0) return { error: null, errors, values };
+  const refusal = cardRefusal(role, values);
+  if (refusal) return refusal;
 
   const { data, error } = await supabase.from("clients").insert(cardFromForm(form)).select("id").single();
   if (error) return { error: errorCode(error), errors: {}, values };

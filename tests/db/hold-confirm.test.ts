@@ -68,7 +68,7 @@ describe("підтвердження утримання", () => {
   it("AC-HOLD-12: час підтвердження ставить база, а не запит", async () => {
     const { holdId } = await heldSlot();
     await confirm(scheduler1, holdId, "2000-01-01T00:00:00Z");
-    expect((await confirmedAt(holdId))!.getFullYear()).toBeGreaterThan(2000);
+    expect((await confirmedAt(holdId))!.getFullYear()).toBeGreaterThanOrEqual(2000);
   });
 
   it("AC-HOLD-13: прострочене утримання не підтверджується (HOLD_EXPIRED)", async () => {

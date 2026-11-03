@@ -63,7 +63,7 @@ export default async function HoldsPage({ searchParams }: PageProps<"/holds">) {
                   )}
                 </span>
                 <StatusBadge status={hold.status} />
-                {hold.status === "Held" && (
+                {hold.status !== "Confirmed" && (
                   <form action={confirmHold}>
                     <input type="hidden" name="hold_id" value={hold.id} />
                     <SubmitButton
