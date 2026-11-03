@@ -2,7 +2,7 @@ import { AppNav } from "@/app/_components/app-nav";
 import { ErrorMessage } from "@/app/_components/error-message";
 import { StaffPageRefusal } from "@/app/_components/staff-page-refusal";
 import { StatusBadge } from "@/app/_components/status-badge";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/app/_components/submit-button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { HoldsIcon, TimeIcon } from "@/components/ui/icons";
 import { List, ListItem } from "@/components/ui/list";
@@ -66,9 +66,14 @@ export default async function HoldsPage({ searchParams }: PageProps<"/holds">) {
                 {hold.status === "Held" && (
                   <form action={confirmHold}>
                     <input type="hidden" name="hold_id" value={hold.id} />
-                    <Button type="submit" variant="secondary" size="sm">
+                    <SubmitButton
+                      variant="secondary"
+                      size="sm"
+                      pendingLabel="Confirming…"
+                      aria-label={`Confirm hold for ${hold.clients.full_name}, ${formatPracticeDateTime(new Date(hold.slots.starts_at))}`}
+                    >
                       Confirm
-                    </Button>
+                    </SubmitButton>
                   </form>
                 )}
               </ListItem>
