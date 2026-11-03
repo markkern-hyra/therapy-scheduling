@@ -24,7 +24,7 @@
 
 - PR воріт: https://github.com/markkern-hyra/therapy-scheduling/pull/30
 - Зелений `quality` на `main`: https://github.com/markkern-hyra/therapy-scheduling/actions/runs/41618737448
-- Обов'язкові перевірки в `solo-main`: ще не додано (2026-11-03: лише `spec`, `app`, `conformance`, `db-check`); `quality` зелений на `main`, додати — «Ворота: fallow audit», «Покриття: доменна підлога»
+- Обов'язкові перевірки в `solo-main`: «Ворота: fallow audit» і «Покриття: доменна підлога» додано 2026-11-03, після зеленого прогону на `main`; разом із `spec`, `app`, `conformance`, `db-check`. «Порада: вразливі залежності» лишається дорадчою
 
 Розбір першого повного прогону `fallow` (той самий — в описі PR воріт):
 
