@@ -2,6 +2,7 @@ import { AppNav } from "@/app/_components/app-nav";
 import { ErrorMessage } from "@/app/_components/error-message";
 import { StaffPageRefusal } from "@/app/_components/staff-page-refusal";
 import { StatusBadge } from "@/app/_components/status-badge";
+import { SubmitButton } from "@/app/_components/submit-button";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { NextIcon, PreviousIcon, TimeIcon } from "@/components/ui/icons";
@@ -168,9 +169,14 @@ export default async function SlotsPage({ searchParams }: PageProps<"/slots">) {
                           ))}
                         </Select>
                       </div>
-                      <Button type="submit" variant="secondary" size="sm">
+                      <SubmitButton
+                        variant="secondary"
+                        size="sm"
+                        pendingLabel="Holding…"
+                        aria-label={`Hold ${formatPracticeTime(new Date(slot.starts_at))}`}
+                      >
                         Hold
-                      </Button>
+                      </SubmitButton>
                     </form>
                   )}
                 </ListItem>

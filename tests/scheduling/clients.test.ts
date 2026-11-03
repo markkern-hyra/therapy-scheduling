@@ -95,6 +95,22 @@ describe("картка з анкети", () => {
   });
 });
 
+describe("відмови підтвердження з бази", () => {
+  const raised = (code: string) => text({ code: "P0001", message: code });
+  it("AC-HOLD-13: HOLD_EXPIRED — «This hold has expired. Hold the slot again.»", () => {
+    expect(raised("HOLD_EXPIRED")).toBe("This hold has expired. Hold the slot again.");
+  });
+  it("AC-HOLD-14: CONFIRM_FORBIDDEN — «Only schedulers and admins can confirm holds.»", () => {
+    expect(raised("CONFIRM_FORBIDDEN")).toBe("Only schedulers and admins can confirm holds.");
+  });
+  it("AC-HOLD-22: CONFIRM_STARTED — «This slot has already started and cannot be confirmed.»", () => {
+    expect(raised("CONFIRM_STARTED")).toBe("This slot has already started and cannot be confirmed.");
+  });
+  it("AC-HOLD-36: ALREADY_CONFIRMED — «This hold is already confirmed.»", () => {
+    expect(raised("ALREADY_CONFIRMED")).toBe("This hold is already confirmed.");
+  });
+});
+
 describe("перевірка форми картки", () => {
   const TODAY = "2026-11-03";
   const texts = (values: Record<string, string>) =>
