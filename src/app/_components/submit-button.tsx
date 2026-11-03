@@ -12,8 +12,14 @@ export function SubmitButton({
 }: Omit<ComponentProps<typeof Button>, "type" | "disabled"> & { pendingLabel: string }) {
   const { pending } = useFormStatus();
   return (
-    <Button {...props} type="submit" disabled={pending}>
-      {pending ? pendingLabel : children}
-    </Button>
+    <>
+      <Button {...props} type="submit" disabled={pending}>
+        {pending ? pendingLabel : children}
+      </Button>
+      {/* aria-label замінює текст кнопки, тож стан озвучує окрема область; вона є й порожньою, інакше зчитувач її пропустить. */}
+      <span role="status" className="sr-only">
+        {pending ? pendingLabel : ""}
+      </span>
+    </>
   );
 }
