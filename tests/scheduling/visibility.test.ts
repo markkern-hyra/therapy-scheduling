@@ -125,7 +125,7 @@ describe("тиждень терапевта", () => {
     expect(week.flatMap((d) => d.slots.map((s) => s.status))).toEqual(["Past", "free"]);
   });
 
-  it("утримання, слот якого почався, лишається «Held» до прострочення", () => {
+  it("AC-HOLD-22: утримання, слот якого почався, лишається «Held» до прострочення", () => {
     const week = therapistWeek([slot("2026-11-04T18:00:00Z", { expires_at: "2026-11-05T20:00:00Z", client_name: "client1" })], NOW);
     expect(week[0].slots[0].status).toBe("Held");
   });

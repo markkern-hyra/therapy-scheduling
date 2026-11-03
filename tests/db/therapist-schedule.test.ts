@@ -73,7 +73,7 @@ describe("розклад терапевта", () => {
     expect(row?.expires_at).toBeNull();
   });
 
-  it("після початку слоту утримання «Held» лишається в розкладі з ім'ям клієнта", async () => {
+  it("AC-HOLD-22: після початку слоту утримання «Held» лишається в розкладі з ім'ям клієнта", async () => {
     const own = await freeSlot(therapist1);
     await hold(own);
     await t.asService(
