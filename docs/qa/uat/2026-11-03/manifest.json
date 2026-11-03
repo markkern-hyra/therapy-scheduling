@@ -1,0 +1,153 @@
+{
+  "kind": "uat",
+  "generatedAt": "2026-11-03T15:09:31.646Z",
+  "baseURL": "https://therapy-scheduling-theta.vercel.app",
+  "deployedSha": "f512871fdb0b94bbe537d3c54d76dbcd7c59d70a",
+  "testsCommit": "117f6efab719282c8ada21d722508814ffe4cc29",
+  "reviewer": {
+    "model": "claude-haiku-5-5",
+    "disputes": "claude-sonnet-5-5"
+  },
+  "note": "Відео й траси не в git (test-results/ локально, артефакт CI). check-recordings конвеєра WS9 вимагає відео на диску — для нього цей manifest треба доповнити.",
+  "results": [
+    {
+      "id": "AC-CARD-06",
+      "proof": "AC-CARD-06",
+      "title": "AC-CARD-06: терапевт за прямим посиланням не бачить форми, бачить відмову, кількість карток та сама",
+      "screenshot": "docs/qa/uat/2026-11-03/frames/AC-CARD-06-then-1.png",
+      "video": "test-results/artifacts/client-cards-терапевт-AC-C-1fe46-ву-кількість-карток-та-сама-chromium/video.webm",
+      "trace": "test-results/artifacts/client-cards-терапевт-AC-C-1fe46-ву-кількість-карток-та-сама-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі /clients/new видно шапку з «Therapist One» (роль «Therapist») і червоне повідомлення про помилку з текстом, що збігається з критерієм посимвольно. Форми, полів і кнопки «Create client» на кадрі немає. Кількість карток клієнтів з кадру не видно, тому ця частина лишається за автоматичними перевірками."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Therapist One",
+          "onPage": true
+        },
+        {
+          "quote": "Only schedulers and admins can create client cards.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 2253,
+      "reviewCostUsd": 0.00189,
+      "reviewWallMs": 6621
+    },
+    {
+      "id": "AC-CARD-12",
+      "proof": "AC-CARD-12",
+      "title": "AC-CARD-12: кілька помилок у формі — одразу три повідомлення біля полів, картку не створено, введене лишається",
+      "screenshot": "docs/qa/uat/2026-11-03/frames/AC-CARD-12-then-1.png",
+      "video": "test-results/artifacts/client-cards-планувальник--5bca6--створено-введене-лишається-chromium/video.webm",
+      "trace": "test-results/artifacts/client-cards-планувальник--5bca6--створено-введене-лишається-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінка «New client» з усіма трьома повідомленнями про помилки під відповідними полями: «Enter the client's name.», «Enter a date of birth that is not in the future.» (перенесено на два рядки, текст цілий) і «Select a session language.». Тип «Child» вибрано, ім'я опікуна «Guardian Eight» і email «guardian8@example.test» на місці. Поле дати показує 04.11.2026, що є відображенням 2026-11-04 у форматі браузера; частини про aria-describedby та кількість карток не видно на кадрі."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Enter the client's name.",
+          "onPage": true
+        },
+        {
+          "quote": "Enter a date of birth that is not in the future.",
+          "onPage": true
+        },
+        {
+          "quote": "Select a session language.",
+          "onPage": true
+        },
+        {
+          "quote": "Child",
+          "onPage": true
+        },
+        {
+          "quote": "Guardian Eight",
+          "onPage": true
+        },
+        {
+          "quote": "guardian8@example.test",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 5972,
+      "reviewCostUsd": 0.00214,
+      "reviewWallMs": 8495
+    },
+    {
+      "id": "AC-CARD-16",
+      "proof": "AC-CARD-16",
+      "title": "AC-CARD-16: неіснуюча картка — планувальник і терапевт бачать кожен свій текст і жодних даних клієнтів",
+      "screenshot": "docs/qa/uat/2026-11-03/frames/AC-CARD-16-then-1.png",
+      "video": "test-results/artifacts/client-cards-планувальник--13dd8-кст-і-жодних-даних-клієнтів-chromium/video.webm",
+      "trace": "test-results/artifacts/client-cards-планувальник--13dd8-кст-і-жодних-даних-клієнтів-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі 1 у шапці видно «Scheduler One» з роллю Scheduler, а під заголовком «Client» — червоне повідомлення «This client card doesn't exist.». На кадрі 2 у шапці «Therapist One» з роллю Therapist і повідомлення «You don't have access to this client.». Жодних даних клієнта на обох кадрах не видно; перевірка відсутності даних лишається за автотестами."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Scheduler One",
+          "onPage": true
+        },
+        {
+          "quote": "This client card doesn't exist.",
+          "onPage": true
+        },
+        {
+          "quote": "Therapist One",
+          "onPage": true
+        },
+        {
+          "quote": "You don't have access to this client.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 2494,
+      "reviewCostUsd": 0.00231,
+      "reviewWallMs": 7151
+    }
+  ],
+  "negativeControls": [],
+  "cleanup": {
+    "at": "2026-11-03T15:09:22.462Z",
+    "deleted": [],
+    "remaining": [],
+    "leftoverRequests": 0
+  }
+}
