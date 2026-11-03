@@ -2,6 +2,7 @@
 // кадр екрана, aria-знімок сторінки і список частин «Тоді», які людина БАЧИТЬ (агент має їх процитувати з кадру).
 // Невидимі частини (буфер обміну, рядки в базі, «даних немає») вирішують лише автоматичні перевірки.
 // Джерело: демо-репо курсу, tests/e2e/support/uat.ts (тег ws8-03-uat). Змінюйте лише signIn (форма входу).
+// Єдине відхилення від матеріалу: межа очікування відповіді в attachRuntimeErrors.
 import { test, type Locator, type Page } from "@playwright/test";
 
 export type ThenSpec = {
@@ -73,8 +74,11 @@ export async function attachRuntimeErrors(page: Page) {
     .filter((m) => m.type() === "error")
     .map((m) => m.text());
   const pageErrors = (await page.pageErrors({ filter: "all" })).map((e) => String(e));
+  // Запит, перерваний наступним page.goto (префетч посилань), не дає ні відповіді, ні помилки: без межі хук висить до
+  // тайм-ауту тесту, а це хибний FAIL (R1). Так упав NC-2 на проді; такий запит не вада, тож у failed він не йде.
+  const gaveUp = new Promise<null>((done) => setTimeout(done, 5_000, null));
   const responses = await Promise.all(
-    (await page.requests()).map(async (r) => ({ r, status: (await r.response())?.status() ?? 0 })),
+    (await page.requests()).map(async (r) => ({ r, status: (await Promise.race([r.response(), gaveUp]))?.status() ?? 0 })),
   );
   const failed = responses
     .filter(({ r, status }) => r.failure() !== null || status >= 500)
