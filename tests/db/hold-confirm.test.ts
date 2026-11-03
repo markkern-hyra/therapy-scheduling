@@ -139,8 +139,11 @@ describe("підтвердження утримання", () => {
 
   it("AC-HOLD-14: інші колонки утримання через update не змінюються", async () => {
     const { holdId } = await heldSlot();
-    await expect(
-      t.asUser(scheduler1, "update public.holds set expires_at = now() + interval '30 days' where id = $1", [holdId]),
-    ).rejects.toThrow(/permission denied/);
+    const changes = ["expires_at = now() + interval '30 days'", "client_id = client_id", "slot_id = slot_id", "created_at = now()"];
+    for (const user of [scheduler1, therapist1]) {
+      for (const change of changes) {
+        await expect(t.asUser(user, `update public.holds set ${change} where id = $1`, [holdId])).rejects.toThrow(/permission denied/);
+      }
+    }
   });
 });
