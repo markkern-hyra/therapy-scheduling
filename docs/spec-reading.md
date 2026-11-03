@@ -92,9 +92,9 @@
 
 | # | AC / вимога | Питання | Рекомендація | Issue в репо PM | Відповідь PM | Рішення (що зробили) |
 |---|---|---|---|---|---|---|
-| Q5 | AC-CARD-10 (Sofiia-pm/therapy-scheduling-spec#19) | Що бачать планувальник і адміністратор, коли карток клієнтів ще немає? | A: «No clients yet. Create a client card from an intake form.» | Sofiia-pm/therapy-scheduling-spec#27 | очікуємо | у специфікації — текст PM, питання в Open questions `add-client-cards`; на сторінці лишається «No clients yet.» зі зрізу 1 |
-| Q6 | AC-CARD-05 (Sofiia-pm/therapy-scheduling-spec#19) | Що бачить кожна роль за посиланням на картку, якої немає? | B: планувальник і адміністратор — «This client card doesn't exist.», терапевт — «You don't have access to this client.» | Sofiia-pm/therapy-scheduling-spec#28 | очікуємо | у специфікації — текст PM; до відповіді терапевт бачить для неіснуючої картки той самий текст, що для чужої |
-| Q7 | AC-CARD-11 (Sofiia-pm/therapy-scheduling-spec#19) | Чи може користувач без ролі вийти з акаунта? | A: повідомлення і кнопка «Sign out», жодних даних | Sofiia-pm/therapy-scheduling-spec#29 | очікуємо | у специфікації — текст PM; рядок матриці AC-CARD-11 — за відповіддю |
+| Q5 | AC-CARD-10 (Sofiia-pm/therapy-scheduling-spec#19) | Що бачать планувальник і адміністратор, коли карток клієнтів ще немає? | A: «No clients yet. Create a client card from an intake form.» | Sofiia-pm/therapy-scheduling-spec#27 | прийнято варіант A: HryhoriiHaponiukQuitCode/therapy-scheduling-spec#19, AC-CARD-15 | у специфікації — текст PM, питання в Open questions `add-client-cards`; на сторінці лишається «No clients yet.» зі зрізу 1 |
+| Q6 | AC-CARD-05 (Sofiia-pm/therapy-scheduling-spec#19) | Що бачить кожна роль за посиланням на картку, якої немає? | B: планувальник і адміністратор — «This client card doesn't exist.», терапевт — «You don't have access to this client.» | Sofiia-pm/therapy-scheduling-spec#28 | прийнято варіант B: HryhoriiHaponiukQuitCode/therapy-scheduling-spec#19, AC-CARD-16 | у специфікації — текст PM; до відповіді терапевт бачить для неіснуючої картки той самий текст, що для чужої |
+| Q7 | AC-CARD-11 (Sofiia-pm/therapy-scheduling-spec#19) | Чи може користувач без ролі вийти з акаунта? | A: повідомлення і кнопка «Sign out», жодних даних | Sofiia-pm/therapy-scheduling-spec#29 | прийнято варіант A: HryhoriiHaponiukQuitCode/therapy-scheduling-spec#19, змінений AC-CARD-11 | у специфікації — текст PM; рядок матриці AC-CARD-11 — за відповіддю |
 
 Питання колег до цієї вимоги, які змінюють нашу реалізацію (без відповіді PM на 2026-10-26): #20 (швидке створення лише
 з ім'ям та email), #21 (тексти для дати народження, мови й імені дитини), #22 (email опікуна в іншій картці), #23
@@ -111,3 +111,16 @@
 Колеги вже поставили сім питань про поля картки й дублікати, тож скан з фокусом на права й стани знайшов те, що
 лишилось: порожній список для планувальника (стан без тексту), неіснуюча картка (відмова, з якої терапевт міг би
 дізнатися, які картки існують) і вихід без ролі. Без таблиці матриці прав ці три місця виглядали «очевидними».
+
+## Уточнення PM — знімок 2026-11-02
+
+Вимоги: HryhoriiHaponiukQuitCode/therapy-scheduling-spec · джерело: issues · знімок 2026-11-02. Репо PM перенесено зі
+старої адреси `Sofiia-pm/therapy-scheduling-spec`, старі посилання перенаправляють. Зміна специфікації —
+`clarify-client-cards`.
+
+- Усі питання розробника й колег до зрізів 1–2 закрито: Q5–Q7 і питання колег #20–#26, #30, #31 у репо PM. Нових питань
+  до PM немає.
+- Власні припущення зафіксовано в `proposal.md` зміни: місце спільного повідомлення для пари полів, розклад терапевта
+  після початку слоту, дані без ролі.
+- `spec-review` знайшов один блокер: сценарій AC-CARD-06 у MODIFIED було перейменовано. Назву повернуто, текст сценарію
+  оновлено за PM.
