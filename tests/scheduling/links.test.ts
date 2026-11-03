@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { slotsHref } from "@/lib/scheduling/links";
+import { scheduleHref, slotsHref } from "@/lib/scheduling/links";
 
 describe("slotsHref: адреса дня на сторінці слотів", () => {
   it("терапевт і день — у параметрах; чого немає — того й у адресі немає", () => {
@@ -13,5 +13,11 @@ describe("slotsHref: адреса дня на сторінці слотів", ()
       "/slots?therapist=t1&day=2026-10-27&client=guardian7%40example.test",
     );
     expect(slotsHref("t1", "2026-10-27", "")).toBe("/slots?therapist=t1&day=2026-10-27");
+  });
+});
+
+describe("scheduleHref: адреса тижня в розкладі", () => {
+  it("AC-HOLD-31: понеділок тижня — у параметрі week", () => {
+    expect(scheduleHref("2026-11-09")).toBe("/schedule?week=2026-11-09");
   });
 });
