@@ -10,7 +10,7 @@
 
 - Прод-URL: https://therapy-scheduling-theta.vercel.app
 - Вимоги: https://github.com/HryhoriiHaponiukQuitCode/therapy-scheduling-spec · джерело: issues · знімок 2026-11-02
-- `/api/health` на момент UAT: <!-- sha і db, напр. «sha 1a2b3c4, db ok, 01.11.2026» -->
+- `/api/health` на момент UAT: sha f512871, db ok, 03.11.2026
 
 ## 3 AC
 
@@ -44,15 +44,15 @@
 
 | AC | Де живе правило | Рівень | Чому | Тест |
 |---|---|---|---|---|
-| AC-CARD-06 | політика `clients_insert_staff` ([міграція](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/supabase/migrations/20261021155328_roles_and_clients.sql#L74)); дозвіл у дії `canCreateCards`; текст — `errorCode` і `MESSAGES` | база (PGlite) + SQL-мутант; unit для дії й тексту; e2e для сторінки без форми | відмову тримає RLS, і довести її може лише справжній SQL; мок клієнта цього не доводить. Текст і те, що форму не показано, — на сторінці, а її Vitest не рендерить | [база](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/db/client-cards.test.ts#L175), [дія](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/scheduling/client-card-action.test.ts#L141), [текст](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/scheduling/clients.test.ts#L61) |
-| AC-CARD-12 | чиста `validateCard` ([код](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/src/lib/scheduling/clients.ts#L37)); запасна межа — `clients_intake_check` і `clients_full_name_check` | unit + Stryker; база (PGlite) + SQL-мутант; e2e для показу біля полів | межі й перелік помилок перевіряються за мілісекунди, і мутації знаходять пропущену межу. Правило двічі: прямий запит оминає TS, тому база перевіряється окремо | [unit](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/scheduling/clients.test.ts#L125), [дія зберігає введене](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/scheduling/client-card-action.test.ts#L97), [база](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/db/client-cards.test.ts#L114) |
-| AC-CARD-16 | чиста `missingCardText` ([код](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/src/lib/scheduling/clients.ts#L96)); рядка немає — сторінка `clients/[id]` | unit + Stryker для тексту за роллю; e2e для сторінки | неіснуючий рядок база не поверне за будь-якої політики, тож SQL-мутанта для цього AC немає. Вибір тексту — TS, а зв'язок сторінки з ним доводить лише браузер | [unit](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/scheduling/clients.test.ts#L219) |
+| AC-CARD-06 | політика `clients_insert_staff` ([міграція](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/supabase/migrations/20261021155328_roles_and_clients.sql#L74)); дозвіл у дії `canCreateCards`; текст — `errorCode` і `MESSAGES` | база (PGlite) + SQL-мутант; unit для дії й тексту; e2e для сторінки без форми | відмову тримає RLS, і довести її може лише справжній SQL; мок клієнта цього не доводить. Текст і те, що форму не показано, — на сторінці, а її Vitest не рендерить | [база](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/db/client-cards.test.ts#L175), [дія](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/scheduling/client-card-action.test.ts#L141), [текст](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/scheduling/clients.test.ts#L61), [e2e](https://github.com/markkern-hyra/therapy-scheduling/blob/117f6efab719282c8ada21d722508814ffe4cc29/tests/e2e/client-cards.spec.ts#L33) |
+| AC-CARD-12 | чиста `validateCard` ([код](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/src/lib/scheduling/clients.ts#L37)); запасна межа — `clients_intake_check` і `clients_full_name_check` | unit + Stryker; база (PGlite) + SQL-мутант; e2e для показу біля полів | межі й перелік помилок перевіряються за мілісекунди, і мутації знаходять пропущену межу. Правило двічі: прямий запит оминає TS, тому база перевіряється окремо | [unit](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/scheduling/clients.test.ts#L125), [дія зберігає введене](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/scheduling/client-card-action.test.ts#L97), [база](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/db/client-cards.test.ts#L114), [e2e](https://github.com/markkern-hyra/therapy-scheduling/blob/117f6efab719282c8ada21d722508814ffe4cc29/tests/e2e/client-cards.spec.ts#L76) |
+| AC-CARD-16 | чиста `missingCardText` ([код](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/src/lib/scheduling/clients.ts#L96)); рядка немає — сторінка `clients/[id]` | unit + Stryker для тексту за роллю; e2e для сторінки | неіснуючий рядок база не поверне за будь-якої політики, тож SQL-мутанта для цього AC немає. Вибір тексту — TS, а зв'язок сторінки з ним доводить лише браузер | [unit](https://github.com/markkern-hyra/therapy-scheduling/blob/7c711ca543106b4257b4637c2076ae63c5e3c2ce/tests/scheduling/clients.test.ts#L219), [e2e](https://github.com/markkern-hyra/therapy-scheduling/blob/117f6efab719282c8ada21d722508814ffe4cc29/tests/e2e/client-cards.spec.ts#L148) |
 
 ### Покриття
 
 `npm run test:coverage`, 2026-11-03. Підлога `vitest.coverage.config.mts`: рядки й оператори 90 %, гілки 85 %, функції 90 % на файл, лише для доменних модулів; порогу на загальний відсоток немає.
 
-Файли з 0 % мають довести e2e-специфікації треку C. **Поки їх немає, ці рядки заплановано, а не доведено.**
+Vitest не рендерить сторінки, тому файли з 0 % доводять e2e-специфікації треку C (звіт — розділ C). Кожна доводить лише гілки, які проходить її сценарій; решту нижче позначено як не доведену.
 
 | Файл за AC | Рядки | Гілки | Чим доведено, якщо 0 % |
 |---|---|---|---|
@@ -60,11 +60,11 @@
 | `src/lib/scheduling/messages.ts` | 100 % | 100 % | — |
 | `src/lib/auth/roles.ts` | 100 % | 100 % | — |
 | `src/lib/auth/access.ts` | 100 % | 100 % | — |
-| `src/lib/auth/require-role.ts` | 100 % | 60 % | гілки редіректів для входу й ролі: заплановано e2e |
+| `src/lib/auth/require-role.ts` | 100 % | 60 % | гілки без сесії чи ролі (редіректи) і з помилкою запиту профілю: **e2e не доведено**, усі три сценарії йдуть із сесією й роллю. Рішення про редірект — `accessFor`, unit |
 | `src/app/clients/actions.ts` | 100 % | 100 % | — |
-| `src/app/clients/new/page.tsx` | 0 % | 0 % | AC-CARD-06: заплановано e2e; рішення показу — `canCreateCards`, unit |
-| `src/app/clients/[id]/page.tsx` | 0 % | 0 % | AC-CARD-16: заплановано e2e; текст — `missingCardText`, unit |
-| `src/app/_components/client-card-form.tsx` | 0 % | 0 % | AC-CARD-12: заплановано e2e; помилки й значення — `validateCard` і дія, unit |
+| `src/app/clients/new/page.tsx` | 0 % | 0 % | обидві гілки, e2e: AC-CARD-06 (терапевт, відмова без форми) і AC-CARD-12 (планувальник, форма); рішення показу — `canCreateCards`, unit |
+| `src/app/clients/[id]/page.tsx` | 0 % | 0 % | лише картка, якої немає: AC-CARD-16, e2e; текст — `missingCardText`, unit. Показ наявної картки (поза трьома AC), адреса не у форматі UUID і помилка запиту до бази — **e2e не доведено**; тесту на адресу не у форматі UUID немає на жодному рівні |
+| `src/app/_components/client-card-form.tsx` | 0 % | 0 % | AC-CARD-12, e2e: тип «Child», три помилки біля полів, введене лишається; помилки й значення — `validateCard` і дія, unit. Поля дорослого, помилки типу клієнта й полів опікуна, `Alert` відмови бази і стан «Creating…» — **e2e не доведено** |
 
 ### Доказ мутацією
 
@@ -115,19 +115,28 @@
 
 | AC | Специфікація | Тест (твердження) | Агент | Вердикт | Кадр |
 |---|---|---|---|---|---|
-| AC-…-NN | <!-- …/blob/<sha>/tests/e2e/….spec.ts --> | <!-- passed / failed --> | <!-- Haiku: PASS / FAIL / NEEDS-HUMAN (+ Sonnet, якщо була суперечка) --> | <!-- PASS / FAIL / NEEDS-HUMAN і правило (R1–R6) --> | <!-- …/blob/<sha>/docs/qa/uat/<дата>/frames/AC-…-then-1.png --> |
+| AC-CARD-06 | [client-cards.spec.ts](https://github.com/markkern-hyra/therapy-scheduling/blob/117f6efab719282c8ada21d722508814ffe4cc29/tests/e2e/client-cards.spec.ts#L33) | passed | Haiku: PASS | PASS, R6 | [кадр](https://github.com/markkern-hyra/therapy-scheduling/blob/5f56d521bf6f66e827055aed99e7295e8418504a/docs/qa/uat/2026-11-03/frames/AC-CARD-06-then-1.png) |
+| AC-CARD-12 | [client-cards.spec.ts](https://github.com/markkern-hyra/therapy-scheduling/blob/117f6efab719282c8ada21d722508814ffe4cc29/tests/e2e/client-cards.spec.ts#L76) | passed | Haiku: PASS | PASS, R6 | [кадр](https://github.com/markkern-hyra/therapy-scheduling/blob/5f56d521bf6f66e827055aed99e7295e8418504a/docs/qa/uat/2026-11-03/frames/AC-CARD-12-then-1.png) |
+| AC-CARD-16 | [client-cards.spec.ts](https://github.com/markkern-hyra/therapy-scheduling/blob/117f6efab719282c8ada21d722508814ffe4cc29/tests/e2e/client-cards.spec.ts#L148) | passed | Haiku: PASS | PASS, R6 | [планувальник](https://github.com/markkern-hyra/therapy-scheduling/blob/5f56d521bf6f66e827055aed99e7295e8418504a/docs/qa/uat/2026-11-03/frames/AC-CARD-16-then-1.png), [терапевт](https://github.com/markkern-hyra/therapy-scheduling/blob/5f56d521bf6f66e827055aed99e7295e8418504a/docs/qa/uat/2026-11-03/frames/AC-CARD-16-then-2.png) |
 
-- Звіт: <!-- …/blob/<sha>/docs/qa/uat/<YYYY-MM-DD>/report.md -->
-- Відео: <!-- вкладення в описі PR …/pull/N -->
-- Рецензент: <!-- моделі зі звіту (claude-haiku-5-5; суперечки — claude-sonnet-5-5) і вартість прогону -->
-- Негативний контроль: <!-- NC-… (npm run uat:nc): що навмисно хибне, вердикт (FAIL / NEEDS-HUMAN), …/pull/N -->
-- Дані: <!-- «лише читання» або «@writes: uat-<запуск>@example.test, рядок «Прибирання» зі звіту» -->
+- Звіт: [report.md](https://github.com/markkern-hyra/therapy-scheduling/blob/5f56d521bf6f66e827055aed99e7295e8418504a/docs/qa/uat/2026-11-03/report.md): прод `f512871`, тести `117f6ef`, прогін 03.11.2026, 17:09 за Києвом
+- Відео: вкладення в описі [PR](https://github.com/markkern-hyra/therapy-scheduling/pull/35)
+- Рецензент: `claude-haiku-5-5`, суперечки — `claude-sonnet-5-5`. Розбір трьох AC: $0.0063 за цінами API, суперечок не було
+- Негативний контроль (`npm run uat:nc`, ті самі прод і тести, $0.0431; рядки звіту — в описі [PR](https://github.com/markkern-hyra/therapy-scheduling/pull/35)):
+  - NC-1: у твердженні навмисно інший текст відмови → **FAIL, R1**. Haiku сказав PASS, але агент не перекриває впале твердження.
+  - NC-2: в анотації `ac-text` навмисно інший текст «Тоді», твердження й застосунок без змін → **NEEDS-HUMAN, R3**. Haiku і Sonnet: FAIL.
+- Дані: лише читання; рядок «Прибирання» зі звіту: видалено 0, лишилось 0
+- Перший прогін (прод `89cb6b4`): три AC — PASS, NC-1 — FAIL R1, але NC-2 — FAIL R1 не через текст, а через тайм-аут хука `attachRuntimeErrors`. Механізм відтворено на локальному сервері: запит, перерваний наступним `page.goto`, не дає ні відповіді, ні помилки, і `r.response()` чекає до тайм-ауту тесту. Який саме запит висів на проді, не зафіксовано; непрямий доказ — NC-1 і NC-2 після виправлення тривали 11,7 і 6,5 с замість 67,2 і 61,5 с, а NC-2 дав очікуваний R3.
+- Виправлення: очікування обмежено 5 с — єдине відхилення від матеріалу курсу в `tests/e2e/support/uat.ts`. Наслідок для R5: запит без відповіді за 5 с не рахується ні 5xx, ні збоєм. Завершені запити, помилки сторінки й консолі це не зачіпає, а поломку головного документа чи дії ловлять твердження. На вердикти трьох AC межа не вплинула: хук у них зайняв 0,25–0,45 с.
+- Обидва прогони запущено заново на коміті `117f6ef`; після нього в коді змінено лише коментарі. Вердикти руками не правлено, промпт і схему рецензента не змінено.
 
 ### Приймання PM
 
 | AC | Рішення PM | Посилання |
 |---|---|---|
-| AC-…-NN | <!-- ✅ / ❌ / NEEDS-HUMAN → … --> | <!-- коментар-підпис або issue «Відхилення від вимог» --> |
+| AC-CARD-06 | очікує PM | — |
+| AC-CARD-12 | очікує PM | — |
+| AC-CARD-16 | очікує PM | — |
 
 ## D. Eval рецензента
 
