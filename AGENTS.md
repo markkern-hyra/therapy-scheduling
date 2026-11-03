@@ -64,7 +64,7 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
   у `.claude/` та `.cursor/` згенерував OpenSpec (однакові копії для двох інструментів) — вручну не редагуй.
 - Нові шари курсу — новими файлами: e2e-тести — `tests/e2e/**/*.spec.ts` (Playwright; Vitest їх не запускає, а
   `ac:coverage` рахує їх як покриття AC — фільтр у `scripts/lib/test-titles.mjs`; у CI їх не запускає жоден job, прогін —
-  `npm run uat` на проді людиною), нові перевірки — окремим workflow у `.github/workflows/`. Jobs `spec`, `app`,
+  `npm run uat` на проді людиною; «job e2e» у коментарях матеріалів WS8 — про бонусний `e2e.yml`, якого в репо немає), нові перевірки — окремим workflow у `.github/workflows/`. Jobs `spec`, `app`,
   `conformance`, `db-check`, `db-deploy` у `ci.yml` не перейменовуй і не видаляй: на їхніх назвах тримається ruleset.
 
 ## Процес і ролі
@@ -105,7 +105,7 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
   «Done when: AC-…»); галочки в `tasks.md` став у PR задачі; archive (`npx openspec archive impl-<зріз> -y`) — в
   останньому PR зрізу.
 - AC ID (`AC-<AREA>-<NN>`) — ID PM: на початку назви сценарію і в назві тесту: `it("AC-LEAVE-02: …")`; лише AC, які вже
-  є в `openspec/specs/` (інакше ORPHAN): за новою вимогою PM працюй після злитого PR «Специфікація». Тести — лише у файлах `*.test.ts` / `*.test.tsx` під `src/` або `tests/` (Vitest, крім `tests/e2e/`) і `tests/e2e/**/*.spec.ts` (Playwright): інші файли (зокрема `*.spec.ts` поза `tests/e2e/`) жоден раннер не запускає, і `ac:coverage` їх не рахує. Перевірки в тестах — через `expect(…)`: `vitest.config.mts` вимагає хоча б один `expect` у кожному тесті, а `assert` (з `vitest` чи `node:assert`) не рахується — такий тест падає з «expected any number of assertion, but got none».
+  є в `openspec/specs/` (інакше ORPHAN): за новою вимогою PM працюй після злитого PR «Специфікація». Тести — лише у файлах `*.test.ts` / `*.test.tsx` під `src/` або `tests/` (Vitest, крім `tests/e2e/`) і `tests/e2e/**/*.spec.ts` (Playwright): AC-тести в інших файлах (зокрема `*.spec.ts` поза `tests/e2e/`) жоден раннер не запускає, і `ac:coverage` їх не рахує. Перевірки в тестах — через `expect(…)`: `vitest.config.mts` вимагає хоча б один `expect` у кожному тесті, а `assert` (з `vitest` чи `node:assert`) не рахується — такий тест падає з «expected any number of assertion, but got none». У Playwright-тестах запобіжник інший: правило лінтера `playwright/expect-expect`.
 - Рядок у `docs/conformance.md` для AC задачі оновлюється в тому самому PR, що й код (`/conformance`, `npm run ac:coverage`);
   рядок «Вимоги: …» у шапці матриці змінює лише `/requirements-sync`. Новий AC після archive зміни специфікації —
   «відкладено (чекає реалізації)», доки його не реалізовано або не вказано конкретну причину з посиланням на рішення PM.

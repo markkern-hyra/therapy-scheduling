@@ -68,14 +68,15 @@ async function captureEvidence(page: Page, n: number, spec: ThenSpec, assertions
   await info.attach(`then-${n}.json`, { body: JSON.stringify(meta, null, 2), contentType: "application/json" });
 }
 
-/** Помилки консолі, необроблені помилки сторінки й відповіді 5xx за час тесту (API Playwright 1.56+). */
+/** Помилки консолі, необроблені помилки сторінки й відповіді 5xx за час тесту і до 5 с після нього (API Playwright 1.56+). */
 export async function attachRuntimeErrors(page: Page) {
   const consoleErrors = (await page.consoleMessages({ filter: "all" }))
     .filter((m) => m.type() === "error")
     .map((m) => m.text());
   const pageErrors = (await page.pageErrors({ filter: "all" })).map((e) => String(e));
-  // Запит, перерваний наступним page.goto (префетч посилань), не дає ні відповіді, ні помилки: без межі хук висить до
-  // тайм-ауту тесту, а це хибний FAIL (R1). Так упав NC-2 на проді; такий запит не вада, тож у failed він не йде.
+  // Запит, перерваний наступним page.goto, не дає ні відповіді, ні помилки: без межі хук висить до тайм-ауту тесту, і це
+  // хибний FAIL (R1). Механізм відтворено на локальному сервері; який саме запит висів у NC-2 на проді, не зафіксовано.
+  // shortcut: запит без відповіді за 5 с не рахується ні 5xx, ні збоєм, тож R5 його не бачить; якщо такі стануть важливі — окреме поле pending у звіті.
   const gaveUp = new Promise<null>((done) => setTimeout(done, 5_000, null));
   const responses = await Promise.all(
     (await page.requests()).map(async (r) => ({ r, status: (await Promise.race([r.response(), gaveUp]))?.status() ?? 0 })),
