@@ -120,9 +120,9 @@ Vitest не рендерить сторінки, тому файли з 0 % до
 | AC-CARD-16 | [client-cards.spec.ts](https://github.com/markkern-hyra/therapy-scheduling/blob/117f6efab719282c8ada21d722508814ffe4cc29/tests/e2e/client-cards.spec.ts#L148) | passed | Haiku: PASS | PASS, R6 | [планувальник](https://github.com/markkern-hyra/therapy-scheduling/blob/5f56d521bf6f66e827055aed99e7295e8418504a/docs/qa/uat/2026-11-03/frames/AC-CARD-16-then-1.png), [терапевт](https://github.com/markkern-hyra/therapy-scheduling/blob/5f56d521bf6f66e827055aed99e7295e8418504a/docs/qa/uat/2026-11-03/frames/AC-CARD-16-then-2.png) |
 
 - Звіт: [report.md](https://github.com/markkern-hyra/therapy-scheduling/blob/5f56d521bf6f66e827055aed99e7295e8418504a/docs/qa/uat/2026-11-03/report.md): прод `f512871`, тести `117f6ef`, прогін 03.11.2026, 17:09 за Києвом
-- Відео: вкладення в описі PR цього треку
+- Відео: вкладення в описі [PR](https://github.com/markkern-hyra/therapy-scheduling/pull/35)
 - Рецензент: `claude-haiku-5-5`, суперечки — `claude-sonnet-5-5`. Розбір трьох AC: $0.0063 за цінами API, суперечок не було
-- Негативний контроль (`npm run uat:nc`, ті самі прод і тести, $0.0431; рядки звіту — в описі PR):
+- Негативний контроль (`npm run uat:nc`, ті самі прод і тести, $0.0431; рядки звіту — в описі [PR](https://github.com/markkern-hyra/therapy-scheduling/pull/35)):
   - NC-1: у твердженні навмисно інший текст відмови → **FAIL, R1**. Haiku сказав PASS, але агент не перекриває впале твердження.
   - NC-2: в анотації `ac-text` навмисно інший текст «Тоді», твердження й застосунок без змін → **NEEDS-HUMAN, R3**. Haiku і Sonnet: FAIL.
 - Дані: лише читання; рядок «Прибирання» зі звіту: видалено 0, лишилось 0
