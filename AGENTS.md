@@ -63,8 +63,8 @@ OpenSpec 1.14.1 (devDependency + глобальний CLI тієї ж версі
   «Скіли розробки»; джерела й ліцензії — `.claude/skills/THIRD-PARTY-NOTICES.md`); Cursor читає їх звідти ж. `openspec-*` і `/opsx*`
   у `.claude/` та `.cursor/` згенерував OpenSpec (однакові копії для двох інструментів) — вручну не редагуй.
 - Нові шари курсу — новими файлами: e2e-тести — `tests/e2e/**/*.spec.ts` (Playwright; Vitest їх не запускає, а
-  `ac:coverage` рахує їх як покриття AC — фільтр у `scripts/lib/test-titles.mjs`; у CI їх не запускає жоден job, прогін —
-  `npm run uat` на проді людиною; «job e2e» у коментарях матеріалів WS8 — про бонусний `e2e.yml`, якого в репо немає), нові перевірки — окремим workflow у `.github/workflows/`. Jobs `spec`, `app`,
+  `ac:coverage` рахує їх як покриття AC — фільтр у `scripts/lib/test-titles.mjs`; у CI їх запускає job `e2e` (`.github/workflows/e2e.yml`, одноразовий
+  Supabase, не обов'язкова перевірка), на проді — `npm run uat` людиною), нові перевірки — окремим workflow у `.github/workflows/`. Jobs `spec`, `app`,
   `conformance`, `db-check`, `db-deploy` у `ci.yml` не перейменовуй і не видаляй: на їхніх назвах тримається ruleset.
 
 ## Процес і ролі
