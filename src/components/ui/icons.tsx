@@ -1,5 +1,6 @@
 import {
   CalendarDays,
+  CalendarRange,
   ChevronLeft,
   ChevronRight,
   CircleAlert,
@@ -22,6 +23,7 @@ function icon(Glyph: LucideIcon) {
 
 export const SlotsIcon = icon(CalendarDays);
 export const ClientsIcon = icon(Users);
+export const ScheduleIcon = icon(CalendarRange);
 export const HoldsIcon = icon(ClipboardList);
 export const SignOutIcon = icon(LogOut);
 export const AddIcon = icon(Plus);

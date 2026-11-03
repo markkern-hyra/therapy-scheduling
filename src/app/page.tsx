@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { AppNav } from "@/app/_components/app-nav";
 import { ErrorMessage } from "@/app/_components/error-message";
-import { ClientsIcon, HoldsIcon, SlotsIcon } from "@/components/ui/icons";
+import { ClientsIcon, HoldsIcon, ScheduleIcon, SlotsIcon } from "@/components/ui/icons";
 import { LinkCard } from "@/components/ui/link-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/require-role";
@@ -17,6 +17,7 @@ const SECTIONS: Record<Role, Section[]> = {
   admin: STAFF_SECTIONS,
   scheduler: STAFF_SECTIONS,
   therapist: [
+    { href: "/schedule", icon: <ScheduleIcon />, title: "Schedule", description: "Your week: free, held and confirmed slots." },
     { href: "/clients", icon: <ClientsIcon />, title: "Clients", description: "Your clients: a hold or a confirmed session with you." },
   ],
 };
