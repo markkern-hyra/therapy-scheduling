@@ -22,9 +22,9 @@
 
 ## A. Ворота
 
-- PR воріт: <!-- …/pull/N -->
-- Зелений `quality` на `main`: <!-- …/actions/runs/N -->
-- Обов'язкові перевірки в `solo-main` з <!-- дата -->: <!-- назви jobs -->
+- PR воріт: https://github.com/markkern-hyra/therapy-scheduling/pull/30
+- Зелений `quality` на `main`: https://github.com/markkern-hyra/therapy-scheduling/actions/runs/41618737448
+- Обов'язкові перевірки в `solo-main`: ще не додано (2026-11-03: лише `spec`, `app`, `conformance`, `db-check`); `quality` зелений на `main`, додати — «Ворота: fallow audit», «Покриття: доменна підлога»
 
 Розбір першого повного прогону `fallow` (той самий — в описі PR воріт):
 
@@ -44,24 +44,66 @@
 
 | AC | Де живе правило | Рівень | Чому | Тест |
 |---|---|---|---|---|
-| AC-…-NN | <!-- політика / функція бази / TS-модуль / сторінка --> | <!-- unit / база (PGlite) / e2e --> | … | <!-- …/blob/<sha>/tests/…#L<N> --> |
+| AC-CARD-06 | політика `clients_insert_staff` ([міграція](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/supabase/migrations/20261021155328_roles_and_clients.sql#L74)); дозвіл у дії `canCreateCards`; текст — `errorCode` і `MESSAGES` | база (PGlite) + SQL-мутант; unit для дії й тексту; e2e для сторінки без форми | відмову тримає RLS, і довести її може лише справжній SQL; мок клієнта цього не доводить. Текст і те, що форму не показано, — на сторінці, а її Vitest не рендерить | [база](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/db/client-cards.test.ts#L159), [дія](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/client-card-action.test.ts#L139), [текст](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/clients.test.ts#L61) |
+| AC-CARD-12 | чиста `validateCard` ([код](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/src/lib/scheduling/clients.ts#L37)); запасна межа — `clients_intake_check` і `clients_full_name_check` | unit + Stryker; база (PGlite) + SQL-мутант; e2e для показу біля полів | межі й перелік помилок перевіряються за мілісекунди, і мутації знаходять пропущену межу. Правило двічі: прямий запит оминає TS, тому база перевіряється окремо | [unit](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/clients.test.ts#L125), [дія зберігає введене](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/client-card-action.test.ts#L95), [база](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/db/client-cards.test.ts#L113) |
+| AC-CARD-16 | чиста `missingCardText` ([код](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/src/lib/scheduling/clients.ts#L96)); рядка немає — сторінка `clients/[id]`; чужа картка для терапевта — `is_own_client` | unit + Stryker для тексту за роллю; база + SQL-мутант для відмови терапевту (AC-CARD-05); e2e для сторінки | неіснуючий рядок база не поверне за будь-якої політики, тож тут немає чого мутувати в SQL. Вибір тексту — TS, а зв'язок сторінки з ним доводить лише браузер | [unit](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/clients.test.ts#L219), [база, чужа картка](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/db/own-clients.test.ts#L97) |
 
 ### Покриття
 
+`npm run test:coverage`, 2026-11-03. Підлога `vitest.coverage.config.mts`: рядки й оператори 90 %, гілки 85 %, функції 90 % на файл, лише для доменних модулів; порогу на загальний відсоток немає.
+
 | Файл за AC | Рядки | Гілки | Чим доведено, якщо 0 % |
 |---|---|---|---|
-| <!-- src/lib/<модуль>.ts --> | … % | … % | — |
-| <!-- src/app/<сторінка>/page.tsx --> | 0 % | 0 % | <!-- e2e: tests/e2e/….spec.ts --> |
+| `src/lib/scheduling/clients.ts` | 100 % | 93,65 % | — |
+| `src/lib/scheduling/messages.ts` | 100 % | 100 % | — |
+| `src/lib/auth/roles.ts` | 100 % | 100 % | — |
+| `src/lib/auth/access.ts` | 100 % | 100 % | — |
+| `src/lib/auth/require-role.ts` | 100 % | 60 % | гілки редіректів для входу й ролі: e2e (трек C) |
+| `src/app/clients/actions.ts` | 100 % | 100 % | — |
+| `src/app/clients/new/page.tsx` | 0 % | 0 % | AC-CARD-06: e2e (трек C); рішення показу — `canCreateCards`, unit |
+| `src/app/clients/[id]/page.tsx` | 0 % | 0 % | AC-CARD-16: e2e (трек C); текст — `missingCardText`, unit; дані — RLS, база |
+| `src/app/_components/client-card-form.tsx` | 0 % | 0 % | AC-CARD-12: e2e (трек C); помилки й значення — `validateCard` і дія, unit |
 
 ### Доказ мутацією
 
+Тести проти вижилих написала окрема сесія агента, що не писала цей код, з тексту AC; кожен тест вона бачила червоним на мутації. Прогін нижче відтворюється: `npm run mutation:ts -- --mutate "src/lib/scheduling/clients.ts,src/lib/scheduling/messages.ts,src/lib/auth/access.ts,src/app/clients/actions.ts"`.
+
 | Мутант (файл:рядок, що змінено) | AC під загрозою | До | Тест, посилений з тексту AC | Після |
 |---|---|---|---|---|
-| <!-- src/lib/…/x.ts:14 `<=` → `<` --> | AC-…-NN | вижив | <!-- …/blob/<sha>/tests/…#L<N>: межа «…» з AC --> | убитий |
+| `messages.ts:63` `&&` → `\|\|` | AC-CARD-06 | вижив | [«відмова в запису до іншої таблиці»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/messages.test.ts#L41): текст стосується лише створення карток | убитий |
+| `messages.ts:63` `error.code === "42501"` → `true` | AC-CARD-06 | вижив | [«помилка іншого коду зі згадкою таблиці clients»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/messages.test.ts#L45) | убитий |
+| `messages.ts:63` `'table "clients"'` → `""` | AC-CARD-06 | вижив | [«відмова в запису до іншої таблиці»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/messages.test.ts#L41) | убитий |
+| `clients.ts:27` `?? ""` → `?? "Stryker was here!"` | AC-CARD-12 | вижив | [«три повідомлення біля полів… введене лишається у формі»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/client-card-action.test.ts#L95): без мови, як надсилає браузер | убитий |
+| `clients.ts:38` `?? ""` → `?? "Stryker was here!"` | AC-CARD-12 | без покриття | [«поля немає в запиті»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/clients.test.ts#L153) | убитий |
+| `messages.ts:54` `"BIRTH_DATE_INVALID"` → `""` | AC-CARD-12 | вижив | [«база відхилила дату народження»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/clients.test.ts#L163): «Enter a date of birth that is not in the future.» | убитий |
+| `clients.ts:33` прибрано `$` у `VALID_EMAIL` | AC-HOLD-39 (форма AC-CARD-12) | вижив | [«зайве після коректної адреси»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/clients.test.ts#L187): другий «@» чи пробіл усередині | убитий |
+| `clients.ts:7` `?? ""` → `?? "Stryker was here!"` | AC-CARD-03, AC-HOLD-11 | без покриття | [опікун](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/clients.test.ts#L55), [ім'я](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/clients.test.ts#L265) | убитий |
+| `messages.ts:73` `&&` → `\|\|` і вся умова → `true` | технічний, текст з `?error=` | вижив | [«назва властивості об'єкта JS»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/clients.test.ts#L297): `?error=constructor` не показує нічого | убитий |
+| `messages.ts:73` `typeof code === "string"` → `true` | технічний | вижив | [«не рядок»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/clients.test.ts#L303) | убитий |
+| `messages.ts:64` умова → `true` | технічний | вижив | [«назва обмеження в помилці, що не є його порушенням»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/messages.test.ts#L56) | убитий |
+| `messages.ts:65` `?.[1]` → `[1]` | технічний | вижив | [«порушення без назви обмеження»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/messages.test.ts#L62) | убитий |
+| `messages.ts:68` `"UNKNOWN"` → `""` | технічний | без покриття | [«помилка, для якої немає правила PM»](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/tests/scheduling/messages.test.ts#L51) | убитий |
 
-- Stryker: <!-- score до → після, посилання на PR з виводом -->
-- SQL-мутації (`npm run mutation:sql`): <!-- таблиця з npm run mutation:sql -- --markdown (KILLED / SURVIVED / ERROR) з PR або «немає PGlite-гарнесу» -->
-- Еквівалентні мутанти: <!-- який і чому (рядок міграції чи коду, що робить його еквівалентним) або «немає» -->
+- Stryker, чотири модулі за трьома AC: **до** 91,56 % (217 вбито, 15 вижило, 5 без покриття) → **після** 97,47 % (231 вбито, 5 вижило, 1 без покриття). `src/lib/auth/roles.ts` (за ним `canCreateCards`) окремо: 68,75 % (11 вбито, 5 вижило). Опис PR — вивід «до» і «після».
+- SQL-мутації (`npm run mutation:sql -- --markdown`), 7 із 7 вбито:
+
+| Мутант | AC | Що зламано | Вердикт | Який тест упав |
+|---|---|---|---|---|
+| C1 | AC-CARD-06 | `clients_insert_staff`: картку створює будь-хто з входом | KILLED | AC-CARD-06: therapist1 не створює картку; AC-CARD-11: newuser1 |
+| C2 | AC-CARD-06 | `clients_insert_staff`: до дозволених ролей додано therapist | KILLED | AC-CARD-06: therapist1 не створює картку |
+| C3 | AC-CARD-12 | `clients_intake_check`: дата народження в майбутньому дозволена | KILLED | AC-CARD-12: нова картка без дати чи мови, або з датою в майбутньому |
+| C4 | AC-CARD-12 | `clients_intake_check`: мова сеансів може бути будь-якою | KILLED | AC-CARD-12: нова картка без дати чи мови, або з датою в майбутньому |
+| C5 | AC-CARD-12 | `clients_full_name_check`: порожнє ім'я дозволене | KILLED | AC-HOLD-11: порожнє ім'я; AC-HOLD-41: ім'я з самих пробілів |
+| C6 | AC-CARD-05, AC-CARD-16 | `clients_select_own_for_therapist`: терапевт бачить усі картки | KILLED | AC-CARD-04, 05, 08, 09, 11, 14 |
+| C7 | AC-CARD-05, AC-CARD-16 | `is_own_client`: клієнт із чужим утриманням теж свій | KILLED | AC-CARD-04, 05, 08, 09 |
+
+- Вижилі, що лишились:
+  - `clients.ts:50`, прибрано `^` або `$` у виразі дати — еквівалентні: дату приймає лише `toISOString().slice(0, 10) === birthDate` у [рядку 51](https://github.com/markkern-hyra/therapy-scheduling/blob/70129fe707476d665cd71269e30b21d675ae8826/src/lib/scheduling/clients.ts#L51), тож вхід має рівно 10 символів, а на них послаблений вираз збігається лише на всьому рядку. Перевірено перебором близько 400 тисяч входів на всіх трьох варіантах коду: розбіжностей немає.
+  - `messages.ts:60`, `?? ""` → `?? "Stryker was here!"` — еквівалентний: цей рядок не дорівнює жодному коду, не згадує `table "clients"` і `constraint "…"`, тож результат і далі `UNKNOWN`.
+  - `clients.ts:107` (пошук, AC-CARD-02) і `actions.ts:23` (назви `"clients"`, `"id"` у записі, AC-CARD-01) — поза трьома AC. `actions.ts:23` мок не розрізнить; запис перевірено на базі й у браузері.
+  - `roles.ts:13`, `role !== null` → `true` — еквівалентний: `includes(null)` і так дає `false`, умова потрібна лише для типів TypeScript.
+  - `roles.ts:6`, `ROLE_LABELS` (4 мутанти) — підпис ролі в шапці, поза трьома AC; бачить лише браузер.
+- Відома межа: `clients_intake_check` охоплює і дату, і мову, а `errorCode` показує для нього лише текст про дату. Форму це не зачіпає: `validateCard` спрацьовує раніше й дає «Select a session language.». Хибний текст можливий лише для запиту в обхід форми, який цього тексту не показує.
 
 ## C. UAT на проді
 
