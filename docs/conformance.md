@@ -54,16 +54,16 @@
 | AC-HOLD-08 | терапевт не утримує — «Only schedulers and admins can hold slots.» | `supabase/migrations/20261026103449_holds.sql` (check_new_hold), `src/app/slots/actions.ts` (holdSlot), `src/lib/scheduling/messages.ts`, `src/app/page.tsx` | `tests/db/holds.test.ts`, `tests/scheduling/messages.test.ts` | реалізовано |
 | AC-HOLD-25 | перетин з утриманням клієнта — «This client already has a hold or session at this time.» | `supabase/migrations/20261026103449_holds.sql` (check_new_hold), `src/app/slots/actions.ts` (holdSlot), `src/lib/scheduling/messages.ts` | `tests/db/holds.test.ts`, `tests/scheduling/messages.test.ts` | реалізовано |
 | AC-HOLD-26 | прострочене утримання клієнта не заважає новому | `supabase/migrations/20261026103449_holds.sql` (check_new_hold), `src/app/slots/actions.ts` (holdSlot) | `tests/db/holds.test.ts` | реалізовано |
-| AC-HOLD-05 | за хвилину до 24 годин утримання ще «Held» | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-06 | через 24 години — «Expired», слот вільний | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-20 | планувальник бачить прострочене утримання зі статусом «Expired» | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-28 | прострочене утримання видно до початку слоту | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-29 | з початку слоту прострочене утримання в списку не показано | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-37 | прострочене утримання знову утримано за тим самим клієнтом — «Held» до 2026-11-04 15:00, старий «Expired» зник зі списку | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-38 | список утримань — лише «Held» і «Expired», за часом слоту від найближчого | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-42 | утримання «Held» зникає зі списку з початком слоту | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-43 | запис «Expired» лишається до початку слоту, навіть якщо слот утримано за іншим клієнтом | — | — | відкладено (чекає реалізації) |
-| AC-HOLD-44 | терапевт за прямим посиланням на сторінки планувальника — «Only schedulers and admins can view this page.» | — | — | відкладено (чекає реалізації) |
+| AC-HOLD-05 | за хвилину до 24 годин утримання ще «Held» | `src/lib/scheduling/visibility.ts` (schedulerHolds), `src/app/holds/page.tsx` | `tests/scheduling/visibility.test.ts` | реалізовано |
+| AC-HOLD-06 | через 24 години — «Expired», слот вільний | `src/lib/scheduling/visibility.ts` (schedulerHolds), `src/app/holds/page.tsx` | `tests/scheduling/visibility.test.ts` | реалізовано |
+| AC-HOLD-20 | планувальник бачить прострочене утримання зі статусом «Expired» | `src/lib/scheduling/visibility.ts` (schedulerHolds), `src/app/holds/page.tsx` | `tests/scheduling/visibility.test.ts` | реалізовано |
+| AC-HOLD-28 | прострочене утримання видно до початку слоту | `src/lib/scheduling/visibility.ts` (schedulerHolds), `src/app/holds/page.tsx` | `tests/scheduling/visibility.test.ts` | реалізовано |
+| AC-HOLD-29 | з початку слоту прострочене утримання в списку не показано | `src/lib/scheduling/visibility.ts` (schedulerHolds), `src/app/holds/page.tsx` | `tests/scheduling/visibility.test.ts` | реалізовано |
+| AC-HOLD-37 | прострочене утримання знову утримано за тим самим клієнтом — «Held» до 2026-11-04 15:00, старий «Expired» зник зі списку | `src/lib/scheduling/visibility.ts` (schedulerHolds), `src/app/holds/page.tsx`, `supabase/migrations/20261026103449_holds.sql` (check_new_hold) | `tests/scheduling/visibility.test.ts`, `tests/db/holds.test.ts` | реалізовано |
+| AC-HOLD-38 | список утримань — лише «Held» і «Expired», за часом слоту від найближчого | `src/lib/scheduling/visibility.ts` (schedulerHolds), `src/app/holds/page.tsx` | `tests/scheduling/visibility.test.ts` | реалізовано |
+| AC-HOLD-42 | утримання «Held» зникає зі списку з початком слоту | `src/lib/scheduling/visibility.ts` (schedulerHolds), `src/app/holds/page.tsx` | `tests/scheduling/visibility.test.ts` | реалізовано |
+| AC-HOLD-43 | запис «Expired» лишається до початку слоту, навіть якщо слот утримано за іншим клієнтом | `src/lib/scheduling/visibility.ts` (schedulerHolds), `src/app/holds/page.tsx` | `tests/scheduling/visibility.test.ts` | реалізовано |
+| AC-HOLD-44 | терапевт за прямим посиланням на сторінки планувальника — «Only schedulers and admins can view this page.» | `src/lib/scheduling/visibility.ts` (staffPageRefusal), `src/app/_components/staff-page-refusal.tsx`, `src/app/holds/page.tsx`, `src/app/slots/page.tsx` | `tests/scheduling/visibility.test.ts`, `tests/db/holds.test.ts` | реалізовано |
 | AC-HOLD-12 | підтвердження — «Confirmed», без «Held until», слот недоступний і після 24 годин | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-19 | адміністратор утримує й підтверджує, як планувальник | — | — | відкладено (чекає реалізації) |
 | AC-HOLD-23 | підтвердження за хвилину до початку слоту | — | — | відкладено (чекає реалізації) |

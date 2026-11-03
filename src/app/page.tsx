@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { AppNav } from "@/app/_components/app-nav";
 import { ErrorMessage } from "@/app/_components/error-message";
-import { ClientsIcon, SlotsIcon } from "@/components/ui/icons";
+import { ClientsIcon, HoldsIcon, SlotsIcon } from "@/components/ui/icons";
 import { LinkCard } from "@/components/ui/link-card";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/require-role";
@@ -10,6 +10,7 @@ import type { Role } from "@/lib/auth/roles";
 type Section = { href: string; icon: ReactNode; title: string; description: string };
 const STAFF_SECTIONS: Section[] = [
   { href: "/slots", icon: <SlotsIcon />, title: "Slots", description: "See a therapist's day and hold a free slot for a client." },
+  { href: "/holds", icon: <HoldsIcon />, title: "Holds", description: "Held and expired holds, nearest slot first." },
   { href: "/clients", icon: <ClientsIcon />, title: "Clients", description: "All client cards. Create a card from the intake form." },
 ];
 const SECTIONS: Record<Role, Section[]> = {
