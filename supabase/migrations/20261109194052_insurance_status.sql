@@ -35,8 +35,9 @@ create policy client_insurance_select_visible
     or ((select private.has_role('therapist')) and private.is_own_client(client_id))
   );
 
--- Позначають лише admin і scheduler (матриця прав PM; AC-INS-02, 03). Терапевт — 42501 на insert і на гілці
--- on conflict, 0 рядків на прямому update (AC-INS-05).
+-- Позначають лише admin і scheduler (матриця прав PM; AC-INS-02, 03). Терапевт — 42501 від with check політики insert
+-- (і коли рядок уже є: запропонований рядок перевіряється до on conflict; update-політика — друга лінія), 0 рядків на
+-- прямому update (AC-INS-05).
 create policy client_insurance_insert_staff
   on public.client_insurance
   for insert
