@@ -19,4 +19,11 @@ describe("insuranceLine: рядок «Insurance: <статус>» у картц�
   it("AC-INS-04: позначено «Not accepted» — «Insurance: Not accepted»", () => {
     expect(insuranceLine("not_accepted")).toBe("Insurance: Not accepted");
   });
+
+  // «Not set» — лише відсутність рядка (null). Значення поза check client_insurance_status_check означає, що схема й
+  // застосунок розійшлися: картка не має мовчки показати «Not set» замість справжнього статусу.
+  it("AC-INS-01: невідоме значення статусу — помилка, а не «Insurance: Not set»", () => {
+    expect(() => insuranceLine("not_set")).toThrow(/not_set/);
+    expect(() => insuranceLine("")).toThrow(/Unknown insurance status/);
+  });
 });

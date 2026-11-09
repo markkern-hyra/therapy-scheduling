@@ -8,7 +8,10 @@ export const INSURANCE_STATUSES = [
 
 // Рядок у картці клієнта — текстом, не лише кольором (Припущення PM): «Insurance: Not set» (AC-INS-01), «Insurance:
 // Verified» (AC-INS-02) …
+// Значення поза списком — схема й застосунок розійшлися: помилка, а не «Not set» замість справжнього статусу.
 export function insuranceLine(status: string | null): string {
-  const label = INSURANCE_STATUSES.find((s) => s.value === status)?.label ?? "Not set";
+  if (status === null) return "Insurance: Not set";
+  const label = INSURANCE_STATUSES.find((s) => s.value === status)?.label;
+  if (!label) throw new Error(`Unknown insurance status: ${status}`);
   return `Insurance: ${label}`;
 }
