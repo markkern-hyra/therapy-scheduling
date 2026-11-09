@@ -15,7 +15,9 @@ const ROLES_CLIENTS = "supabase/migrations/20261021155328_roles_and_clients.sql"
 const CLIENT_CARDS = "supabase/migrations/20261026104702_client_cards.sql";
 const OWN_CLIENTS = "supabase/migrations/20261026110054_own_clients.sql";
 const OWN_CLIENT_RULE = "supabase/migrations/20261102151752_own_client_rule.sql";
+const INSURANCE = "supabase/migrations/20261109194052_insurance_status.sql";
 const CARDS_DB = "tests/db/client-cards.test.ts";
+const INSURANCE_DB = "tests/db/insurance.test.ts";
 const OWN_DB = "tests/db/own-clients.test.ts";
 
 export const mutants = [
@@ -66,6 +68,50 @@ export const mutants = [
     what: "is_own_client: клієнт із чужим утриманням теж вважається своїм",
     find: "where h.client_id = p_client\n      and s.therapist_id = (select auth.uid())\n",
     replace: "where h.client_id = p_client\n",
+  },
+  // Зріз 3 (impl-insurance-status): правила статусу страхування живуть у SQL — відмова терапевту (AC-INS-05),
+  // анонімові (AC-INS-06) і видимість лише своїх клієнтів (AC-INS-04).
+  {
+    id: "I1", kind: "sql", ac: "AC-INS-05", file: INSURANCE, tests: [INSURANCE_DB],
+    what: "client_insurance_insert_staff: статус позначає будь-хто з входом",
+    find: "  for insert\n  to authenticated\n  with check ((select private.has_role('admin', 'scheduler')));",
+    replace: "  for insert\n  to authenticated\n  with check (true);",
+  },
+  {
+    id: "I2", kind: "sql", ac: "AC-INS-05", file: INSURANCE, tests: [INSURANCE_DB],
+    what: "client_insurance_insert_staff: до дозволених ролей додано therapist",
+    find: "  for insert\n  to authenticated\n  with check ((select private.has_role('admin', 'scheduler')));",
+    replace: "  for insert\n  to authenticated\n  with check ((select private.has_role('admin', 'scheduler', 'therapist')));",
+  },
+  {
+    id: "I3", kind: "sql", ac: "AC-INS-05", file: INSURANCE, tests: [INSURANCE_DB],
+    what: "client_insurance_update_staff: статус змінює будь-хто з входом",
+    find: "  using ((select private.has_role('admin', 'scheduler')))\n  with check ((select private.has_role('admin', 'scheduler')));",
+    replace: "  using (true)\n  with check (true);",
+  },
+  {
+    id: "I4", kind: "sql", ac: "AC-INS-06", file: INSURANCE, tests: [INSURANCE_DB],
+    what: "set_insurance_status: функцію може викликати й відвідувач без входу",
+    find: "revoke execute on function public.set_insurance_status(uuid, text) from public, anon;",
+    replace: "grant execute on function public.set_insurance_status(uuid, text) to anon;",
+  },
+  {
+    id: "I5", kind: "sql", ac: "AC-INS-06", file: INSURANCE, tests: [INSURANCE_DB],
+    what: "client_insurance: відвідувач без входу читає статуси",
+    find: "grant select on table public.client_insurance to authenticated;",
+    replace: "grant select on table public.client_insurance to authenticated, anon;",
+  },
+  {
+    id: "I6", kind: "sql", ac: "AC-INS-04", file: INSURANCE, tests: [INSURANCE_DB],
+    what: "client_insurance_select_visible: терапевт бачить статус будь-якого клієнта, а не лише своїх",
+    find: "    or ((select private.has_role('therapist')) and private.is_own_client(client_id))\n",
+    replace: "    or (select private.has_role('therapist'))\n",
+  },
+  {
+    id: "I7", kind: "sql", ac: "Припущення PM (AC-INS-02)", file: INSURANCE, tests: [INSURANCE_DB],
+    what: "client_insurance_status_check: «Not set» можна позначити значенням not_set",
+    find: "check (status in ('verified', 'not_accepted', 'private_pay'))",
+    replace: "check (status in ('not_set', 'verified', 'not_accepted', 'private_pay'))",
   },
 ];
 

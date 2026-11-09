@@ -16,6 +16,7 @@ const FLOORED: string[] = [
   "auth/access",
   "auth/roles",
   "scheduling/clients",
+  "scheduling/insurance",
   "scheduling/links",
   "scheduling/messages",
   "scheduling/status",

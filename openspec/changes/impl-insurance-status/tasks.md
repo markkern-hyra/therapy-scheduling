@@ -7,7 +7,7 @@
 
 ## 1. Статус у картці й права в базі
 
-- [ ] 1.1 Міграція `insurance_status`: таблиця `client_insurance`, RLS, GRANT, політики select / insert / update і функція `set_insurance_status`
+- [x] 1.1 Міграція `insurance_status`: таблиця `client_insurance`, RLS, GRANT, політики select / insert / update і функція `set_insurance_status`
   (design.md, «Дані й RLS»); `insurance.ts` (`insuranceLine`) під підлогою покриття; у картці — `Card` «Insurance» з
   рядком «Insurance: <статус>»; типи БД.
   Тести: unit — «Insurance: Not set» без рядка; база (PGlite) — початковий стан, відмова терапевту на виклик `set_insurance_status`, insert і
