@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { DescriptionList } from "@/components/ui/description-list";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth/require-role";
+import { isStaff } from "@/lib/auth/roles";
 import { cardFields, missingCardText } from "@/lib/scheduling/clients";
 
 const BACK = { href: "/clients", label: "Clients" };
@@ -15,9 +16,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 // Картка клієнта. Хто що бачить, вирішує RLS: admin і scheduler — усі картки (AC-CARD-10), терапевт — лише своїх
 // клієнтів. Немає рядка — чужа, прострочена чи неіснуюча картка — лише текст за роллю, без даних (AC-CARD-05, 08, 14, 16).
 // Статус страхування — у тому самому запиті (client_insurance 1:1, та сама видимість; рядка немає — «Not set», AC-INS-01).
-export default async function ClientPage({ params }: PageProps<"/clients/[id]">) {
+export default async function ClientPage({ params, searchParams }: PageProps<"/clients/[id]">) {
   const { supabase, role, name } = await requireRole();
   const { id } = await params;
+  const { notice, error: actionError } = await searchParams;
   const { data: client, error } = UUID.test(id)
     ? await supabase
         .from("clients")
@@ -60,7 +62,13 @@ export default async function ClientPage({ params }: PageProps<"/clients/[id]">)
                 ]}
               />
             </Card>
-            <InsuranceCard insurance={client.client_insurance} />
+            <InsuranceCard
+              clientId={id}
+              insurance={client.client_insurance}
+              canMark={isStaff(role)}
+              notice={notice}
+              error={actionError}
+            />
           </>
         ) : (
           <>

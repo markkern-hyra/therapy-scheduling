@@ -113,6 +113,13 @@ export const mutants = [
     find: "check (status in ('verified', 'not_accepted', 'private_pay'))",
     replace: "check (status in ('not_set', 'verified', 'not_accepted', 'private_pay'))",
   },
+  {
+    id: "I8", kind: "ts", ac: "AC-INS-05", file: "src/app/clients/actions.ts",
+    tests: ["tests/scheduling/insurance-action.test.ts"],
+    what: "setInsuranceStatus: прибрано перевірку ролі до запису — дія викликає функцію бази й для терапевта",
+    find: "  if (!isStaff(role)) redirect(back);\n",
+    replace: "",
+  },
 ];
 
 // Приклади з демо (інша схема — у вашому репо цих файлів немає, тож не розкоментовуйте як є):

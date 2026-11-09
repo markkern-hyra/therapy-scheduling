@@ -32,7 +32,7 @@
 | `card` / `card-foreground` | поверхні: картки, списки, поля, шапка | `oklch(1 0 0)` / `oklch(0.255 0.012 60)` | `oklch(0.215 0.007 70)` / `oklch(0.95 0.006 80)` | `bg-card`, `text-card-foreground` |
 | `primary` / `primary-foreground` | основна дія (одна на екран), посилання, знак продукту | `oklch(0.5 0.08 172)` / `oklch(0.985 0.003 90)` | `oklch(0.77 0.09 170)` / `oklch(0.2 0.03 175)` | `bg-primary`, `text-primary-foreground`, `text-primary` |
 | `primary-hover` | тло головної кнопки при наведенні | `oklch(0.45 0.075 172)` | `oklch(0.82 0.08 170)` | `hover:bg-primary-hover` (лише в `Button`) |
-| `primary-soft` | м'яке тло акценту: поточний розділ, ініціали, обраний `Choice`, коло іконки `LinkCard` | `oklch(0.955 0.025 172)` | `oklch(0.3 0.04 172)` | `bg-primary-soft` (лише в `ui`) |
+| `primary-soft` | м'яке тло акценту: поточний розділ, ініціали, обраний `Choice`, коло іконки `LinkCard`, `Alert success` | `oklch(0.955 0.025 172)` | `oklch(0.3 0.04 172)` | `bg-primary-soft` (лише в `ui`) |
 | `muted` / `muted-foreground` | наведення, нейтральні бейджі, коло порожнього стану; підписи, «Not provided» | `oklch(0.955 0.006 75)` / `oklch(0.47 0.013 60)` | `oklch(0.26 0.008 70)` / `oklch(0.72 0.012 75)` | `bg-muted`, `text-muted-foreground` |
 | `destructive` / `destructive-soft` | текст і тло помилки (`Alert`) | `oklch(0.52 0.17 28)` / `oklch(0.965 0.016 25)` | `oklch(0.72 0.15 25)` / `oklch(0.27 0.04 25)` | `text-destructive`, `bg-destructive-soft` |
 | `border` | роздільники, рамки поверхонь | `oklch(0.905 0.007 75)` | `oklch(0.3 0.008 70)` | `border-border`, `divide-border` |
@@ -137,14 +137,14 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 | `BrandMark` | — | знак продукту: монограма «TS» на `primary`, `aria-hidden` (назва — поруч текстом) |
 | `LinkCard` | — | розділ застосунку плиткою на головній: іконка в колі `primary-soft`, назва (`primary`) і для чого розділ; наведення — межа `input` |
 | `EmptyState` | — | порожній список: іконка в колі `muted`, текст AC дослівно |
-| `Alert` | помилка | `role="alert"`, тло `destructive-soft`, іконка й текст дослівно з AC, над формою чи списком |
+| `Alert` | `error` (типово), `success` | `error` — `role="alert"`, тло `destructive-soft`, `AlertIcon`; `success` — дію виконано («Insurance status saved.», AC-INS-02): `role="status"`, тло `primary-soft`, текст `card-foreground`, `SavedIcon`; текст дослівно з AC, над формою чи списком |
 | `NavLink` | — | пункт шапки з іконкою; поточний розділ — `aria-current="page"` і тло `primary-soft`, інші — `muted-foreground`; єдиний клієнтський (`"use client"`) компонент в `ui` — потребує `usePathname` |
-| Іконки (`icons.tsx`) | `SlotsIcon`, `ClientsIcon`, `HoldsIcon`, `ScheduleIcon`, `SignOutIcon`, `AddIcon`, `BackIcon`, `PreviousIcon`, `NextIcon`, `AlertIcon`, `TimeIcon`, `ClientIcon` | лінійні іконки `lucide-react`, 16px, товщина 1.9, `aria-hidden`; лише цей набір і завжди поруч із підписом — сенс несе текст |
+| Іконки (`icons.tsx`) | `SlotsIcon`, `ClientsIcon`, `HoldsIcon`, `ScheduleIcon`, `SignOutIcon`, `AddIcon`, `BackIcon`, `PreviousIcon`, `NextIcon`, `AlertIcon`, `SavedIcon`, `TimeIcon`, `ClientIcon` | лінійні іконки `lucide-react`, 16px, товщина 1.9, `aria-hidden`; лише цей набір і завжди поруч із підписом — сенс несе текст |
 
 Компоненти застосунку (`AppNav` — знак і назва, розділи ролі з іконками, аватар з ім'ям і роллю, «Sign out»;
 `AuthShell` — вхід (з призначенням продукту) і «доступу ще немає» (лише знак і назва); назва й призначення — `PRODUCT`
 у `src/lib/product.ts`; `ErrorMessage`; `StatusBadge`, що перетворює статус на варіант `Badge`;
-`ClientCardForm`; `SubmitButton` — кнопка серверної форми зі станом надсилання) — у `src/app/_components/` і складаються з компонентів `ui` без власних кольорів.
+`ClientCardForm`; `InsuranceCard` — рядок «Insurance: <статус>» і для admin та scheduler позначка трьома `Choice`; `SubmitButton` — кнопка серверної форми зі станом надсилання) — у `src/app/_components/` і складаються з компонентів `ui` без власних кольорів.
 
 ## 6. Стани
 
@@ -161,7 +161,7 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 | Без ролі | `AuthShell` з повідомленням як `h1`, без навігації й даних | «Your account has no access yet. Contact an administrator.» (AC-CARD-11) |
 | Не увійшов | перенаправлення на сторінку входу | — (AC-CARD-07) |
 | Завантаження | сторінки рендеряться на сервері; окремого індикатора немає; форма під час надсилання — текст кнопки «Creating…» | — |
-| Успіх | повернення на ту саму сторінку з новим рядком у списку (чи перехід на нову картку); окремого повідомлення немає | — |
+| Успіх | повернення на ту саму сторінку з новим рядком у списку (чи перехід на нову картку); окремого повідомлення немає, крім тих, що є в AC: `Alert variant="success"` над формою | «Insurance status saved.» (AC-INS-02) |
 | Недоступна дія | кнопку не показуємо (не `disabled`) | — |
 
 ## 7. Доступність — мінімум

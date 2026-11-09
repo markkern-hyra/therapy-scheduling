@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
+  CircleCheck,
   ClipboardList,
   Clock,
   LogOut,
@@ -31,5 +32,6 @@ export const BackIcon = icon(ChevronLeft);
 export const PreviousIcon = icon(ChevronLeft);
 export const NextIcon = icon(ChevronRight);
 export const AlertIcon = icon(CircleAlert);
+export const SavedIcon = icon(CircleCheck);
 export const TimeIcon = icon(Clock);
 export const ClientIcon = icon(UserRound);
