@@ -23,7 +23,27 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "clients": {
+            "client_insurance": {
+                  Row: {
+                    "client_id": string,"status": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "client_id": string,"status": string
+                  }
+                  Update: {
+                    "client_id"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "client_insurance_client_id_fkey"
+      columns: ["client_id"]
+isOneToOne: true
+      referencedRelation: "clients"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"clients": {
                   Row: {
                     "birth_date": string | null,"created_at": string,"email": string | null,"full_name": string,"guardian_email": string | null,"guardian_name": string | null,"id": string,"kind": string,"language": string | null
                   }
@@ -105,6 +125,9 @@ isOneToOne: false
           Functions: {
             "generate_demo_slots":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           }
+            "set_insurance_status":
+{ Args: { "p_client_id": string,"p_status": string }; Returns: undefined
                            }
             "therapist_schedule":
 { Args: { "p_from": string,"p_to": string }; Returns: { "client_name": string | null,"confirmed_at": string | null,"ends_at": string,"expires_at": string | null,"slot_id": string,"starts_at": string }[]
