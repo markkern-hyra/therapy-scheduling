@@ -137,14 +137,14 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 | `BrandMark` | — | знак продукту: монограма «TS» на `primary`, `aria-hidden` (назва — поруч текстом) |
 | `LinkCard` | — | розділ застосунку плиткою на головній: іконка в колі `primary-soft`, назва (`primary`) і для чого розділ; наведення — межа `input` |
 | `EmptyState` | — | порожній список: іконка в колі `muted`, текст AC дослівно |
-| `Alert` | помилка | `role="alert"`, тло `destructive-soft`, іконка й текст дослівно з AC, над формою чи списком |
+| `Alert` | `error` (типово), `success` | `error` — `role="alert"`, тло `destructive-soft`, `AlertIcon`; `success` — дію виконано («Insurance status saved.», AC-INS-02): `role="status"`, тло `primary-soft`, текст `card-foreground`, `SavedIcon`; текст дослівно з AC, над формою чи списком |
 | `NavLink` | — | пункт шапки з іконкою; поточний розділ — `aria-current="page"` і тло `primary-soft`, інші — `muted-foreground`; єдиний клієнтський (`"use client"`) компонент в `ui` — потребує `usePathname` |
-| Іконки (`icons.tsx`) | `SlotsIcon`, `ClientsIcon`, `HoldsIcon`, `ScheduleIcon`, `SignOutIcon`, `AddIcon`, `BackIcon`, `PreviousIcon`, `NextIcon`, `AlertIcon`, `TimeIcon`, `ClientIcon` | лінійні іконки `lucide-react`, 16px, товщина 1.9, `aria-hidden`; лише цей набір і завжди поруч із підписом — сенс несе текст |
+| Іконки (`icons.tsx`) | `SlotsIcon`, `ClientsIcon`, `HoldsIcon`, `ScheduleIcon`, `SignOutIcon`, `AddIcon`, `BackIcon`, `PreviousIcon`, `NextIcon`, `AlertIcon`, `SavedIcon`, `TimeIcon`, `ClientIcon` | лінійні іконки `lucide-react`, 16px, товщина 1.9, `aria-hidden`; лише цей набір і завжди поруч із підписом — сенс несе текст |
 
 Компоненти застосунку (`AppNav` — знак і назва, розділи ролі з іконками, аватар з ім'ям і роллю, «Sign out»;
 `AuthShell` — вхід (з призначенням продукту) і «доступу ще немає» (лише знак і назва); назва й призначення — `PRODUCT`
 у `src/lib/product.ts`; `ErrorMessage`; `StatusBadge`, що перетворює статус на варіант `Badge`;
-`ClientCardForm`; `SubmitButton` — кнопка серверної форми зі станом надсилання) — у `src/app/_components/` і складаються з компонентів `ui` без власних кольорів.
+`ClientCardForm`; `InsuranceCard` — рядок «Insurance: <статус>» і для admin та scheduler позначка трьома `Choice`; `SubmitButton` — кнопка серверної форми зі станом надсилання) — у `src/app/_components/` і складаються з компонентів `ui` без власних кольорів.
 
 ## 6. Стани
 
@@ -161,7 +161,7 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 | Без ролі | `AuthShell` з повідомленням як `h1`, без навігації й даних | «Your account has no access yet. Contact an administrator.» (AC-CARD-11) |
 | Не увійшов | перенаправлення на сторінку входу | — (AC-CARD-07) |
 | Завантаження | сторінки рендеряться на сервері; окремого індикатора немає; форма під час надсилання — текст кнопки «Creating…» | — |
-| Успіх | повернення на ту саму сторінку з новим рядком у списку (чи перехід на нову картку); окремого повідомлення немає | — |
+| Успіх | повернення на ту саму сторінку з новим рядком у списку (чи перехід на нову картку); окремого повідомлення немає, крім тих, що є в AC: `Alert variant="success"` над формою | «Insurance status saved.» (AC-INS-02) |
 | Недоступна дія | кнопку не показуємо (не `disabled`) | — |
 
 ## 7. Доступність — мінімум

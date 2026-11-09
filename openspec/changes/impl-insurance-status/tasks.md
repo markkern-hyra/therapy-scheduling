@@ -17,7 +17,7 @@
 
 ## 2. Позначка статусу
 
-- [ ] 2.1 `setInsuranceStatus` (requireRole, лише staff, `rpc("set_insurance_status")`), `runAction(…, notice)`, `MESSAGES.INSURANCE_SAVED`,
+- [x] 2.1 `setInsuranceStatus` (requireRole, лише staff, `rpc("set_insurance_status")`), `runAction(…, notice)`, `MESSAGES.INSURANCE_SAVED`,
   `Alert variant="success"` і рядки `DESIGN.md`; форма з трьома `Choice` лише для staff.
   Тести: дія — staff пише й повертає `?notice=INSURANCE_SAVED`, терапевт — без запису; база — планувальник позначає,
   адміністратор змінює, інший планувальник бачить, терапевт бачить статус свого клієнта й не бачить чужого. Доказ, що
