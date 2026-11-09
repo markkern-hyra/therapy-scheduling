@@ -19,7 +19,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export default async function ClientPage({ params, searchParams }: PageProps<"/clients/[id]">) {
   const { supabase, role, name } = await requireRole();
   const { id } = await params;
-  const { notice } = await searchParams;
+  const { notice, error: actionError } = await searchParams;
   const { data: client, error } = UUID.test(id)
     ? await supabase
         .from("clients")
@@ -66,7 +66,8 @@ export default async function ClientPage({ params, searchParams }: PageProps<"/c
               clientId={id}
               insurance={client.client_insurance}
               canMark={isStaff(role)}
-              saved={notice === "INSURANCE_SAVED"}
+              notice={notice}
+              error={actionError}
             />
           </>
         ) : (

@@ -32,7 +32,7 @@
 | `card` / `card-foreground` | поверхні: картки, списки, поля, шапка | `oklch(1 0 0)` / `oklch(0.255 0.012 60)` | `oklch(0.215 0.007 70)` / `oklch(0.95 0.006 80)` | `bg-card`, `text-card-foreground` |
 | `primary` / `primary-foreground` | основна дія (одна на екран), посилання, знак продукту | `oklch(0.5 0.08 172)` / `oklch(0.985 0.003 90)` | `oklch(0.77 0.09 170)` / `oklch(0.2 0.03 175)` | `bg-primary`, `text-primary-foreground`, `text-primary` |
 | `primary-hover` | тло головної кнопки при наведенні | `oklch(0.45 0.075 172)` | `oklch(0.82 0.08 170)` | `hover:bg-primary-hover` (лише в `Button`) |
-| `primary-soft` | м'яке тло акценту: поточний розділ, ініціали, обраний `Choice`, коло іконки `LinkCard` | `oklch(0.955 0.025 172)` | `oklch(0.3 0.04 172)` | `bg-primary-soft` (лише в `ui`) |
+| `primary-soft` | м'яке тло акценту: поточний розділ, ініціали, обраний `Choice`, коло іконки `LinkCard`, `Alert success` | `oklch(0.955 0.025 172)` | `oklch(0.3 0.04 172)` | `bg-primary-soft` (лише в `ui`) |
 | `muted` / `muted-foreground` | наведення, нейтральні бейджі, коло порожнього стану; підписи, «Not provided» | `oklch(0.955 0.006 75)` / `oklch(0.47 0.013 60)` | `oklch(0.26 0.008 70)` / `oklch(0.72 0.012 75)` | `bg-muted`, `text-muted-foreground` |
 | `destructive` / `destructive-soft` | текст і тло помилки (`Alert`) | `oklch(0.52 0.17 28)` / `oklch(0.965 0.016 25)` | `oklch(0.72 0.15 25)` / `oklch(0.27 0.04 25)` | `text-destructive`, `bg-destructive-soft` |
 | `border` | роздільники, рамки поверхонь | `oklch(0.905 0.007 75)` | `oklch(0.3 0.008 70)` | `border-border`, `divide-border` |
