@@ -26,7 +26,7 @@
 
 ## 3. UAT на кожен AC
 
-- [ ] 3.1 `tests/e2e/insurance.spec.ts`: один `test` на кожен AC-INS-01…06 з дослівним «Тоді» (`given` / `when` /
+- [x] 3.1 `tests/e2e/insurance.spec.ts`: один `test` на кожен AC-INS-01…06 з дослівним «Тоді» (`given` / `when` /
   `thenStep`), `@writes` і синтетичні картки з прибиранням; `npm run uat -- --url <прод>` і NC-1 (`npm run uat:nc`);
   звіт `docs/qa/uat/<дата>/`, відео — у описі PR.
   Done when: AC-INS-01, AC-INS-02, AC-INS-03, AC-INS-04, AC-INS-05, AC-INS-06 мають UAT-запис на проді.
