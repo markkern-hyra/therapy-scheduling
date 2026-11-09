@@ -105,7 +105,7 @@ update його не пропускає); анонім не має ні grant н
 | AC-INS-02 | база + дія + e2e | `tests/db/insurance.test.ts`, `tests/scheduling/insurance-action.test.ts`, `tests/e2e/insurance.spec.ts` | — |
 | AC-INS-03 | база + e2e | `tests/db/insurance.test.ts`, `tests/e2e/insurance.spec.ts` | — |
 | AC-INS-04 | база + e2e | `tests/db/insurance.test.ts` (терапевт читає статус свого клієнта, чужого — ні), `tests/e2e/insurance.spec.ts` | SQL-мутант: select без `is_own_client` |
-| AC-INS-05 | база + дія + e2e | `tests/db/insurance.test.ts` (`asUser` therapist1: функція, insert, update), `tests/scheduling/insurance-action.test.ts` | SQL-мутанти: `with check (true)` у insert і update, `therapist` у ролях |
+| AC-INS-05 | база + дія + e2e | `tests/db/insurance.test.ts` (`asUser` therapist1: функція, insert, update), `tests/scheduling/insurance-action.test.ts` | SQL-мутанти: `with check (true)` у insert, `using (true)` і `with check (true)` разом в update (лише `with check` — еквівалентний мутант: `using` уже відсікає терапевта), `therapist` у ролях |
 | AC-INS-06 | база + e2e | `tests/db/insurance.test.ts` (`asAnon`), `tests/e2e/insurance.spec.ts` | SQL-мутант: `select` видано `anon` замість `revoke` |
 
 UAT на проді: `@writes` для AC, що змінюють статус; синтетичні картки `uat-<запуск>-…@example.test` створює й прибирає
