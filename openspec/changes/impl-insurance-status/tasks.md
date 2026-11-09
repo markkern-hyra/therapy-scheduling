@@ -21,7 +21,7 @@
   `Alert variant="success"` і рядки `DESIGN.md`; форма з трьома `Choice` лише для staff.
   Тести: дія — staff пише й повертає `?notice=INSURANCE_SAVED`, терапевт — без запису; база — планувальник позначає,
   адміністратор змінює, інший планувальник бачить, терапевт бачить статус свого клієнта й не бачить чужого. Доказ, що
-  падає: SQL-мутант select без `is_own_client`; Stryker на перевірку ролі в дії.
+  падає: SQL-мутант select без `is_own_client`; TS-мутант на перевірку ролі в дії (`npm run mutation:sql` → I8).
   Done when: AC-INS-02, AC-INS-03, AC-INS-04.
 
 ## 3. UAT на кожен AC
