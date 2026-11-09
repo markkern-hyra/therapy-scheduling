@@ -7,17 +7,17 @@
 
 ## 1. Статус у картці й права в базі
 
-- [ ] 1.1 Міграція `insurance_status`: таблиця `client_insurance`, RLS, GRANT і політики select / insert / update
+- [ ] 1.1 Міграція `insurance_status`: таблиця `client_insurance`, RLS, GRANT, політики select / insert / update і функція `set_insurance_status`
   (design.md, «Дані й RLS»); `insurance.ts` (`insuranceLine`) під підлогою покриття; у картці — `Card` «Insurance» з
   рядком «Insurance: <статус>»; типи БД.
-  Тести: unit — «Insurance: Not set» без рядка; база (PGlite) — початковий стан, відмова терапевту на insert / upsert /
+  Тести: unit — «Insurance: Not set» без рядка; база (PGlite) — початковий стан, відмова терапевту на виклик `set_insurance_status`, insert і
   update з незмінним статусом, відмова анонімові. Доказ, що падає: SQL-мутанти на політики insert / update і grant
   анонімові — `npm run mutation:sql` → `KILLED`.
   Done when: AC-INS-01, AC-INS-05, AC-INS-06.
 
 ## 2. Позначка статусу
 
-- [ ] 2.1 `setInsuranceStatus` (requireRole, лише staff, upsert), `runAction(…, notice)`, `MESSAGES.INSURANCE_SAVED`,
+- [ ] 2.1 `setInsuranceStatus` (requireRole, лише staff, `rpc("set_insurance_status")`), `runAction(…, notice)`, `MESSAGES.INSURANCE_SAVED`,
   `Alert variant="success"` і рядки `DESIGN.md`; форма з трьома `Choice` лише для staff.
   Тести: дія — staff пише й повертає `?notice=INSURANCE_SAVED`, терапевт — без запису; база — планувальник позначає,
   адміністратор змінює, інший планувальник бачить, терапевт бачить статус свого клієнта й не бачить чужого. Доказ, що

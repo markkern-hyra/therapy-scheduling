@@ -33,11 +33,19 @@ null check (status in ('verified', 'not_accepted', 'private_pay')))`. Рядка
   значення, а delete не видано, тож повернути «Not set» не можна ні на сторінці, ні прямим запитом.
 - Історії «хто й коли» немає (поза межами PM), тож лише остання позначка, без `updated_at` / `updated_by`.
 
-### 2. Запис — один upsert клієнтом користувача (AC-INS-02, 03)
+### 2. Запис — функція `public.set_insurance_status`, `security invoker` (AC-INS-02, 03, 05)
 
-`supabase.from("client_insurance").upsert({ client_id, status })` — один `insert … on conflict (client_id) do update`,
-одна транзакція; RPC не потрібна (одна таблиця, без перевірки поза рядком). Одночасні позначки двох планувальників дають
-останню (історії немає).
+`supabase.rpc("set_insurance_status", { p_client_id, p_status })` → `insert … on conflict (client_id) do update set
+status = excluded.status`: одна інструкція, одна транзакція, права й RLS — користувача, що викликає (`security invoker`,
+`set search_path = ''`).
+
+- Чому не `.from("client_insurance").upsert(…)`: PostgREST пише в `do update set` усі колонки тіла, зокрема
+  `client_id`, тож колонковий `grant update (status)` відхилив би запис планувальника (`42501`; знайшов тест-спершу на
+  PGlite). Розширити grant до `update (client_id, …)` означало б дати змінювати власника рядка — функція тримає grant
+  вузьким.
+- `execute` — лише `authenticated` (`revoke … from public, anon`). Терапевт, що викликає функцію напряму, упирається в
+  ті самі політики insert / update — `42501`, статус не змінено.
+- Одночасні позначки двох планувальників дають останню (історії немає).
 
 ### 3. Повідомлення про успіх — `?notice=` у `runAction` (AC-INS-02)
 
@@ -69,20 +77,22 @@ null check (status in ('verified', 'not_accepted', 'private_pay')))`. Рядка
 | Що | Рішення | AC |
 |---|---|---|
 | RLS | `enable row level security`; `revoke all … from anon, authenticated` | AC-INS-05, 06 |
-| GRANT | `select` і `insert (client_id, status)`, `update (status)` — `authenticated`; `delete` не видано; `service_role` — усе (UAT-прибирання й сид) | AC-INS-02, 05 |
+| GRANT | `select` і `insert (client_id, status)`, `update (status)` — `authenticated`; `delete` не видано; `service_role` — усе (UAT-прибирання й сид); `execute` функції `set_insurance_status` — лише `authenticated` | AC-INS-02, 05, 06 |
 | `client_insurance_select_visible` | `select`: `has_role('admin','scheduler')` або (`has_role('therapist')` і `private.is_own_client(client_id)`) — та сама видимість, що в картки | AC-INS-01, 03, 04 |
 | `client_insurance_insert_staff` | `insert with check (has_role('admin','scheduler'))` | AC-INS-02, 05 |
 | `client_insurance_update_staff` | `update using (has_role('admin','scheduler')) with check (has_role('admin','scheduler'))` | AC-INS-03, 05 |
 | Анонім | жодного grant: `anon` отримує `42501` | AC-INS-06 |
 
-Upsert для терапевта: `insert … on conflict do update` спершу перевіряє `with check` політики insert — терапевт отримує
-`42501`, рядок не змінено. Прямий `update` терапевта — 0 рядків (політика update його не пропускає).
+Функція для терапевта: без рядка — `with check` політики insert, з рядком — `using` політики update на гілці
+`on conflict` (Postgres кидає помилку, а не пропускає рядок) — в обох випадках `42501`, рядок не змінено. Прямий
+`update` таблиці терапевтом — 0 рядків (політика update його не пропускає); анонім не має ні grant на таблицю, ні
+`execute` функції.
 
 ## Auth
 
 | Де | Перевірка | AC |
 |---|---|---|
-| `setInsuranceStatus` (server action, `src/app/clients/actions.ts`) | `requireRole()` (getClaims → роль з `profiles`) до запису; не `isStaff` — без запису, назад на картку | AC-INS-05 |
+| `setInsuranceStatus` (server action, `src/app/clients/actions.ts`) | `requireRole()` (getClaims → роль з `profiles`) до запису; не `isStaff` — без виклику `set_insurance_status`, назад на картку | AC-INS-05 |
 | База | політики insert / update лише для staff — відмова й на прямий запит в обхід дії та сторінок | AC-INS-05 |
 | Сторінка картки | `requireRole()` — без входу `/login`; форма лише для `isStaff` | AC-INS-04, 06 |
 
@@ -94,7 +104,7 @@ Upsert для терапевта: `insert … on conflict do update` сперш�
 | AC-INS-02 | база + дія + e2e | `tests/db/insurance.test.ts`, `tests/scheduling/insurance-action.test.ts`, `tests/e2e/insurance.spec.ts` | — |
 | AC-INS-03 | база + e2e | `tests/db/insurance.test.ts`, `tests/e2e/insurance.spec.ts` | — |
 | AC-INS-04 | база + e2e | `tests/db/insurance.test.ts` (терапевт читає статус свого клієнта, чужого — ні), `tests/e2e/insurance.spec.ts` | SQL-мутант: select без `is_own_client` |
-| AC-INS-05 | база + дія + e2e | `tests/db/insurance.test.ts` (`asUser` therapist1: insert / upsert / update), `tests/scheduling/insurance-action.test.ts` | SQL-мутанти: `with check (true)` у insert і update, `therapist` у ролях |
+| AC-INS-05 | база + дія + e2e | `tests/db/insurance.test.ts` (`asUser` therapist1: функція, insert, update), `tests/scheduling/insurance-action.test.ts` | SQL-мутанти: `with check (true)` у insert і update, `therapist` у ролях |
 | AC-INS-06 | база + e2e | `tests/db/insurance.test.ts` (`asAnon`), `tests/e2e/insurance.spec.ts` | SQL-мутант: `select` видано `anon` замість `revoke` |
 
 UAT на проді: `@writes` для AC, що змінюють статус; синтетичні картки `uat-<запуск>-…@example.test` створює й прибирає
