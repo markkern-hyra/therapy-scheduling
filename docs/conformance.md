@@ -94,3 +94,9 @@
 | AC-CARD-14 | з початком слоту утримання клієнт більше не свій; за посиланням — відмова | `supabase/migrations/20261102151752_own_client_rule.sql` (private.is_own_client), `src/app/clients/page.tsx`, `src/app/clients/[id]/page.tsx` | `tests/db/own-clients.test.ts` | реалізовано |
 | AC-CARD-15 | карток ще немає — «No clients yet. Create a client card from an intake form.» | `src/lib/scheduling/clients.ts` (emptyClientsText), `src/app/clients/page.tsx` | `tests/scheduling/clients.test.ts` | реалізовано |
 | AC-CARD-16 | неіснуюча картка: планувальник — «This client card doesn't exist.», терапевт — відмова як для чужої | `src/lib/scheduling/clients.ts` (missingCardText), `src/app/clients/[id]/page.tsx` | `tests/scheduling/clients.test.ts`, `tests/e2e/client-cards.spec.ts` | реалізовано |
+| AC-INS-01 | статус ще не позначено — у картці «Insurance: Not set» | — | — | відкладено (чекає реалізації) |
+| AC-INS-02 | scheduler1 позначає «Verified» — «Insurance status saved.», статус лишається після повторного відкриття | — | — | відкладено (чекає реалізації) |
+| AC-INS-03 | admin1 змінює на «Private pay» — і admin1, і scheduler2 бачать «Insurance: Private pay» | — | — | відкладено (чекає реалізації) |
+| AC-INS-04 | therapist1 бачить статус свого клієнта, змінити йому не запропоновано | — | — | відкладено (чекає реалізації) |
+| AC-INS-05 | therapist1 напряму, в обхід сторінок, не змінює статус — scheduler1 бачить той самий | — | — | відкладено (чекає реалізації) |
+| AC-INS-06 | без входу картка за посиланням — лише сторінка входу, статус не змінився | — | — | відкладено (чекає реалізації) |
