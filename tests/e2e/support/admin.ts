@@ -109,3 +109,94 @@ export async function deleteUatUsers(onlyEmail?: string): Promise<CleanupResult>
   );
   return { deleted, remaining, leftoverRequests };
 }
+
+// ── Синтетичні картки клієнтів зрізу 3 (impl-insurance-status, UAT AC-INS-01…06) ─────────────────────────────────────
+// Картка uat-<run>-<суфікс>@example.test — лише для одного тесту; прибирання — deleteUatClients (утримання й статус
+// страхування картки видаляються каскадом: holds.client_id і client_insurance.client_id — on delete cascade).
+
+/** Нова картка дорослого з анкети; статусу страхування немає («Not set»). Повертає id картки. */
+export async function createUatClient(suffix: string, fullName: string): Promise<string> {
+  const { data, error } = await adminClient()
+    .from("clients")
+    .insert({ kind: "adult", full_name: fullName, email: uatEmail(suffix), birth_date: "1990-05-14", language: "English" })
+    .select("id")
+    .single();
+  if (error) throw error;
+  return data.id as string;
+}
+
+/** «Дано»: статус перевірки страхування картки в обхід RLS (null — «Not set», рядка немає). */
+export async function setUatInsurance(clientId: string, status: string | null): Promise<void> {
+  const table = adminClient().from("client_insurance");
+  const { error } = status
+    ? await table.upsert({ client_id: clientId, status }, { onConflict: "client_id" })
+    : await table.delete().eq("client_id", clientId);
+  if (error) throw error;
+}
+
+/** Що зберігає база — для невидимих частин «Тоді» («статус не змінився»). */
+export async function uatInsuranceOf(clientId: string): Promise<string | null> {
+  const { data, error } = await adminClient()
+    .from("client_insurance")
+    .select("status")
+    .eq("client_id", clientId)
+    .maybeSingle();
+  if (error) throw error;
+  return (data?.status as string | undefined) ?? null;
+}
+
+/**
+ * «client6 — свій клієнт therapist1»: scheduler1 утримує за карткою найближчий вільний слот терапевта, що почнеться не
+ * раніше ніж за добу. Від імені scheduler1, а не секретним ключем: тригер утримання вимагає роль планувальника.
+ */
+export async function holdUatClientWith(clientId: string, therapistEmail: string): Promise<void> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const password = process.env.UAT_PASSWORD_SCHEDULER ?? process.env.DEMO_USER_PASSWORD;
+  if (!url || !key || !password) throw new Error("Для утримання потрібні NEXT_PUBLIC_SUPABASE_* і пароль scheduler1");
+  const scheduler = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { error: signInError } = await scheduler.auth.signInWithPassword({ email: "scheduler1@example.test", password });
+  if (signInError) throw signInError;
+  const { data: therapist, error: therapistError } = await adminClient()
+    .from("profiles")
+    .select("id")
+    .eq("email", therapistEmail)
+    .single();
+  if (therapistError) throw therapistError;
+  const { data: slots, error: slotsError } = await scheduler
+    .from("slots")
+    .select("id")
+    .eq("therapist_id", therapist.id)
+    .gt("starts_at", new Date(Date.now() + 24 * 3_600_000).toISOString())
+    .order("starts_at")
+    .limit(40);
+  if (slotsError) throw slotsError;
+  for (const slot of slots ?? []) {
+    const { error } = await scheduler.from("holds").insert({ slot_id: slot.id, client_id: clientId });
+    if (!error) return;
+    if (!/SLOT_TAKEN/.test(error.message)) throw error;
+  }
+  throw new Error(`немає вільного слота ${therapistEmail} для утримання синтетичної картки`);
+}
+
+/** Видаляє всі картки uat-*@example.test (і залишки обірваних прогонів); повертає, скільки лишилось. */
+export async function deleteUatClients(): Promise<{ deleted: number; remaining: number }> {
+  const supabase = adminClient();
+  const uatCards = async () => {
+    const { data, error } = await supabase.from("clients").select("id, email").like("email", "uat-%@example.test");
+    if (error) throw error;
+    return (data ?? []).filter((c) => UAT_EMAIL.test(String(c.email)));
+  };
+  const targets = await uatCards();
+  if (targets.length) {
+    const { error } = await supabase
+      .from("clients")
+      .delete()
+      .in(
+        "id",
+        targets.map((c) => c.id),
+      );
+    if (error) throw error;
+  }
+  return { deleted: targets.length, remaining: (await uatCards()).length };
+}
