@@ -198,5 +198,12 @@ export async function deleteUatClients(): Promise<{ deleted: number; remaining: 
       );
     if (error) throw error;
   }
-  return { deleted: targets.length, remaining: (await uatCards()).length };
+  const remaining = (await uatCards()).length;
+  // Той самий журнал, що й для користувачів: рядок «Прибирання» звіту рахує й синтетичні картки, які прибрав прогін.
+  mkdirSync("test-results", { recursive: true });
+  appendFileSync(
+    CLEANUP_LOG,
+    `${JSON.stringify({ at: new Date().toISOString(), scope: "uat-clients", deleted: targets.map((c) => String(c.email)), remaining })}\n`,
+  );
+  return { deleted: targets.length, remaining };
 }

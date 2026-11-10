@@ -11,4 +11,4 @@
 7. **Супроводжуваність** — не потрібно окремо (fallow audit уже є); урок: згенерований `database.types.ts` виключати з перевірок дублювання.
 8. **Рівні автономії** — не потрібно: прод спільний з PM, злиття лише після CodeRabbit і перевірок; автозлиття — лише в двійнику.
 9. **Бюджети** — не потрібно як ворота (підписка, зупиняє людина); вартість розбору UAT уже пише `docs/qa/uat/<дата>/report.md`.
-10. **Готовність (`doctor`)** — **візьмемо:** у `docs/bootstrap.md` перевірку `claude auth status` перед UAT (на macOS без `USER` — «Not logged in»).
+10. **Готовність (`doctor`)** — **візьмемо:** у `docs/bootstrap.md` перевірку `claude --version` і `claude auth status` тим самим `claude`, з тим самим середовищем, що й `scripts/uat/review.mjs` (у WS8 старий `/usr/local/bin/claude` дав NEEDS-HUMAN на все; у фабриці без `USER` — «Not logged in»).

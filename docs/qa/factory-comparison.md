@@ -2,7 +2,7 @@
 
 - Зріз 3: планувальник або адміністратор позначає в картці клієнта статус перевірки страхування, і кожен, хто бачить картку, бачить його; терапевт — лише в картках своїх клієнтів (вимога PM [#33](https://github.com/HryhoriiHaponiukQuitCode/therapy-scheduling-spec/issues/33)).
 - AC зрізу 3: AC-INS-01, AC-INS-02, AC-INS-03, AC-INS-04, AC-INS-05, AC-INS-06.
-- Звичайно: https://github.com/markkern-hyra/therapy-scheduling, main `[`2da7f34`](https://github.com/markkern-hyra/therapy-scheduling/commit/2da7f348b93582ff874610eb8a5e7598cf5f0230) (усі задачі з кодом; PR UAT — [#44](https://github.com/markkern-hyra/therapy-scheduling/pull/44))`, прод https://therapy-scheduling-theta.vercel.app
+- Звичайно: https://github.com/markkern-hyra/therapy-scheduling, main [`2da7f34`](https://github.com/markkern-hyra/therapy-scheduling/commit/2da7f348b93582ff874610eb8a5e7598cf5f0230) (усі задачі з кодом; PR UAT — [#44](https://github.com/markkern-hyra/therapy-scheduling/pull/44))`, прод https://therapy-scheduling-theta.vercel.app
 - Фабрика: https://github.com/markkern-hyra/therapy-scheduling-factory, main [`4e4d359`](https://github.com/markkern-hyra/therapy-scheduling-factory/commit/4e4d3598a8f7d02de1e330ea5f1cacb0c80840a4), прод https://therapy-scheduling-factory.vercel.app
 - Фабрика й імпортер: курс-редакція [`koldovsky/2026-quitcode-09-factory`](https://github.com/koldovsky/2026-quitcode-09-factory) без змін коду; імпортер `tools/ac-to-task.mjs` прочитав формат PM (issue «Вимога» → `requirements/33-…md`) як є, адаптер не потрібен (F09: «формат збігається — нічого не змінюй»). Зміна в конфігурації контролю — обгортка `claude` для macOS (див. «Втручання», 3).
 - Моделі фабрики: планувальник, виконавець і рецензент — `claude-sonnet-5-5`; розбір UAT — `claude-haiku-5-5`, суперечки — `claude-sonnet-5-5`.
@@ -63,7 +63,7 @@
 - Фабрика: ізоляція виконавця — лише політика (хук) в одному обліковому записі ОС: код, який агент написав і запустив (тести, оцінювач прихованих сценаріїв), теоретично міг читати інші файли.
 - Фабрика: вцілілий мутант `src/lib/supabase/database.types.ts:41` — жоден тест не тримає цей рядок (типи, на поведінку не впливає).
 - Фабрика: повідомлення «Insurance status saved.» за підробленим `?notice=INSURANCE_SAVED` бачить і терапевт (примітка рецензента medium; ворота її не блокують). AC цього не забороняє прямо, але повідомлення означає «збережено», а терапевт нічого не зберігав.
-- Обидва: AC-INS-04 «не запропоновано» і AC-INS-06 «лише сторінка входу» доводить лише UAT (браузер), не ворота й не unit-тести.
+- AC-INS-04 «не запропоновано» і AC-INS-06 «лише сторінка входу»: у фабрики ці частини доводить лише UAT (у задачі їх немає). Звичайно автоматичні перевірки є: відсутність форми для терапевта — тест рендеру `tests/ui/insurance-card.test.ts`, відмова анонімові в читанні й записі — `tests/db/insurance.test.ts` (`asAnon`). Як сторінка входу виглядає в браузері, і там, і там показує лише UAT.
 - Звичайно: повний Stryker на коді зрізу 3 не запускали (лише TS-мутант I8 і SQL-мутанти I1–I7); одночасна позначка двома працівниками в AC не задана; приймання PM — після 10.11 ([`proof-pack.md`](proof-pack.md), «Не перевірено»).
 
 ## Частковий прогін

@@ -134,9 +134,9 @@ Vitest не рендерить сторінки, тому файли з 0 % до
 
 | AC | Рішення PM | Посилання |
 |---|---|---|
-| AC-CARD-06 | очікує PM | — |
-| AC-CARD-12 | очікує PM | — |
-| AC-CARD-16 | очікує PM | — |
+| AC-CARD-06 | ✅ прийнято PM 03.11.2026 | [коментар PM у #35](https://github.com/markkern-hyra/therapy-scheduling/pull/35#issuecomment-6609874893) |
+| AC-CARD-12 | ✅ прийнято PM 03.11.2026 | [коментар PM у #35](https://github.com/markkern-hyra/therapy-scheduling/pull/35#issuecomment-6609874893) |
+| AC-CARD-16 | ✅ прийнято PM 03.11.2026 | [коментар PM у #35](https://github.com/markkern-hyra/therapy-scheduling/pull/35#issuecomment-6609874893) |
 
 ## D. Eval рецензента
 

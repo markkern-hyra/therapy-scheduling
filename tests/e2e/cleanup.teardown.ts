@@ -7,15 +7,17 @@ import { deleteUatClients, deleteUatUsers, deletedThisRun, hasAdminKey } from ".
 
 if (hasAdminKey()) {
   teardown("прибирання: синтетичні uat-*@example.test", async () => {
+    // Спершу все прибрати, потім перевіряти: впала перевірка користувачів не лишає синтетичних карток на проді.
     const result = await deleteUatUsers();
+    // Картки uat-*@example.test зрізу 3 (UAT AC-INS-01…06) — разом з їхніми утриманнями й статусами (каскад).
+    const clients = await deleteUatClients();
     writeFileSync(
       "test-results/uat-cleanup.json",
-      // deleted — усе, що прибрав цей прогін: afterAll специфікацій і цей teardown.
-      JSON.stringify({ at: new Date().toISOString(), ...result, deleted: deletedThisRun() }, null, 2),
+      // deleted — усе, що прибрав цей прогін (користувачі й картки): afterAll специфікацій і цей teardown.
+      JSON.stringify({ at: new Date().toISOString(), ...result, deleted: deletedThisRun(), clients }, null, 2),
     );
     expect(result.remaining, "лишились синтетичні користувачі").toEqual([]);
-    // Картки uat-*@example.test зрізу 3 (UAT AC-INS-01…06) — разом з їхніми утриманнями й статусами (каскад).
-    expect((await deleteUatClients()).remaining, "лишились синтетичні картки клієнтів").toBe(0);
+    expect(clients.remaining, "лишились синтетичні картки клієнтів").toBe(0);
     expect(result.leftoverRequests, "лишились заявки синтетичних користувачів").toBe(0);
   });
 }

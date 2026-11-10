@@ -52,7 +52,7 @@
 ## C. UAT на проді
 
 - Звіт: https://github.com/markkern-hyra/therapy-scheduling/blob/611564a/docs/qa/uat/2026-11-10/report.md
-- Відео: вкладення в описі https://github.com/markkern-hyra/therapy-scheduling/pull/44
+- Відео: вкладення в описі https://github.com/markkern-hyra/therapy-scheduling/pull/44, по одному на AC-INS-01…06. Їх додає людина у вебінтерфейсі: `gh` вкладень не завантажує. Запис кожного AC без відео — кадри «Тоді» й `manifest.json` у звіті
 - Рецензент: `claude-haiku-5-5` (суперечки → `claude-sonnet-5-5`, суперечок не було), $0.0150 за розбір 6 AC
 - Негативний контроль: NC-1 (`npm run uat:nc`, той самий прод `2da7f34`) — навмисно інший текст у твердженні AC-CARD-06 → **FAIL, R1**; NC-2 → NEEDS-HUMAN, R3; рядки звіту — в описі [#44](https://github.com/markkern-hyra/therapy-scheduling/pull/44)
 - Дані: `@writes` — синтетичні картки `uat-<запуск>-…@example.test` на кожен AC; «Прибирання» зі звіту: видалено 0 (уже прибрано в `afterAll`), лишилось 0, їхніх рядків — 0
