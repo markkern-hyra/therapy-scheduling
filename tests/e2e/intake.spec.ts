@@ -80,6 +80,8 @@ test.describe("планувальник складає чернетку", () => 
           await expect(message(page, READY)).toBeVisible(MODEL_TIMEOUT);
           await expect(field(page, "Adult")).toBeChecked();
           await expect(field(page, "Name")).toHaveValue("Client Ten");
+          // Дата — у hidden, тож кадр її не підтверджує: видимість поля перевіряємо тут (рев'ю CodeRabbit #50).
+          await expect(field(page, "Date of birth")).toBeVisible();
           await expect(field(page, "Date of birth")).toHaveValue("1990-05-14");
           await expect(language(page)).toHaveValue("English");
           await expect(field(page, "Email")).toHaveValue("client10@example.test");
