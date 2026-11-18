@@ -207,3 +207,23 @@ export async function deleteUatClients(): Promise<{ deleted: number; remaining: 
   );
   return { deleted: targets.length, remaining };
 }
+
+// ── Зріз 4: чернетка картки з тексту звернення (impl-client-intake-draft, UAT AC-INTAKE-03, 07, 09) ──────────────────
+// Лише читання: кількість карток і картка з email — невидимі частини «Тоді» («картки немає», «кількість лишається N»).
+
+/** Скільки всього карток клієнтів у базі (в обхід RLS). */
+export async function clientCount(): Promise<number> {
+  const { count, error } = await adminClient().from("clients").select("id", { count: "exact", head: true });
+  if (error) throw error;
+  return count ?? 0;
+}
+
+/** Скільки карток клієнтів з цим email (дорослого) — 0, якщо картку не створено. */
+export async function clientsWithEmail(email: string): Promise<number> {
+  const { count, error } = await adminClient()
+    .from("clients")
+    .select("id", { count: "exact", head: true })
+    .eq("email", email);
+  if (error) throw error;
+  return count ?? 0;
+}

@@ -55,7 +55,13 @@ export default defineConfig({
     { name: "setup", testMatch: /auth\.setup\.ts$/, teardown: "cleanup", use: noRecording },
     // Прибирання після всіх тестів: видаляє синтетичних uat-*@example.test і перевіряє, що нічого не лишилось.
     { name: "cleanup", testMatch: /cleanup\.teardown\.ts$/, use: noRecording },
-    { name: "chromium", dependencies: ["setup"], grepInvert: /@negative-control/ },
+    // Зріз 4: @live-model потребує справжньої моделі (ключ є лише на розгорнутому застосунку), @no-model — помічника без
+    // ключа (локальна збірка й CI). Кожен @live-model — запит із денного ліміту помічника.
+    {
+      name: "chromium",
+      dependencies: ["setup"],
+      grepInvert: deployed ? /@negative-control|@no-model/ : /@negative-control|@live-model/,
+    },
     ...(withNegativeControls
       ? [{ name: "negative-controls", dependencies: ["setup"], grep: /@negative-control/ }]
       : []),
