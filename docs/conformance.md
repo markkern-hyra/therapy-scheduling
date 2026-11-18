@@ -100,3 +100,12 @@
 | AC-INS-04 | therapist1 бачить статус свого клієнта, змінити йому не запропоновано | `src/app/_components/insurance-card.tsx` (форма лише для staff), `src/app/clients/[id]/page.tsx`, `supabase/migrations/20261109194052_insurance_status.sql` (client_insurance_select_visible: is_own_client) | `tests/db/insurance.test.ts`, `tests/scheduling/insurance.test.ts`, `tests/ui/insurance-card.test.ts`, `tests/e2e/insurance.spec.ts` | реалізовано |
 | AC-INS-05 | therapist1 напряму, в обхід сторінок, не змінює статус — scheduler1 бачить той самий | `supabase/migrations/20261109194052_insurance_status.sql` (client_insurance_insert_staff, client_insurance_update_staff, set_insurance_status security invoker) | `tests/db/insurance.test.ts`, `tests/scheduling/insurance-action.test.ts`, `tests/e2e/insurance.spec.ts` | реалізовано |
 | AC-INS-06 | без входу картка за посиланням — лише сторінка входу, статус не змінився | `supabase/migrations/20261109194052_insurance_status.sql` (revoke від anon, execute функції лише authenticated), `src/lib/auth/require-role.ts` (без входу — /login) | `tests/db/insurance.test.ts`, `tests/e2e/insurance.spec.ts` | реалізовано |
+| AC-INTAKE-01 | чернетка дорослого: тип, ім'я, дата народження, мова, email і «Draft ready…» | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-02 | чернетка дитини з опікуном і «Draft ready…» | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-03 | чернетка без збереження не створює картки — у списку клієнтів її немає | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-04 | неповна чернетка: порожні поля й «Draft is incomplete. Missing: …» | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-05 | дата народження пізніша за сьогодні — поле порожнє й у «Missing» | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-06 | текст не про нового клієнта — форма не змінена, «This text can't be used…» | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-07 | ін'єкція — форма порожня, «This text can't be used…», кількість карток та сама | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-08 | помічник недоступний (немає відповіді, ліміт) — «The assistant is unavailable…», форма вручну | — | — | відкладено (чекає реалізації) |
+| AC-INTAKE-09 | терапевт за прямим посиланням — без форми й чернетки, «Only schedulers and admins…» | — | — | відкладено (чекає реалізації) |
