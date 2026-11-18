@@ -36,11 +36,14 @@ const cleanEmail = (value: string | null) => {
 };
 // Менше 18 на сьогодні: вісімнадцятий день народження ще не настав (рядкове порівняння РРРР-ММ-ДД; GC-03, GC-05).
 const isMinor = (birthDate: string, today: string) =>
-  `${Number(birthDate.slice(0, 4)) + 18}${birthDate.slice(4)}` > today;
+  `${String(Number(birthDate.slice(0, 4)) + 18).padStart(4, "0")}${birthDate.slice(4)}` > today;
+// Для порівняння з текстом: без різниці в регістрі, пробілах і апострофі (’ чи ').
+const squash = (value: string) => value.normalize("NFC").toLowerCase().replaceAll("’", "'").replace(/\s+/g, " ");
 
 // Відповідь моделі (сирий текст JSON) → чернетка форми. Чиста функція: той самий код у застосунку, офлайн-реплеї й
-// живому eval. Відповідь не за схемою — збій (AC-INTAKE-08), а не «майже чернетка».
-export function draftFromModelText(modelText: string, today: string): IntakeResult {
+// живому eval. Відповідь не за схемою — збій (AC-INTAKE-08), а не «майже чернетка». input — текст звернення: імена й
+// email беремо лише ті, що в ньому є (Припущення PM: «як у тексті; застосунок імен не вигадує»).
+export function draftFromModelText(modelText: string, today: string, input: string): IntakeResult {
   let json: unknown;
   try {
     json = JSON.parse(modelText);
@@ -57,15 +60,18 @@ export function draftFromModelText(modelText: string, today: string): IntakeResu
   const birthDate = isCalendarDate(birth) && birth <= today ? birth : "";
   // Child — пише батько чи мати про свою дитину або клієнту менше 18 (Припущення PM: «або … або»).
   const child = facts.written_by_parent || (birthDate !== "" && isMinor(birthDate, today));
+  // Значення, якого в тексті немає (вигадане ім'я чи email), — порожнє поле, і воно потрапляє в «Missing».
+  const text = squash(input);
+  const fromText = (value: string) => (value && text.includes(squash(value)) ? value : "");
   const values: IntakeValues = {
     kind: child ? "child" : "adult",
-    full_name: clean(facts.client_name),
+    full_name: fromText(clean(facts.client_name)),
     birth_date: birthDate,
     language: facts.session_language ?? "",
     // Дорослий — власний email; дитина — email опікуна: email клієнта не стає email опікуна (GC-05).
-    email: child ? "" : cleanEmail(facts.client_email),
-    guardian_name: child ? clean(facts.guardian_name) : "",
-    guardian_email: child ? cleanEmail(facts.guardian_email) : "",
+    email: child ? "" : fromText(cleanEmail(facts.client_email)),
+    guardian_name: child ? fromText(clean(facts.guardian_name)) : "",
+    guardian_email: child ? fromText(cleanEmail(facts.guardian_email)) : "",
   };
   // Обов'язкові поля в порядку форми (Припущення PM). Client type порожнім не буває: правило вище завжди його задає.
   const contact: [string, keyof IntakeValues][] = child
@@ -86,7 +92,8 @@ export function draftFromModelText(modelText: string, today: string): IntakeResu
 
 // Текст звернення з форми: порожній чи довший за 2000 символів — null, і моделі його не надсилаємо (AC-INTAKE-06).
 export function intakeText(raw: unknown): string | null {
-  const text = typeof raw === "string" ? raw.trim() : "";
+  // Форма надсилає кінець рядка як CRLF, а поле браузера рахує його одним символом (maxLength).
+  const text = typeof raw === "string" ? raw.replace(/\r\n?/g, "\n").trim() : "";
   return text && text.length <= MAX_INTAKE_LENGTH ? text : null;
 }
 
@@ -120,7 +127,7 @@ export async function proposeIntakeDraft(
     const call = { modelId: message.model, stopReason: message.stop_reason ?? undefined };
     if (message.stop_reason === "refusal") return { result: { status: "refused" }, ...call };
     const modelText = message.content.find((block) => block.type === "text")?.text ?? "";
-    return { result: draftFromModelText(modelText, today), modelText, ...call };
+    return { result: draftFromModelText(modelText, today, text), modelText, ...call };
   } catch (error) {
     return { result: { status: "unavailable", reason: failureReason(error) } };
   }

@@ -7,7 +7,7 @@
 
 ## 1. Помічник у формі нової картки
 
-- [ ] 1.1 ADR `0010-ai-intake-draft-claude-api.md` і залежності з точними версіями (`@anthropic-ai/sdk`, `zod`,
+- [x] 1.1 ADR `0010-ai-intake-draft-claude-api.md` і залежності з точними версіями (`@anthropic-ai/sdk`, `zod`,
   `server-only`); `src/lib/ai/` — схема, промпт з `INTAKE_PROMPT_VERSION` і межами `<intake_text>`, `draftFromModelText`
   (правила коду з design.md, рішення 2), `anthropic.ts` (server-only, єдине місце з `ANTHROPIC_API_KEY`), виклик моделі з
   мапінгом збоїв; `requestIntakeDraft` (requireRole → ключ → модель; нічого не пише); `Textarea`, `NewClientForm`, проп

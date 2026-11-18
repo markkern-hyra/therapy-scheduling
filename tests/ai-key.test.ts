@@ -48,11 +48,18 @@ describe("перевірка ключа: ANTHROPIC_API_KEY лише на сер�
     expect(creators).toEqual([KEY_READER]);
   });
 
-  it('жоден файл із "use client" не імпортує обгортку з ключем чи SDK', () => {
+  it('жоден файл із "use client" не імпортує обгортку з ключем, SDK чи модулі, що тягнуть SDK і промпт', () => {
     const clientFiles = srcFiles.filter((f) => /^\s*["']use client["']/.test(f.text));
     const offenders = clientFiles
-      .filter((f) => /@\/lib\/ai\/anthropic["']|@anthropic-ai\/sdk/.test(f.text))
+      .filter((f) => /@\/lib\/ai\/(anthropic|intake-draft|prompts\/[\w-]+)["']|@anthropic-ai\/sdk/.test(f.text))
       .map((f) => f.rel);
     expect(offenders).toEqual([]);
+  });
+
+  it("клієнт SDK не логує тіла запитів і не пише вміст у трасування — текст звернення не потрапляє в логи Vercel", () => {
+    // ANTHROPIC_LOG=debug чи ANTHROPIC_OPEN_TELEMETRY_TRACES_CONTENT_MODE=content у середовищі інакше вивели б текст.
+    const reader = srcFiles.find((f) => f.rel === KEY_READER)?.text ?? "";
+    expect(reader).toMatch(/logLevel:\s*"warn"/);
+    expect(reader).toMatch(/openTelemetry:\s*false/);
   });
 });

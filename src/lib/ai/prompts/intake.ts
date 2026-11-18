@@ -36,8 +36,16 @@ export const INTAKE_INSTRUCTIONS = [
   "Copy email addresses exactly as written, even when they look invalid.",
 ].join("\n");
 
-// Недовірений текст завжди загортаємо як дані; теги-межі з самого тексту вирізаємо, щоб текст не «закрив» межу.
+// Тег-межа в будь-якому регістрі, з атрибутами чи без; [^<>] не дає «тегу» без «>» з'їсти текст через інший «<».
+const BOUNDARY_TAG = /<\/?\s*intake_text\b[^<>]*>/gi;
+
+// Недовірений текст завжди загортаємо як дані; теги-межі з самого тексту вирізаємо, доки вони є: вкладений
+// «</intake</intake_text>_text>» після одного проходу зібрався б знову й «закрив» межу.
 export function wrapIntakeText(text: string): string {
-  const data = text.replace(/<\/?\s*intake_text[^>]*>/gi, "").slice(0, MAX_INTAKE_LENGTH);
-  return `<intake_text>\n${data}\n</intake_text>`;
+  let data = text;
+  for (let previous = ""; previous !== data; ) {
+    previous = data;
+    data = data.replace(BOUNDARY_TAG, "");
+  }
+  return `<intake_text>\n${data.slice(0, MAX_INTAKE_LENGTH)}\n</intake_text>`;
 }

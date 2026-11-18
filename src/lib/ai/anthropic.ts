@@ -6,7 +6,9 @@ import Anthropic from "@anthropic-ai/sdk";
 // Цей файл — єдине місце в src/, що читає ключ і створює клієнт (tests/ai-key.test.ts). Ключ передаємо явно: без
 // apiKey SDK сам шукав би облікові дані в середовищі й на диску.
 // Немає ключа (або лише пробіли) → null: помічник «недоступний» (AC-INTAKE-08), а ручна форма працює далі.
+// logLevel і openTelemetry — явно: змінні середовища ANTHROPIC_LOG=debug чи режим трасування «content» інакше записали б
+// текст звернення в логи (текст звернення не зберігаємо — Припущення PM).
 export function assistantClient(): Anthropic | null {
   const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
-  return apiKey ? new Anthropic({ apiKey }) : null;
+  return apiKey ? new Anthropic({ apiKey, logLevel: "warn", openTelemetry: false }) : null;
 }

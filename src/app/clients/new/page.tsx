@@ -10,6 +10,10 @@ import { practiceToday } from "@/lib/scheduling/time";
 // Форма нової картки з анкети (AC-CARD-01–03) і чернетка з тексту звернення над нею (AC-INTAKE-01…08). Терапевт за
 // прямим посиланням бачить лише відмову, без форми й поля звернення (AC-CARD-06, AC-INTAKE-09; варіант A питання
 // Sofiia-pm/therapy-scheduling-spec#24) — дії createClientCard і requestIntakeDraft відмовляють і без сторінки.
+// Дія чернетки чекає на модель до 25 с і повторює щонайбільше раз (design.md, «AI»): межа функції Vercel — з запасом, щоб
+// повільна модель дала «The assistant is unavailable…» (AC-INTAKE-08), а не сторінку помилки платформи.
+export const maxDuration = 60;
+
 export default async function NewClientPage() {
   const { role, name } = await requireRole();
 

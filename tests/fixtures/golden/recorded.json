@@ -1,1 +1,72 @@
-{}
+{
+  "GC-01": {
+    "modelId": "claude-sonnet-5-5",
+    "recordedAt": "2026-11-18T14:52:47.051Z",
+    "promptVersion": "intake-v1",
+    "stopReason": "end_turn",
+    "text": "{\"status\":\"draft\",\"client_name\":\"Nora Vale\",\"birth_date\":\"1987-10-24\",\"session_language\":\"Spanish\",\"client_email\":\"nora.vale@example.test\",\"written_by_parent\":false,\"guardian_name\":null,\"guardian_email\":null}"
+  },
+  "GC-02": {
+    "modelId": "claude-sonnet-5-5",
+    "recordedAt": "2026-11-18T14:52:50.157Z",
+    "promptVersion": "intake-v1",
+    "stopReason": "end_turn",
+    "text": "{\"status\":\"draft\",\"client_name\":\"Leo Marsh\",\"birth_date\":\"2017-05-06\",\"session_language\":\"English\",\"client_email\":null,\"written_by_parent\":true,\"guardian_name\":\"Owen Marsh\",\"guardian_email\":\"owen.marsh@example.test\"}"
+  },
+  "GC-03": {
+    "modelId": "claude-sonnet-5-5",
+    "recordedAt": "2026-11-18T14:52:54.603Z",
+    "promptVersion": "intake-v1",
+    "stopReason": "end_turn",
+    "text": "{\"status\":\"draft\",\"client_name\":\"Ellis Reed\",\"birth_date\":\"2008-11-01\",\"session_language\":\"English\",\"client_email\":\"Ellis.Reed@Example.TEST\",\"written_by_parent\":false,\"guardian_name\":null,\"guardian_email\":null}"
+  },
+  "GC-04": {
+    "modelId": "claude-sonnet-5-5",
+    "recordedAt": "2026-11-18T14:52:56.767Z",
+    "promptVersion": "intake-v1",
+    "stopReason": "end_turn",
+    "text": "{\"status\":\"draft\",\"client_name\":\"Iris Kent\",\"birth_date\":\"2015-08-19\",\"session_language\":\"Spanish\",\"client_email\":null,\"written_by_parent\":true,\"guardian_name\":\"Maya Kent\",\"guardian_email\":\"maya.kent@example.test\"}"
+  },
+  "GC-05": {
+    "modelId": "claude-sonnet-5-5",
+    "recordedAt": "2026-11-18T14:52:59.646Z",
+    "promptVersion": "intake-v1",
+    "stopReason": "end_turn",
+    "text": "{\"status\":\"draft\",\"client_name\":\"Rowan Lake\",\"birth_date\":\"2008-12-20\",\"session_language\":\"English\",\"client_email\":\"rowan.lake@example.test\",\"written_by_parent\":false,\"guardian_name\":null,\"guardian_email\":null}"
+  },
+  "GC-06": {
+    "modelId": "claude-sonnet-5-5",
+    "recordedAt": "2026-11-18T14:53:01.932Z",
+    "promptVersion": "intake-v1",
+    "stopReason": "end_turn",
+    "text": "{\"status\":\"draft\",\"client_name\":\"Morgan Bell\",\"birth_date\":null,\"session_language\":\"Spanish\",\"client_email\":\"morgan.bell.example.test\",\"written_by_parent\":false,\"guardian_name\":null,\"guardian_email\":null}"
+  },
+  "GC-07": {
+    "modelId": "claude-sonnet-5-5",
+    "recordedAt": "2026-11-18T14:53:04.090Z",
+    "promptVersion": "intake-v1",
+    "stopReason": "end_turn",
+    "text": "{\"status\":\"draft\",\"client_name\":\"Alma Ríos\",\"birth_date\":\"1993-07-04\",\"session_language\":null,\"client_email\":\"alma.rios@example.test\",\"written_by_parent\":false,\"guardian_name\":null,\"guardian_email\":null}"
+  },
+  "GC-08": {
+    "modelId": "claude-sonnet-5-5",
+    "recordedAt": "2026-11-18T14:53:06.831Z",
+    "promptVersion": "intake-v1",
+    "stopReason": "end_turn",
+    "text": "{\"status\":\"draft\",\"client_name\":\"Nina Field\",\"birth_date\":\"2026-12-20\",\"session_language\":\"English\",\"client_email\":null,\"written_by_parent\":true,\"guardian_name\":\"Tessa Field\",\"guardian_email\":\"tessa.field@example.test\"}"
+  },
+  "GC-09": {
+    "modelId": "claude-sonnet-5-5",
+    "recordedAt": "2026-11-18T14:53:09.861Z",
+    "promptVersion": "intake-v1",
+    "stopReason": "end_turn",
+    "text": "{\"status\":\"refused\",\"client_name\":null,\"birth_date\":null,\"session_language\":null,\"client_email\":null,\"written_by_parent\":false,\"guardian_name\":null,\"guardian_email\":null}"
+  },
+  "GC-10": {
+    "modelId": "claude-sonnet-5-5",
+    "recordedAt": "2026-11-18T14:53:12.507Z",
+    "promptVersion": "intake-v1",
+    "stopReason": "end_turn",
+    "text": "{\"status\":\"refused\",\"client_name\":null,\"birth_date\":null,\"session_language\":null,\"client_email\":null,\"written_by_parent\":false,\"guardian_name\":null,\"guardian_email\":null}"
+  }
+}
