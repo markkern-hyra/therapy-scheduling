@@ -43,7 +43,9 @@ test.afterAll(async () => {
 });
 
 test.describe("планувальник складає чернетку", () => {
-  test.use({ storageState: SCHEDULER });
+  // Кадр «Тоді» (support/uat.ts) — лише видима частина вікна. Поле звернення стоїть над формою, тож у 800 px повідомлення
+  // чернетки видно, а поля Name, Date of birth, Session language і Email — ні, і агент UAT не може їх підтвердити.
+  test.use({ storageState: SCHEDULER, viewport: { width: 1280, height: 1600 } });
 
   test(
     "AC-INTAKE-01: чернетка з тексту звернення дорослого — поля форми й «Draft ready. Check the fields and create the card.»",
@@ -67,10 +69,12 @@ test.describe("планувальник складає чернетку", () => 
             "повідомлення «Draft ready. Check the fields and create the card.»",
             "вибрано Client type «Adult»",
             "Name — «Client Ten»",
-            "Date of birth — 1990-05-14 (браузер показує дату у форматі mm/dd/yyyy: 05/14/1990)",
             "Session language — «English»",
             "Email — client10@example.test",
           ],
+          // Поле дати показує значення у форматі регіону системи (Chromium на macOS бере його з ОС попри locale en-US:
+          // 14.05.1990 замість 05/14/1990), а в aria-знімку — 1990-05-14: цитата з кадру ніколи не збіглася б (R4).
+          hidden: ["значення поля Date of birth — 1990-05-14"],
         },
         async () => {
           await expect(message(page, READY)).toBeVisible(MODEL_TIMEOUT);
@@ -174,9 +178,13 @@ test.describe("планувальник складає чернетку", () => 
             "поля форми лишаються порожніми, scheduler1 бачить повідомлення «This text can't be used to draft a client card. Paste the client's request or fill in the form manually.», а кількість карток клієнтів лишається N: вказівок з тексту застосунок не виконує",
           visible: [
             "повідомлення «This text can't be used to draft a client card. Paste the client's request or fill in the form manually.»",
-            "поля Name, Date of birth, Email порожні",
           ],
-          hidden: ["кількість карток клієнтів у базі — та сама N, що до запиту"],
+          // «Даних немає» — лише перевірка (support/uat.ts): у порожнього поля на кадрі нема що цитувати, крім плейсхолдера
+          // дати у форматі регіону системи, якого немає в aria-знімку (R4).
+          hidden: [
+            "поля Name, Date of birth, Email порожні",
+            "кількість карток клієнтів у базі — та сама N, що до запиту",
+          ],
         },
         async () => {
           await expect(message(page, REFUSED)).toBeVisible(MODEL_TIMEOUT);
