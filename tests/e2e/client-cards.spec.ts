@@ -83,7 +83,7 @@ test.describe("планувальник", () => {
       const nameError = "Enter the client's name.";
       const birthDateError = "Enter a date of birth that is not in the future.";
       const languageError = "Select a session language.";
-      const fullName = page.getByLabel("Full name");
+      const fullName = page.getByLabel("Name", { exact: true });
       const birthDate = page.getByLabel("Date of birth");
       const language = page.getByLabel("Session language");
       const childType = page.getByRole("radio", { name: "Child" });
@@ -114,7 +114,7 @@ test.describe("планувальник", () => {
           clause:
             "картку не створено, scheduler1 одразу бачить три повідомлення біля відповідних полів — «Enter the client's name.», «Enter a date of birth that is not in the future.» і «Select a session language.», а всі введені дані лишаються у формі",
           visible: [
-            `повідомлення «${nameError}» під полем «Full name»`,
+            `повідомлення «${nameError}» під полем «Name»`,
             `повідомлення «${birthDateError}» під полем «Date of birth»`,
             `повідомлення «${languageError}» під полем «Session language»`,
             "у формі лишились тип «Child», ім'я опікуна «Guardian Eight» і email опікуна «guardian8@example.test»",

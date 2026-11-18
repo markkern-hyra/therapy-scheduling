@@ -27,6 +27,10 @@ export const MESSAGES = {
   LOGIN_INVALID: "Invalid email or password.",
   NO_FREE_SLOTS: "No free slots on this day.",
   INSURANCE_SAVED: "Insurance status saved.",
+  INTAKE_READY: "Draft ready. Check the fields and create the card.",
+  INTAKE_REFUSED: "This text can't be used to draft a client card. Paste the client's request or fill in the form manually.",
+  INTAKE_UNAVAILABLE: "The assistant is unavailable right now. Fill in the form manually.",
+  INTAKE_HINT: "Don't paste diagnoses or other health details: name, date of birth, language and contacts are enough.",
   UNKNOWN: "Something went wrong. Try again.",
 } as const;
 

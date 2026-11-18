@@ -125,6 +125,7 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 | `Button` | `primary`, `secondary`, `ghost`; `size`: `md` (h-10), `sm` (h-8) | `primary` — одна основна дія на екран («Create client», «Sign in»); `secondary` — «Show», «Cancel», дії в рядках («Hold», «Confirm»); `ghost` — тихі дії без рамки («Sign out» у шапці, кроки днями; на `/no-access` «Sign out» — `secondary`, бо це єдина дія картки). Під час надсилання — текст стану («Creating…») і `disabled` |
 | `ButtonLink` (у `button.tsx`) | ті самі, що `Button` | перехід, що виглядає як кнопка: «New client» (`primary`), «Cancel», кроки днями «‹ Mon 26 · Wed 28 ›» (`ghost`, `aria-label` «Previous day, Mon 26» / «Next day, Wed 28»; повна дата — у заголовку дня) |
 | `Input` + `Label` | — | `Label` обгортає поле (`<Label>Email<Input … /></Label>`) — зв'язок без `htmlFor`; placeholder не замість підпису; обов'язкові поля — `required`; форма картки — `noValidate` (перевіряє сервер, текст помилки — з AC) |
+| `Textarea` | — | багаторядкове поле (текст звернення, зріз 4): вигляд `Input` (`border-input bg-card`, `rounded-sm`, `px-3 py-2`), висота — `rows`; `Label` обгортає поле, підказка під ним — `text-sm text-muted-foreground` через `aria-describedby`; межа довжини — `maxLength` |
 | `FieldError` | — | помилка одного поля форми: під полем, `text-sm text-destructive`, `role="alert"`, текст дослівно з AC; без тексту нічого не показує. Загальні відмови — `Alert` над формою |
 | `Select` | `size`: `md`, `sm` | той самий вигляд, що `Input`; `sm` — у рядку списку поруч із `Button sm` |
 | `Choice` | — | радіокнопка в рамці для 2–3 варіантів замість `Select` («Adult» / «Child»); групу обгортає `<fieldset>` з `<legend>`; обраний — рамка `primary` і тло `primary-soft` |
@@ -144,7 +145,9 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 Компоненти застосунку (`AppNav` — знак і назва, розділи ролі з іконками, аватар з ім'ям і роллю, «Sign out»;
 `AuthShell` — вхід (з призначенням продукту) і «доступу ще немає» (лише знак і назва); назва й призначення — `PRODUCT`
 у `src/lib/product.ts`; `ErrorMessage`; `StatusBadge`, що перетворює статус на варіант `Badge`;
-`ClientCardForm`; `InsuranceCard` — рядок «Insurance: <статус>» і для admin та scheduler позначка трьома `Choice`; `SubmitButton` — кнопка серверної форми зі станом надсилання) — у `src/app/_components/` і складаються з компонентів `ui` без власних кольорів.
+`ClientCardForm`; `NewClientForm` — поле звернення в `Card` «Draft from a client's request» над `ClientCardForm`,
+кнопка `secondary` «Draft card» (головна дія лишається «Create client»), повідомлення чернетки — `Alert` між ними;
+`InsuranceCard` — рядок «Insurance: <статус>» і для admin та scheduler позначка трьома `Choice`; `SubmitButton` — кнопка серверної форми зі станом надсилання) — у `src/app/_components/` і складаються з компонентів `ui` без власних кольорів.
 
 ## 6. Стани
 
@@ -162,6 +165,7 @@ Figtree через `next/font` (`--font-sans`) — теплий гуманіст
 | Не увійшов | перенаправлення на сторінку входу | — (AC-CARD-07) |
 | Завантаження | сторінки рендеряться на сервері; окремого індикатора немає; форма під час надсилання — текст кнопки «Creating…» | — |
 | Успіх | повернення на ту саму сторінку з новим рядком у списку (чи перехід на нову картку); окремого повідомлення немає, крім тих, що є в AC: `Alert variant="success"` над формою | «Insurance status saved.» (AC-INS-02) |
+| Чернетка з тексту звернення | `Alert` над формою картки: готова — `success`; неповна, відмова, помічник недоступний — `error`; без чернетки форма не змінюється; кнопка під час запиту — «Drafting…» | «Draft ready. Check the fields and create the card.» (AC-INTAKE-01), «The assistant is unavailable right now. Fill in the form manually.» (AC-INTAKE-08) |
 | Недоступна дія | кнопку не показуємо (не `disabled`) | — |
 
 ## 7. Доступність — мінімум
