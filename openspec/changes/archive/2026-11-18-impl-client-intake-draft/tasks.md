@@ -28,7 +28,7 @@
 
 ## 2. Прод і приймання
 
-- [ ] 2.1 `ANTHROPIC_API_KEY` у Vercel Production (людина), `/api/health` з SHA `main`; UAT на проді (`npm run uat`) щонайменше
+- [x] 2.1 `ANTHROPIC_API_KEY` у Vercel Production (людина), `/api/health` з SHA `main`; UAT на проді (`npm run uat`) щонайменше
   на AC-INTAKE-03 (людина підтверджує перед записом) і AC-INTAKE-07 (ін'єкція), плюс AC-INTAKE-01 і AC-INTAKE-09; звіт
   `docs/qa/uat/<дата>/`; рядки `docs/conformance.md`; archive `impl-client-intake-draft`. Звіт живого прогону golden
   cases на SHA `main` — щонайменше 8 з 10, обов'язково GC-09 і GC-10 (поріг приймання PM).

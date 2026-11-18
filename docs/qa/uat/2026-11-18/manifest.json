@@ -1,0 +1,213 @@
+{
+  "kind": "uat",
+  "generatedAt": "2026-11-18T18:19:05.722Z",
+  "baseURL": "https://therapy-scheduling-theta.vercel.app",
+  "deployedSha": "172c5217e572586cd3cf65fb7570d0db05901979",
+  "testsCommit": "5c81e2fd6443fea34e80358c19b378ee3fdb91fc",
+  "reviewer": {
+    "model": "claude-haiku-5-5",
+    "disputes": "claude-sonnet-5-5"
+  },
+  "note": "Відео й траси не в git (test-results/ локально, артефакт CI). check-recordings конвеєра WS9 вимагає відео на диску — для нього цей manifest треба доповнити.",
+  "results": [
+    {
+      "id": "AC-INTAKE-01",
+      "proof": "AC-INTAKE-01",
+      "title": "AC-INTAKE-01: чернетка з тексту звернення дорослого — поля форми й «Draft ready. Check the fields and create the card.»",
+      "screenshot": "docs/qa/uat/2026-11-18/frames/AC-INTAKE-01-then-1.png",
+      "video": "test-results/artifacts/intake-планувальник-склада-b57ec-ields-and-create-the-card-»-chromium/video.webm",
+      "trace": "test-results/artifacts/intake-планувальник-склада-b57ec-ields-and-create-the-card-»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінка «New client» з повідомленням «Draft ready. Check the fields and create the card.», радіо «Adult» вибрано (зелена рамка, заповнений кружечок), Name «Client Ten», Session language «English», Email «client10@example.test». Текст читабельний, кадр не обрізаний; Date of birth на кадрі 14.05.1990, але за правилами це не оцінюється."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Draft ready. Check the fields and create the card.",
+          "onPage": true
+        },
+        {
+          "quote": "Adult",
+          "onPage": true
+        },
+        {
+          "quote": "Client Ten",
+          "onPage": true
+        },
+        {
+          "quote": "English",
+          "onPage": true
+        },
+        {
+          "quote": "client10@example.test",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 5275,
+      "reviewCostUsd": 0.00247,
+      "reviewWallMs": 8731
+    },
+    {
+      "id": "AC-INTAKE-03",
+      "proof": "AC-INTAKE-03",
+      "title": "AC-INTAKE-03: чернетку заповнено, картку не збережено — у списку клієнтів картки «Client Ten» немає",
+      "screenshot": "docs/qa/uat/2026-11-18/frames/AC-INTAKE-03-then-1.png",
+      "video": "test-results/artifacts/intake-планувальник-склада-04b14-в-картки-«Client-Ten»-немає-chromium/video.webm",
+      "trace": "test-results/artifacts/intake-планувальник-склада-04b14-в-картки-«Client-Ten»-немає-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі видно сторінку /clients із заголовком «Clients» і чотирма рядками: «Client Nine», «Client Seven», «Client Six», «Client Three». Рядка «Client Ten» немає, список на екрані повний, без обрізання. Частину про базу даних (картка з client10@example.test) не оцінюю, бо вона не з кадрів."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Clients",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 4575,
+      "reviewCostUsd": 0.00248,
+      "reviewWallMs": 7471
+    },
+    {
+      "id": "AC-INTAKE-06",
+      "proof": "AC-INTAKE-06",
+      "title": "AC-INTAKE-06: текст не про нового клієнта — поля форми не змінено, «This text can't be used to draft a client card…»",
+      "screenshot": "docs/qa/uat/2026-11-18/frames/AC-INTAKE-06-then-1.png",
+      "video": "test-results/artifacts/intake-планувальник-склада-1216c-ed-to-draft-a-client-card…»-chromium/video.webm",
+      "trace": "test-results/artifacts/intake-планувальник-склада-1216c-ed-to-draft-a-client-card…»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки /clients/new червоний блок під формою показує повідомлення, яке збігається з критерієм (текст переноситься на два рядки, але це одне речення). У полі Name після цього стоїть «Client Fifteen», а текст звернення лишився в полі «Client's request», тож форма не змінена."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "This text can't be used to draft a client card. Paste the client's request or fill in the form manually.",
+          "onPage": true
+        },
+        {
+          "quote": "Client Fifteen",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 4302,
+      "reviewCostUsd": 0.00246,
+      "reviewWallMs": 10484
+    },
+    {
+      "id": "AC-INTAKE-07",
+      "proof": "AC-INTAKE-07",
+      "title": "AC-INTAKE-07: ін'єкція в тексті — поля порожні, «This text can't be used…», кількість карток лишається N",
+      "screenshot": "docs/qa/uat/2026-11-18/frames/AC-INTAKE-07-then-1.png",
+      "video": "test-results/artifacts/intake-планувальник-склада-22f7b-ількість-карток-лишається-N-chromium/video.webm",
+      "trace": "test-results/artifacts/intake-планувальник-склада-22f7b-ількість-карток-лишається-N-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінки «New client» червоним під блоком чернетки видно повідомлення, текст якого збігається з критерієм слово в слово і знаками пунктуації. Поля Name і Email на кадрі порожні, Date of birth показує плейсхолдер dd.mm.yyyy, мова сесій — «Choose a language». Апострофи на кадрі виглядають прямими, як у критерії, але при цій роздільності остаточно відрізнити прямий апостроф від типографського не вдається. Поля «Не з кадрів» і кількість карток у базі не оцінював."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "This text can't be used to draft a client card. Paste the client's request or fill in the form manually.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 3100,
+      "reviewCostUsd": 0.0026,
+      "reviewWallMs": 9666
+    },
+    {
+      "id": "AC-INTAKE-09",
+      "proof": "AC-INTAKE-09",
+      "title": "AC-INTAKE-09: therapist1 за прямим посиланням — без форми й чернетки, «Only schedulers and admins can create client cards.»",
+      "screenshot": "docs/qa/uat/2026-11-18/frames/AC-INTAKE-09-then-1.png",
+      "video": "test-results/artifacts/intake-терапевт-AC-INTAKE--1acab-s-can-create-client-cards-»-chromium/video.webm",
+      "trace": "test-results/artifacts/intake-терапевт-AC-INTAKE--1acab-s-can-create-client-cards-»-chromium/trace.zip",
+      "asserted": true,
+      "vision": {
+        "met": true,
+        "readable": true,
+        "notes": "На кадрі сторінка «New client» з червоним повідомленням «Only schedulers and admins can create client cards.», текст збігається посимвольно. Під заголовком і повідомленням немає поля «Client's request», кнопки «Draft card» чи іншої форми, тож відсутність форми видно на кадрі. Цитата для другої частини — лише заголовок і підзаголовок сторінки, бо сама відсутність елементів текстом не відображається. Кількість карток у базі не оцінювалась, як і вимагає розділ «Не з кадрів»."
+      },
+      "agentModel": "claude-haiku-5-5",
+      "agentVerdicts": {
+        "claude-haiku-5-5": "PASS",
+        "claude-sonnet-5-5": null
+      },
+      "escalated": false,
+      "quotesVerified": [
+        {
+          "quote": "Only schedulers and admins can create client cards.",
+          "onPage": true
+        },
+        {
+          "quote": "New client",
+          "onPage": true
+        },
+        {
+          "quote": "A client card from the intake form.",
+          "onPage": true
+        }
+      ],
+      "verdict": "PASS",
+      "factoryGate": "PASS",
+      "rule": "R6: перевірки, агент і цитати збігаються",
+      "playwrightMs": 1597,
+      "reviewCostUsd": 0.00234,
+      "reviewWallMs": 9665
+    }
+  ],
+  "negativeControls": [],
+  "cleanup": {
+    "at": "2026-11-18T18:18:46.822Z",
+    "deleted": [],
+    "remaining": [],
+    "leftoverRequests": 0,
+    "clients": {
+      "deleted": 0,
+      "remaining": 0
+    }
+  }
+}
