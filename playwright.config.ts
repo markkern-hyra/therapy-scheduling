@@ -55,7 +55,13 @@ export default defineConfig({
     { name: "setup", testMatch: /auth\.setup\.ts$/, teardown: "cleanup", use: noRecording },
     // Прибирання після всіх тестів: видаляє синтетичних uat-*@example.test і перевіряє, що нічого не лишилось.
     { name: "cleanup", testMatch: /cleanup\.teardown\.ts$/, use: noRecording },
-    { name: "chromium", dependencies: ["setup"], grepInvert: /@negative-control/ },
+    // Зріз 4: @live-model потребує справжньої моделі (ключ є лише на розгорнутому застосунку), @no-model — помічника без
+    // ключа (локальна збірка й CI). Кожен @live-model — запит із денного ліміту помічника.
+    {
+      name: "chromium",
+      dependencies: ["setup"],
+      grepInvert: deployed ? /@negative-control|@no-model/ : /@negative-control|@live-model/,
+    },
     ...(withNegativeControls
       ? [{ name: "negative-controls", dependencies: ["setup"], grep: /@negative-control/ }]
       : []),
@@ -66,6 +72,10 @@ export default defineConfig({
         // У CI (e2e.yml) застосунок уже зібрано окремим кроком — лише запускаємо.
         command: process.env.CI ? "npm run start" : "npm run build && npm run start",
         url: "http://localhost:3000/login",
+        // Локально й у CI помічник без ключа (@no-model): пробіл перекриває ANTHROPIC_API_KEY з .env.local, а
+        // assistantClient вважає його порожнім — жодного запиту до моделі й командного бюджету. Уже запущений сервер
+        // (reuseExistingServer) цієї змінної не отримує: перед локальним e2e зупиніть власний npm run dev.
+        env: { ANTHROPIC_API_KEY: " " },
         reuseExistingServer: !process.env.CI,
         timeout: 300_000,
       },

@@ -16,6 +16,8 @@ const CLIENT_CARDS = "supabase/migrations/20261026104702_client_cards.sql";
 const OWN_CLIENTS = "supabase/migrations/20261026110054_own_clients.sql";
 const OWN_CLIENT_RULE = "supabase/migrations/20261102151752_own_client_rule.sql";
 const INSURANCE = "supabase/migrations/20261109194052_insurance_status.sql";
+const QUOTA = "supabase/migrations/20261118144117_assistant_quota.sql";
+const QUOTA_DB = "tests/db/assistant-quota.test.ts";
 const CARDS_DB = "tests/db/client-cards.test.ts";
 const INSURANCE_DB = "tests/db/insurance.test.ts";
 const OWN_DB = "tests/db/own-clients.test.ts";
@@ -119,6 +121,46 @@ export const mutants = [
     what: "setInsuranceStatus: прибрано перевірку ролі до запису — дія викликає функцію бази й для терапевта",
     find: "  if (!isStaff(role)) redirect(back);\n",
     replace: "",
+  },
+  // Зріз 4: денний ліміт помічника (design.md impl-client-intake-draft, «Дані й RLS») і роль до моделі.
+  {
+    id: "Q1", kind: "sql", ac: "AC-INTAKE-08", file: QUOTA, tests: [QUOTA_DB],
+    what: "take_assistant_request: межу 50 прибрано — запитів на добу без ліміту",
+    find: "    where usage.requests < 50\n",
+    replace: "",
+  },
+  {
+    id: "Q2", kind: "sql", ac: "AC-INTAKE-09", file: QUOTA, tests: [QUOTA_DB],
+    what: "take_assistant_request: до ролей, що беруть запит, додано therapist",
+    find: "  if not private.has_role('admin', 'scheduler') then",
+    replace: "  if not private.has_role('admin', 'scheduler', 'therapist') then",
+  },
+  {
+    id: "Q3", kind: "sql", ac: "AC-INTAKE-09", file: QUOTA, tests: [QUOTA_DB],
+    what: "public.take_assistant_request: виконувати дозволено й відвідувачу без входу",
+    find: "grant execute on function public.take_assistant_request() to authenticated;",
+    replace: "grant execute on function public.take_assistant_request() to authenticated, anon;\ngrant execute on function private.take_assistant_request() to anon;\ngrant usage on schema private to anon;",
+  },
+  {
+    id: "Q4", kind: "ts", ac: "AC-INTAKE-09", file: "src/app/clients/new/actions.ts",
+    tests: ["tests/scheduling/intake-action.test.ts"],
+    what: "requestIntakeDraft: прибрано перевірку ролі до моделі — терапевт у обхід сторінки витрачає ліміт і отримує чернетку",
+    find: "  if (!canCreateCards(role)) return { ...unchanged, message: MESSAGES.CARD_FORBIDDEN };\n",
+    replace: "",
+  },
+  {
+    id: "Q5", kind: "ts", ac: "AC-INTAKE-08", file: "src/app/clients/new/actions.ts",
+    tests: ["tests/scheduling/intake-action.test.ts"],
+    what: "requestIntakeDraft: відповідь ліміту дня ігнорується — модель викликано й після 50-го запиту",
+    find: "  if (error || !allowed) return { ...unchanged, message: MESSAGES.INTAKE_UNAVAILABLE };\n",
+    replace: "",
+  },
+  {
+    id: "Q6", kind: "ts", ac: "AC-INTAKE-07", file: "src/app/clients/new/actions.ts",
+    tests: ["tests/scheduling/intake-action.test.ts"],
+    what: "requestIntakeDraft: без перевірки вказівок кодом — відмова на ін'єкцію лише від моделі",
+    find: "  if (!text || instructsAssistant(text)) return",
+    replace: "  if (!text) return",
   },
 ];
 

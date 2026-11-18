@@ -129,6 +129,9 @@ isOneToOne: false
             "set_insurance_status":
 { Args: { "p_client_id": string,"p_status": string }; Returns: undefined
                            }
+            "take_assistant_request":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           }
             "therapist_schedule":
 { Args: { "p_from": string,"p_to": string }; Returns: { "client_name": string | null,"confirmed_at": string | null,"ends_at": string,"expires_at": string | null,"slot_id": string,"starts_at": string }[]
                            }

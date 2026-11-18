@@ -17,7 +17,7 @@
   порожній текст без моделі, теги-межі вирізано); дія — не пише, терапевт без моделі. Доказ, що падає: TS-мутант на
   перевірку ролі в дії.
   Done when: AC-INTAKE-01, AC-INTAKE-02, AC-INTAKE-03, AC-INTAKE-04, AC-INTAKE-05, AC-INTAKE-06, AC-INTAKE-07.
-- [ ] 1.2 Міграція `assistant_quota` (design.md, «Дані й RLS»), виклик `take_assistant_request` у `requestIntakeDraft`
+- [x] 1.2 Міграція `assistant_quota` (design.md, «Дані й RLS»), виклик `take_assistant_request` у `requestIntakeDraft`
   перед моделлю; тести збоїв; теги `@live-model` / `@no-model` у `playwright.config.ts`; e2e без ключа й therapist1.
   Тести: база (PGlite) — 50 запитів дозволено, 51-й — `false`, терапевт і анонім — без лічильника; unit — немає ключа,
   ліміт, 429, 529, таймаут, не за схемою → «The assistant is unavailable…», а `stop_reason: refusal` → «This text can't be
