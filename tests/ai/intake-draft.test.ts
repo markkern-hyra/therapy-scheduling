@@ -7,9 +7,11 @@ import { draftFromModelText, intakeMessage } from "@/lib/ai/intake-draft";
 const TODAY = "2026-11-13";
 // Текст звернення для тестів правил: у ньому є кожне ім'я й email, які «повертає модель» нижче (імена й email чернетки
 // мають бути з тексту — Припущення PM). Окремі тести нижче перевіряють, що вигадане не потрапляє в чернетку.
+// Так само з датами народження й мовою сеансів: їх беремо лише тоді, коли текст їх називає.
 const TEXT =
-  "Client Ten client10@example.test · Client Eleven, Guardian Eleven guardian11@example.test · Client Twelve " +
-  "client12@example.test · Rowan Lake rowan.lake@example.test · morgan.bell.example.test · Ellis.Reed@Example.TEST";
+  "Client Ten client10@example.test, born 1990-05-14, sessions in English · Client Eleven, born 2016-09-03, in Spanish, " +
+  "Guardian Eleven guardian11@example.test · Client Twelve client12@example.test · Rowan Lake rowan.lake@example.test, " +
+  "2008-12-20 · morgan.bell.example.test · Ellis.Reed@Example.TEST · 2027-01-05, 2008-11-13, 2008-11-14, 1990-02-30, 2026-11-13";
 
 // Відповідь моделі за схемою: усі поля є, невідоме — null.
 function modelText(facts: Record<string, unknown> = {}) {
@@ -162,7 +164,7 @@ describe("чернетка з тексту звернення", () => {
   });
 
   it("AC-INTAKE-08: відповідь не JSON чи не за схемою — помічник недоступний, а не «майже чернетка»", () => {
-    for (const text of ["not json", JSON.stringify({ status: "draft" }), modelText({ session_language: "French" })]) {
+    for (const text of ["not json", JSON.stringify({ status: "draft" }), modelText({ written_by_parent: "yes" })]) {
       const result = draftFromModelText(text, TODAY, TEXT);
       expect(result).toEqual({ status: "unavailable", reason: "invalid_output" });
       expect(intakeMessage(result)).toBe("The assistant is unavailable right now. Fill in the form manually.");
@@ -202,9 +204,63 @@ describe("чернетка з тексту звернення", () => {
     expect(result).toMatchObject({ status: "ok", values: { full_name: "Rose O'Neil" } });
   });
 
-  it("AC-INTAKE-04: рік народження з нулями попереду (0005) — дорослий, не дитина", () => {
-    expect(draftFromModelText(modelText({ ...adult, birth_date: "0005-05-14" }), TODAY, TEXT)).toMatchObject({
+  it("AC-INTAKE-04: рік народження з нулями попереду (0005) — дорослий, не дитина; рік 0000 — дати немає", () => {
+    const text = `${TEXT} · 0005-05-14 · 0000-05-14`;
+    expect(draftFromModelText(modelText({ ...adult, birth_date: "0005-05-14" }), TODAY, text)).toMatchObject({
       values: { kind: "adult" },
     });
+    expect(draftFromModelText(modelText({ ...adult, birth_date: "0000-05-14" }), TODAY, text)).toMatchObject({
+      values: { birth_date: "" },
+      missing: ["Date of birth"],
+    });
+  });
+
+  it("AC-INTAKE-04: дата народження й мова, яких текст не називає, — порожні й у «Missing»", () => {
+    const text = "Hi, I'm Client Twelve, client12@example.test. I'd like to start therapy soon.";
+    const result = draftFromModelText(
+      modelText({ client_name: "Client Twelve", client_email: "client12@example.test", birth_date: "1990-05-14", session_language: "English" }),
+      TODAY,
+      text,
+    );
+    expect(result).toMatchObject({ missing: ["Date of birth", "Session language"], values: { birth_date: "", language: "" } });
+  });
+
+  it("AC-INTAKE-01: дату словами й мову з тексту впізнаємо — «May 14, 1990», «the 1st of November», «4 de julio», «español»", () => {
+    const ok = (text: string, birth_date: string, session_language: string) =>
+      draftFromModelText(modelText({ ...adult, birth_date, session_language, client_email: null }), TODAY, `Client Ten. ${text}`);
+    expect(ok("I was born on May 14, 1990, sessions in English.", "1990-05-14", "English")).toMatchObject({
+      values: { birth_date: "1990-05-14", language: "English" },
+    });
+    expect(ok("Born on the 1st of November, 2008. English please.", "2008-11-01", "English")).toMatchObject({
+      values: { birth_date: "2008-11-01" },
+    });
+    expect(ok("Nací el 4 de julio de 1993. Sesiones en español.", "1993-07-04", "Spanish")).toMatchObject({
+      values: { birth_date: "1993-07-04", language: "Spanish" },
+    });
+  });
+
+  it("AC-INTAKE-04: мова поза English / Spanish — поле порожнє й у «Missing», а не «помічник недоступний»", () => {
+    const result = draftFromModelText(modelText({ ...adult, session_language: "French" }), TODAY, `${TEXT} French`);
+    expect(result).toMatchObject({ status: "needs_info", missing: ["Session language"], values: { language: "" } });
+    // Ключ з прототипу об'єкта — теж просто «не та мова», а не виняток.
+    expect(draftFromModelText(modelText({ ...adult, session_language: "toString" }), TODAY, TEXT)).toMatchObject({
+      values: { language: "" },
+    });
+  });
+
+  it("AC-INTAKE-04: email має збігатися з адресою в тексті повністю, а не бути її частиною", () => {
+    const text = "I'm Client Ten, born 1990-05-14, English, joann@example.test.";
+    const result = draftFromModelText(modelText({ ...adult, client_email: "ann@example.test" }), TODAY, text);
+    expect(result).toMatchObject({ missing: ["Email"], values: { email: "" } });
+  });
+
+  it("AC-INTAKE-04: ім'я має збігатися зі словами тексту, а не бути частиною іншого імені", () => {
+    const text = "I'm Joann Lee, born 1990-05-14, English, joann.lee@example.test.";
+    const result = draftFromModelText(
+      modelText({ ...adult, client_name: "Ann Lee", client_email: "joann.lee@example.test" }),
+      TODAY,
+      text,
+    );
+    expect(result).toMatchObject({ missing: ["Name"], values: { full_name: "" } });
   });
 });

@@ -50,7 +50,8 @@ export function isPracticeDay(value: unknown): value is string {
 
 // Справжня календарна дата «РРРР-ММ-ДД» (день з адреси, дата народження у формі й у чернетці картки).
 export function isCalendarDate(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  // Рік 0000 поле дати браузера не приймає.
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || value.startsWith("0000")) return false;
   const time = Date.parse(`${value}T00:00:00Z`);
   // 2026-02-30 Date «перекочує» на 2026-03-02 — така дата не збігається з собою після перетворення.
   return !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === value;

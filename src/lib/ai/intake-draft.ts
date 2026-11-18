@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import type { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { MESSAGES } from "@/lib/scheduling/messages";
 import { isCalendarDate } from "@/lib/scheduling/time";
@@ -39,62 +40,84 @@ const isMinor = (birthDate: string, today: string) =>
   `${String(Number(birthDate.slice(0, 4)) + 18).padStart(4, "0")}${birthDate.slice(4)}` > today;
 // Для порівняння з текстом: без різниці в регістрі, пробілах і апострофі (’ чи ').
 const squash = (value: string) => value.normalize("NFC").toLowerCase().replaceAll("’", "'").replace(/\s+/g, " ");
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// Значення є в тексті цілими словами чи адресою: «Ann Lee» — не частина «Joann Lee», «ann@…» — не частина «joann@…».
+const inText = (value: string, text: string) =>
+  value !== "" &&
+  new RegExp(`(?<![\\p{L}\\p{N}._%+-])${escapeRegExp(squash(value))}(?![\\p{L}\\p{N}_%+-]|\\.[\\p{L}\\p{N}])`, "u").test(text);
+// Дата народження з тексту: є і рік, і день місяця («May 14, 1990», «the 1st of November, 2008», «2016-09-03»).
+const dateInText = (date: string, text: string) => {
+  const [year, , day] = date.split("-");
+  return new RegExp(`(?<!\\d)${year}(?!\\d)`).test(text) && new RegExp(`(?<!\\d)0?${Number(day)}(?!\\d)`).test(text);
+};
+// Мова сеансів — лише English чи Spanish і лише названа в тексті (Припущення PM); інша — поле порожнє.
+const LANGUAGE_WORDS: Record<string, RegExp> = {
+  English: /\b(?:english|ingl[eé]s)\b/,
+  Spanish: /\b(?:spanish|espa[nñ]ol|castellano)\b/,
+};
 
-// Відповідь моделі (сирий текст JSON) → чернетка форми. Чиста функція: той самий код у застосунку, офлайн-реплеї й
-// живому eval. Відповідь не за схемою — збій (AC-INTAKE-08), а не «майже чернетка». input — текст звернення: імена й
-// email беремо лише ті, що в ньому є (Припущення PM: «як у тексті; застосунок імен не вигадує»).
-export function draftFromModelText(modelText: string, today: string, input: string): IntakeResult {
-  let json: unknown;
+type Facts = z.infer<typeof IntakeModelSchema>;
+
+// Сирий текст відповіді моделі → факти за схемою; не JSON чи не за схемою — null.
+function parseFacts(modelText: string): Facts | null {
   try {
-    json = JSON.parse(modelText);
+    const parsed = IntakeModelSchema.safeParse(JSON.parse(modelText));
+    return parsed.success ? parsed.data : null;
   } catch {
-    return { status: "unavailable", reason: "invalid_output" };
+    return null;
   }
-  const parsed = IntakeModelSchema.safeParse(json);
-  if (!parsed.success) return { status: "unavailable", reason: "invalid_output" };
-  const facts = parsed.data;
-  if (facts.status === "refused") return { status: "refused" };
+}
 
-  // Лише справжня дата, не пізніша за сьогодні (AC-INTAKE-05) — правило коду, а не промпту.
+// Факти моделі → поля форми за правилами PM. text — текст звернення (squash): значення, якого в ньому немає (вигадане
+// ім'я, email, дата чи мова), — порожнє поле, і воно потрапляє в «Missing».
+function draftValues(facts: Facts, today: string, text: string): IntakeValues {
+  // Лише справжня дата з тексту, не пізніша за сьогодні (AC-INTAKE-05) — правило коду, а не промпту.
   const birth = clean(facts.birth_date);
-  const birthDate = isCalendarDate(birth) && birth <= today ? birth : "";
+  const birthDate = isCalendarDate(birth) && birth <= today && dateInText(birth, text) ? birth : "";
+  const lang = facts.session_language ?? "";
+  const language = Object.hasOwn(LANGUAGE_WORDS, lang) && LANGUAGE_WORDS[lang].test(text) ? lang : "";
   // Child — пише батько чи мати про свою дитину або клієнту менше 18 (Припущення PM: «або … або»).
   const child = facts.written_by_parent || (birthDate !== "" && isMinor(birthDate, today));
-  // Значення, якого в тексті немає (вигадане ім'я чи email), — порожнє поле, і воно потрапляє в «Missing».
-  const text = squash(input);
-  const fromText = (value: string) => (value && text.includes(squash(value)) ? value : "");
-  const values: IntakeValues = {
-    kind: child ? "child" : "adult",
-    full_name: fromText(clean(facts.client_name)),
-    birth_date: birthDate,
-    language: facts.session_language ?? "",
-    // Дорослий — власний email; дитина — email опікуна: email клієнта не стає email опікуна (GC-05).
-    email: child ? "" : fromText(cleanEmail(facts.client_email)),
-    guardian_name: child ? fromText(clean(facts.guardian_name)) : "",
-    guardian_email: child ? fromText(cleanEmail(facts.guardian_email)) : "",
-  };
-  // Обов'язкові поля в порядку форми (Припущення PM). Client type порожнім не буває: правило вище завжди його задає.
-  const contact: [string, keyof IntakeValues][] = child
-    ? [
-        ["Guardian name", "guardian_name"],
-        ["Guardian email", "guardian_email"],
-      ]
-    : [["Email", "email"]];
-  const required: [string, keyof IntakeValues][] = [
-    ["Name", "full_name"],
-    ["Date of birth", "birth_date"],
-    ["Session language", "language"],
-    ...contact,
-  ];
-  const missing = required.filter(([, field]) => !values[field]).map(([label]) => label);
+  const fromText = (value: string) => (inText(value, text) ? value : "");
+  // Дорослий — власний email; дитина — ім'я та email опікуна: email клієнта не стає email опікуна (GC-05).
+  const contact = child
+    ? { email: "", guardian_name: fromText(clean(facts.guardian_name)), guardian_email: fromText(cleanEmail(facts.guardian_email)) }
+    : { email: fromText(cleanEmail(facts.client_email)), guardian_name: "", guardian_email: "" };
+  return { kind: child ? "child" : "adult", full_name: fromText(clean(facts.client_name)), birth_date: birthDate, language, ...contact };
+}
+
+// Обов'язкові поля в порядку форми (Припущення PM). Client type порожнім не буває: draftValues завжди його задає.
+const REQUIRED: [string, keyof IntakeValues][] = [
+  ["Name", "full_name"],
+  ["Date of birth", "birth_date"],
+  ["Session language", "language"],
+];
+const CONTACT: Record<string, [string, keyof IntakeValues][]> = {
+  adult: [["Email", "email"]],
+  child: [
+    ["Guardian name", "guardian_name"],
+    ["Guardian email", "guardian_email"],
+  ],
+};
+
+// Відповідь моделі (сирий текст JSON) → чернетка форми. Чиста функція: той самий код у застосунку, офлайн-реплеї й
+// живому eval. Відповідь не за схемою — збій (AC-INTAKE-08), а не «майже чернетка». input — текст звернення: імена,
+// email, дату й мову беремо лише ті, що в ньому є (Припущення PM: «як у тексті; застосунок імен не вигадує»).
+export function draftFromModelText(modelText: string, today: string, input: string): IntakeResult {
+  const facts = parseFacts(modelText);
+  if (!facts) return { status: "unavailable", reason: "invalid_output" };
+  if (facts.status === "refused") return { status: "refused" };
+  const values = draftValues(facts, today, squash(input));
+  const missing = [...REQUIRED, ...CONTACT[values.kind]].filter(([, field]) => !values[field]).map(([label]) => label);
   return { status: missing.length > 0 ? "needs_info" : "ok", values, missing };
 }
 
 // Текст звернення з форми: порожній чи довший за 2000 символів — null, і моделі його не надсилаємо (AC-INTAKE-06).
 export function intakeText(raw: unknown): string | null {
-  // Форма надсилає кінець рядка як CRLF, а поле браузера рахує його одним символом (maxLength).
-  const text = typeof raw === "string" ? raw.replace(/\r\n?/g, "\n").trim() : "";
-  return text && text.length <= MAX_INTAKE_LENGTH ? text : null;
+  // Лише рядок (файл — не текст звернення). Форма надсилає кінець рядка як CRLF, а поле браузера рахує його одним
+  // символом; межу рахуємо до обрізання пробілів, як maxLength поля.
+  const text = typeof raw === "string" ? raw.replace(/\r\n?/g, "\n") : "";
+  return text.length <= MAX_INTAKE_LENGTH && text.trim() ? text.trim() : null;
 }
 
 export type IntakeCall = { result: IntakeResult; modelId?: string; modelText?: string; stopReason?: string };
@@ -105,7 +128,7 @@ export async function proposeIntakeDraft(
   text: string,
   client: Anthropic | null,
   today: string,
-  { timeoutMs = 25_000, maxRetries = 1 } = {},
+  { timeoutMs = 25_000, maxRetries = 1, deadlineMs = 45_000 } = {},
 ): Promise<IntakeCall> {
   if (!client) return { result: { status: "unavailable", reason: "no_key" } };
   try {
@@ -120,8 +143,9 @@ export async function proposeIntakeDraft(
         messages: [{ role: "user", content: wrapIntakeText(text) }],
         output_config: { effort: "low", format: OUTPUT_FORMAT },
       },
-      // Повтори — лише SDK (429, 5xx, мережа), не більше одного: ключ і бюджет спільні на команду.
-      { timeout: timeoutMs, maxRetries },
+      // Повтори — лише SDK (429, 5xx, мережа), не більше одного: ключ і бюджет спільні на команду. Дедлайн — на весь
+      // виклик разом з очікуванням Retry-After: до maxDuration сторінки, щоб людина побачила AC-INTAKE-08.
+      { timeout: timeoutMs, maxRetries, signal: AbortSignal.timeout(deadlineMs) },
     );
     // Відмовив увесь ланцюжок моделей — текст не годиться для чернетки (AC-INTAKE-06).
     const call = { modelId: message.model, stopReason: message.stop_reason ?? undefined };
@@ -135,7 +159,7 @@ export async function proposeIntakeDraft(
 
 function failureReason(error: unknown): FailureReason {
   if (error instanceof Anthropic.RateLimitError) return "rate_limited";
-  if (error instanceof Anthropic.APIConnectionTimeoutError) return "timeout";
+  if (error instanceof Anthropic.APIConnectionTimeoutError || error instanceof Anthropic.APIUserAbortError) return "timeout";
   return "provider_error";
 }
 

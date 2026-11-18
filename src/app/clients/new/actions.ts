@@ -15,11 +15,13 @@ import { practiceToday } from "@/lib/scheduling/time";
 // (відмова, збій) версія й значення форми ті самі — введене лишається у формі (AC-INTAKE-06, 07, 08).
 export async function requestIntakeDraft(previous: IntakeFormState, form: FormData): Promise<IntakeFormState> {
   const { supabase, role } = await requireRole();
-  const raw = String(form.get("intake_text") ?? "");
+  // Значення поля як є: файл замість тексту intakeText відхилить (лише вставлений текст — «Поза межами» PM).
+  const value = form.get("intake_text");
+  const raw = typeof value === "string" ? value : "";
   const unchanged = { ...previous, text: raw, tone: "error" as const };
   if (!canCreateCards(role)) return { ...unchanged, message: MESSAGES.CARD_FORBIDDEN };
 
-  const text = intakeText(raw);
+  const text = intakeText(value);
   // Порожній чи задовгий текст і явні вказівки помічнику — відмова без моделі (AC-INTAKE-06, 07).
   if (!text || instructsAssistant(text)) return { ...unchanged, message: MESSAGES.INTAKE_REFUSED };
 

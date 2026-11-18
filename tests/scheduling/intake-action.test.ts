@@ -86,7 +86,9 @@ describe("requestIntakeDraft", () => {
   });
 
   it("AC-INTAKE-03: чернетка нічого не пише — дія читає лише профіль, жодної таблиці клієнтів", async () => {
-    await requestIntakeDraft(INITIAL_INTAKE, form(AC01_TEXT));
+    const state = await requestIntakeDraft(INITIAL_INTAKE, form(AC01_TEXT));
+    // Чернетку справді складено — і все одно жодного запису.
+    expect(state).toMatchObject({ tone: "success", values: { full_name: "Client Ten" } });
     expect(h.tables).toEqual(["profiles"]);
   });
 
@@ -94,6 +96,14 @@ describe("requestIntakeDraft", () => {
     const before = { ...INITIAL_INTAKE, seq: 3, values: { full_name: "Client Fifteen" } };
     const state = await requestIntakeDraft(before, form("   "));
     expect(state).toMatchObject({ seq: 3, values: { full_name: "Client Fifteen" }, message: MESSAGES.INTAKE_REFUSED, tone: "error" });
+    expect(model.sent).toHaveLength(0);
+  });
+
+  it("AC-INTAKE-06: файл замість тексту звернення — відмова без моделі (лише вставлений текст)", async () => {
+    const f = new FormData();
+    f.set("intake_text", new File(["Hi, my name is Client Ten"], "intake.txt"));
+    const state = await requestIntakeDraft(INITIAL_INTAKE, f);
+    expect(state).toMatchObject({ text: "", message: MESSAGES.INTAKE_REFUSED, tone: "error" });
     expect(model.sent).toHaveLength(0);
   });
 
@@ -122,8 +132,10 @@ describe("requestIntakeDraft", () => {
 
   it("AC-INTAKE-08: немає ключа (лише пробіли) — «The assistant is unavailable…» без запиту, форма не змінюється", async () => {
     vi.stubEnv("ANTHROPIC_API_KEY", "  ");
-    const state = await requestIntakeDraft({ ...INITIAL_INTAKE, seq: 1 }, form(AC01_TEXT));
+    const before = { ...INITIAL_INTAKE, seq: 1, values: { full_name: "Client Fifteen" } };
+    const state = await requestIntakeDraft(before, form(AC01_TEXT));
     expect(state).toMatchObject({ seq: 1, message: MESSAGES.INTAKE_UNAVAILABLE, tone: "error" });
+    expect(state.values).toEqual(before.values);
     expect(model.sent).toHaveLength(0);
     // Без ключа ліміт дня не витрачаємо.
     expect(h.rpcs).toEqual([]);

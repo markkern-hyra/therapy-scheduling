@@ -4,7 +4,8 @@
 
 import { MAX_INTAKE_LENGTH } from "../intake-form";
 
-export const INTAKE_PROMPT_VERSION = "intake-v1";
+// v2 — схема відповіді: session_language — рядок (обмеження English / Spanish тримає код, ADR 0010).
+export const INTAKE_PROMPT_VERSION = "intake-v2";
 
 export const INTAKE_INSTRUCTIONS = [
   "You read a request that a client, or a client's parent or guardian, sent to a psychotherapy practice.",
@@ -41,8 +42,11 @@ export const INTAKE_INSTRUCTIONS = [
 // збігається; вказівки, яких він не впізнає, лишаються моделі.
 const ASSISTANT_INSTRUCTIONS = [
   /\bignore\s+(?:all\s+|any\s+|the\s+)?(?:previous|prior|above|earlier)\s+(?:instructions?|rules|prompts?)\b/i,
-  /\b(?:for|to|dear|hey)\s+the\s+(?:assistant|ai|bot|model)\b/i,
-  /\b(?:system|developer)\s+(?:prompt|message|instructions?)\b/i,
+  // Звертання до помічника, а не згадка: «For the assistant reading this:», «Note for the AI:», «Assistant: …».
+  /\b(?:for|to|dear|hey)\s+the\s+(?:assistant|ai|bot|model)\b(?:\s+reading\b|\s*[:,])/i,
+  /(?:^|[.!?\n]\s*)(?:assistant|ai|system)\s*:/i,
+  /\b(?:reveal|ignore|print|show|override)\s+(?:the\s+|your\s+)?(?:system|developer)\s+(?:prompt|message|instructions?)\b/i,
+  /\bsubmit\s+the\s+form\s+(?:immediately|now|automatically|right\s+away)\b/i,
   /\bcreate\s+(?:a\s+)?cards?\s+for\s+(?:every|all|each)\b/i,
   /<\/?\s*(?:system|assistant|instructions?)\b[^<>]*>/i,
 ];
