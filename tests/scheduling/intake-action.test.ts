@@ -80,6 +80,14 @@ describe("requestIntakeDraft", () => {
     expect(model.sent).toHaveLength(0);
   });
 
+  it("AC-INTAKE-06: файл замість тексту звернення — відмова без моделі (лише вставлений текст)", async () => {
+    const f = new FormData();
+    f.set("intake_text", new File(["Hi, my name is Client Ten"], "intake.txt"));
+    const state = await requestIntakeDraft(INITIAL_INTAKE, f);
+    expect(state).toMatchObject({ text: "", message: MESSAGES.INTAKE_REFUSED, tone: "error" });
+    expect(model.sent).toHaveLength(0);
+  });
+
   it("AC-INTAKE-06: модель відмовила — та сама версія чернетки й ті самі значення, нічого не записано", async () => {
     answer({ ...CLIENT_TEN, status: "refused", client_name: null, birth_date: null, session_language: null, client_email: null });
     const before = { ...INITIAL_INTAKE, seq: 2, values: { full_name: "Client Fifteen" } };
