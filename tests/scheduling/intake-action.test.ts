@@ -12,6 +12,8 @@ const h = vi.hoisted(() => ({
   role: "scheduler",
   tables: [] as string[],
   rpcs: [] as string[],
+  // Порядок звернень назовні: функція бази й модель — у тому порядку, у якому їх викликала дія.
+  events: [] as string[],
   quota: { data: true as boolean | null, error: null as { message: string } | null },
 }));
 // server-only кидає виняток поза серверним кодом Next.js; у тесті дії він не потрібен (межу стереже tests/ai-key.test.ts).
@@ -27,6 +29,7 @@ vi.mock("@/lib/supabase/server", () => ({
     },
     rpc: async (fn: string) => {
       h.rpcs.push(fn);
+      h.events.push(fn);
       return h.quota;
     },
   }),
@@ -46,13 +49,17 @@ let model: ReturnType<typeof fakeClaude>;
 const answer = (facts: Record<string, unknown>) => {
   model = fakeClaude(async () => claudeMessage(JSON.stringify(facts)));
   // assistantClient створює клієнт SDK під час виклику дії, тож бере цей fetch.
-  vi.stubGlobal("fetch", model.fetch);
+  vi.stubGlobal("fetch", (url: string, init?: RequestInit) => {
+    h.events.push("model");
+    return model.fetch(url, init);
+  });
 };
 
 beforeEach(() => {
   h.role = "scheduler";
   h.tables = [];
   h.rpcs = [];
+  h.events = [];
   h.quota = { data: true, error: null };
   vi.stubEnv("ANTHROPIC_API_KEY", "test-key");
   answer(CLIENT_TEN);
@@ -124,7 +131,7 @@ describe("requestIntakeDraft", () => {
 
   it("AC-INTAKE-08: ліміт запитів на сьогодні вичерпано — «The assistant is unavailable…», модель не викликано", async () => {
     h.quota = { data: false, error: null };
-    const state = await requestIntakeDraft({ ...INITIAL_INTAKE, seq: 4 }, form("Hi, my name is Client Ten…"));
+    const state = await requestIntakeDraft({ ...INITIAL_INTAKE, seq: 4 }, form(AC01_TEXT));
     expect(state).toMatchObject({ seq: 4, message: MESSAGES.INTAKE_UNAVAILABLE, tone: "error" });
     expect(h.rpcs).toEqual(["take_assistant_request"]);
     expect(model.sent).toHaveLength(0);
@@ -132,15 +139,14 @@ describe("requestIntakeDraft", () => {
 
   it("AC-INTAKE-08: база не відповіла про ліміт — помічник недоступний, модель не викликано", async () => {
     h.quota = { data: null, error: { message: "connection reset" } };
-    const state = await requestIntakeDraft(INITIAL_INTAKE, form("Hi, my name is Client Ten…"));
+    const state = await requestIntakeDraft(INITIAL_INTAKE, form(AC01_TEXT));
     expect(state).toMatchObject({ seq: 0, message: MESSAGES.INTAKE_UNAVAILABLE, tone: "error" });
     expect(model.sent).toHaveLength(0);
   });
 
   it("AC-INTAKE-08: запит до моделі — лише після того, як узято запит ліміту дня", async () => {
-    await requestIntakeDraft(INITIAL_INTAKE, form("Hi, my name is Client Ten…"));
-    expect(h.rpcs).toEqual(["take_assistant_request"]);
-    expect(model.sent).toHaveLength(1);
+    await requestIntakeDraft(INITIAL_INTAKE, form(AC01_TEXT));
+    expect(h.events).toEqual(["take_assistant_request", "model"]);
   });
 
   it("AC-INTAKE-09: терапевт у обхід сторінки — відмова без моделі й без запису", async () => {

@@ -148,6 +148,20 @@ export const mutants = [
     find: "  if (!canCreateCards(role)) return { ...unchanged, message: MESSAGES.CARD_FORBIDDEN };\n",
     replace: "",
   },
+  {
+    id: "Q5", kind: "ts", ac: "AC-INTAKE-08", file: "src/app/clients/new/actions.ts",
+    tests: ["tests/scheduling/intake-action.test.ts"],
+    what: "requestIntakeDraft: відповідь ліміту дня ігнорується — модель викликано й після 50-го запиту",
+    find: "  if (error || !allowed) return { ...unchanged, message: MESSAGES.INTAKE_UNAVAILABLE };\n",
+    replace: "",
+  },
+  {
+    id: "Q6", kind: "ts", ac: "AC-INTAKE-07", file: "src/app/clients/new/actions.ts",
+    tests: ["tests/scheduling/intake-action.test.ts"],
+    what: "requestIntakeDraft: без перевірки вказівок кодом — відмова на ін'єкцію лише від моделі",
+    find: "  if (!text || instructsAssistant(text)) return",
+    replace: "  if (!text) return",
+  },
 ];
 
 // Приклади з демо (інша схема — у вашому репо цих файлів немає, тож не розкоментовуйте як є):

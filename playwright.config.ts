@@ -72,6 +72,10 @@ export default defineConfig({
         // У CI (e2e.yml) застосунок уже зібрано окремим кроком — лише запускаємо.
         command: process.env.CI ? "npm run start" : "npm run build && npm run start",
         url: "http://localhost:3000/login",
+        // Локально й у CI помічник без ключа (@no-model): пробіл перекриває ANTHROPIC_API_KEY з .env.local, а
+        // assistantClient вважає його порожнім — жодного запиту до моделі й командного бюджету. Уже запущений сервер
+        // (reuseExistingServer) цієї змінної не отримує: перед локальним e2e зупиніть власний npm run dev.
+        env: { ANTHROPIC_API_KEY: " " },
         reuseExistingServer: !process.env.CI,
         timeout: 300_000,
       },

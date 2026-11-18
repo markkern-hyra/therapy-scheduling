@@ -197,6 +197,8 @@ test.describe("планувальник складає чернетку", () => 
 
       await given("помічник, що складає чернетки, недоступний: ключа моделі немає (локальна збірка й CI)", async () => {
         await openNewClient(page, "Scheduler One");
+        // Уже введене у форму має лишитися: без чернетки форма не змінюється (Припущення PM).
+        await field(page, "Name").fill("Client Ten");
       });
 
       await when("scheduler1 просить скласти чернетку з тексту звернення", async () => {
@@ -208,17 +210,19 @@ test.describe("планувальник складає чернетку", () => 
         {
           clause:
             "scheduler1 бачить повідомлення «The assistant is unavailable right now. Fill in the form manually.», поля форми не змінено",
-          visible: ["повідомлення «The assistant is unavailable right now. Fill in the form manually.»", "поле Name порожнє"],
+          visible: [
+            "повідомлення «The assistant is unavailable right now. Fill in the form manually.»",
+            "Name лишається «Client Ten», як його ввів scheduler1",
+          ],
         },
         async () => {
           await expect(message(page, UNAVAILABLE)).toBeVisible();
-          await expect(field(page, "Name")).toHaveValue("");
+          await expect(field(page, "Name")).toHaveValue("Client Ten");
         },
       );
 
       await when("scheduler1 заповнює форму вручну й створює картку", async () => {
         await field(page, "Adult").check();
-        await field(page, "Name").fill("Client Ten");
         await field(page, "Date of birth").fill("1990-05-14");
         await language(page).selectOption("English");
         await field(page, "Email").fill(email);
