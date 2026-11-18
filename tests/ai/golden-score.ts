@@ -37,6 +37,11 @@ export function scoreCase(expected: GoldenCase["expected"], result: IntakeResult
     const got = label === "Client type" ? (KIND_LABEL[values.kind] ?? values.kind) : values[FIELDS[label]];
     if (got !== want) mismatches.push(`${label}: «${got}», очікувано «${want}»`);
   }
+  // Поля іншого типу клієнта порожні (Припущення PM: для дорослого — email клієнта, для дитини — email опікуна).
+  const otherType = values.kind === "child" ? ["email"] : ["guardian_name", "guardian_email"];
+  for (const field of otherType as (keyof IntakeValues)[]) {
+    if (values[field]) mismatches.push(`${field}: «${values[field]}» у картці типу ${KIND_LABEL[values.kind]}, очікувано порожнє`);
+  }
   for (const text of expected.absent ?? []) {
     const field = Object.entries(values).find(([, value]) => value.toLowerCase().includes(text.toLowerCase()));
     if (field) mismatches.push(`у полі ${field[0]} — «${text}», якого там бути не має`);

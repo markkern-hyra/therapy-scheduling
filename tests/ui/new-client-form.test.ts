@@ -56,6 +56,9 @@ describe("форма нової картки з чернеткою", () => {
     expect(html).toContain("Draft card");
     // Головна дія екрана лишається одна — «Create client» (DESIGN.md: одна primary-кнопка).
     expect(html.match(/bg-primary /g)).toHaveLength(1);
+    const button = (label: string) => html.match(new RegExp(`<button[^>]*>${label}</button>`))?.[0] ?? "";
+    expect(button("Create client")).toContain("bg-primary ");
+    expect(button("Draft card")).not.toContain("bg-primary ");
     // Повідомлення чернетки до першого запиту немає.
     expect(html).not.toContain('role="alert"');
   });

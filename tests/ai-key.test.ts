@@ -51,7 +51,8 @@ describe("перевірка ключа: ANTHROPIC_API_KEY лише на сер�
   it('жоден файл із "use client" не імпортує обгортку з ключем, SDK чи модулі, що тягнуть SDK і промпт', () => {
     const clientFiles = srcFiles.filter((f) => /^\s*["']use client["']/.test(f.text));
     const offenders = clientFiles
-      .filter((f) => /@\/lib\/ai\/(anthropic|intake-draft|prompts\/[\w-]+)["']|@anthropic-ai\/sdk/.test(f.text))
+      // І через аліас @/, і відносним шляхом (../../lib/ai/…).
+      .filter((f) => /(?:@\/|\/)lib\/ai\/(anthropic|intake-draft|prompts\/[\w-]+)["']|@anthropic-ai\/sdk/.test(f.text))
       .map((f) => f.rel);
     expect(offenders).toEqual([]);
   });

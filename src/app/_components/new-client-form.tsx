@@ -29,6 +29,8 @@ export function NewClientForm({ today }: { today: string }) {
                 rows={6}
                 maxLength={MAX_INTAKE_LENGTH}
                 defaultValue={draft.text}
+                // Під час запиту поле лише для читання: відповідь поверне в поле саме надісланий текст.
+                readOnly={drafting}
                 aria-describedby="intake-hint"
               />
             </Label>
@@ -44,7 +46,11 @@ export function NewClientForm({ today }: { today: string }) {
         </Card>
       </form>
       {draft.message && <Alert variant={draft.tone}>{draft.message}</Alert>}
-      <ClientCardForm key={draft.seq} today={today} initial={draft.values ?? undefined} />
+      {/* Поки складається чернетка, форма картки недоступна: чернетка замінить усю форму (Припущення PM), тож введене чи
+          збереження під час запиту загубилися б. */}
+      <fieldset disabled={drafting} className="contents">
+        <ClientCardForm key={draft.seq} today={today} initial={draft.values ?? undefined} />
+      </fieldset>
     </div>
   );
 }

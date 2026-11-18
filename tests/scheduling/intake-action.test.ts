@@ -67,7 +67,9 @@ describe("requestIntakeDraft", () => {
   });
 
   it("AC-INTAKE-03: чернетка нічого не пише — дія читає лише профіль, жодної таблиці клієнтів", async () => {
-    await requestIntakeDraft(INITIAL_INTAKE, form(AC01_TEXT));
+    const state = await requestIntakeDraft(INITIAL_INTAKE, form(AC01_TEXT));
+    // Чернетку справді складено — і все одно жодного запису.
+    expect(state).toMatchObject({ tone: "success", values: { full_name: "Client Ten" } });
     expect(h.tables).toEqual(["profiles"]);
   });
 
@@ -103,8 +105,10 @@ describe("requestIntakeDraft", () => {
 
   it("AC-INTAKE-08: немає ключа (лише пробіли) — «The assistant is unavailable…» без запиту, форма не змінюється", async () => {
     vi.stubEnv("ANTHROPIC_API_KEY", "  ");
-    const state = await requestIntakeDraft({ ...INITIAL_INTAKE, seq: 1 }, form(AC01_TEXT));
+    const before = { ...INITIAL_INTAKE, seq: 1, values: { full_name: "Client Fifteen" } };
+    const state = await requestIntakeDraft(before, form(AC01_TEXT));
     expect(state).toMatchObject({ seq: 1, message: MESSAGES.INTAKE_UNAVAILABLE, tone: "error" });
+    expect(state.values).toEqual(before.values);
     expect(model.sent).toHaveLength(0);
   });
 

@@ -7,7 +7,9 @@ export const IntakeModelSchema = z.object({
   status: z.enum(["draft", "refused"]),
   client_name: z.string().nullable(),
   birth_date: z.string().nullable(),
-  session_language: z.enum(["English", "Spanish"]).nullable(),
+  // Рядок, а не enum: helper SDK 1.4 переносить enum лише в description, тож схема мови не обмежує. Правило PM
+  // («English» або «Spanish», інша мова — поле порожнє) перевіряє код (draftFromModelText).
+  session_language: z.string().nullable(),
   client_email: z.string().nullable(),
   written_by_parent: z.boolean(),
   guardian_name: z.string().nullable(),

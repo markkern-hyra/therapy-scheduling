@@ -25,9 +25,12 @@
 - Модель — `claude-sonnet-5-5` (рішення людини: між Opus 5.5 і Haiku 5.5 — дешевша за Opus, надійніша за Haiku на відмові
   й ін'єкції, які поріг PM робить обов'язковими), `output_config.effort: "low"`, `output_config.format` — JSON-схема
   відповіді; серверний `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`) — лише на відмову класифікатора
-  безпеки. Без інструментів, без стрімінгу, `maxRetries: 1`, таймаут 25 с.
+  безпеки. Без інструментів, без стрімінгу, `maxRetries: 1`, таймаут спроби 25 с і один дедлайн 45 с на весь виклик разом
+  з очікуванням `Retry-After` (сторінка — `maxDuration = 60`).
 - Модель повідомляє факти (`src/lib/ai/intake-schema.ts`), правила PM застосовує чиста `draftFromModelText`
-  (`src/lib/ai/intake-draft.ts`); стани `ok / needs_info / refused / unavailable`. Ключ `ANTHROPIC_API_KEY` читає й
+  (`src/lib/ai/intake-draft.ts`); стани `ok / needs_info / refused / unavailable`. Ім'я, email, дату й мову беремо лише ті,
+  що є в тексті звернення. `session_language` у схемі — рядок, а не enum: helper `zodOutputFormat` SDK 1.4.0 переносить
+  `enum` лише в `description`, тож обмеження «English / Spanish» тримає код (інша мова — поле порожнє, а не збій). Ключ `ANTHROPIC_API_KEY` читає й
   клієнт SDK створює лише `src/lib/ai/anthropic.ts` з `import "server-only"`; без `NEXT_PUBLIC_`.
 - Ліміт — 50 запитів на добу практики на застосунок: функція бази `take_assistant_request()` (задача 1.2
   `impl-client-intake-draft`); вичерпано — AC-INTAKE-08.
@@ -52,7 +55,9 @@
 - Складніше: кожен запит платний — ліміт 50/добу й `maxRetries: 1`. UAT і приймання PM на проді ділять ліміт бази;
   живий `npm run eval` іде в API напряму (повз ліміт бази) і ділить лише бюджет ключа — 10 запитів на прогін.
 - Записи `tests/fixtures/golden/recorded.json` оновлюємо (`RECORD=1 npm run eval`), коли змінюється промпт
-  (`INTAKE_PROMPT_VERSION`), схема чи модель.
+  (`INTAKE_PROMPT_VERSION`), схема чи модель. Прогін, обірваний 429, лишає частину записів старої версії — `npm test` їх
+  відхиляє: дочекатися ліміту, завершити прогін і лише після зеленого `npm test` комітити записи. Кейс, що стабільно не
+  проходить, — виправити причину (промпт чи код), а не дату чи версію запису руками.
 
 ## Як перевіряємо
 
