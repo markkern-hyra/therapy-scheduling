@@ -14,7 +14,7 @@ import { practiceToday } from "@/lib/scheduling/time";
 // із profiles (requireRole) — до моделі: терапевт у обхід сторінки моделі не викликає (AC-INTAKE-09). Без чернетки
 // (відмова, збій) версія й значення форми ті самі — введене лишається у формі (AC-INTAKE-06, 07, 08).
 export async function requestIntakeDraft(previous: IntakeFormState, form: FormData): Promise<IntakeFormState> {
-  const { role } = await requireRole();
+  const { supabase, role } = await requireRole();
   const raw = String(form.get("intake_text") ?? "");
   const unchanged = { ...previous, text: raw, tone: "error" as const };
   if (!canCreateCards(role)) return { ...unchanged, message: MESSAGES.CARD_FORBIDDEN };
@@ -23,7 +23,14 @@ export async function requestIntakeDraft(previous: IntakeFormState, form: FormDa
   // Порожній чи задовгий текст і явні вказівки помічнику — відмова без моделі (AC-INTAKE-06, 07).
   if (!text || instructsAssistant(text)) return { ...unchanged, message: MESSAGES.INTAKE_REFUSED };
 
-  const { result } = await proposeIntakeDraft(text, assistantClient(), practiceToday(new Date()));
+  const client = assistantClient();
+  if (!client) return { ...unchanged, message: MESSAGES.INTAKE_UNAVAILABLE };
+  // Ліміт дня (50 на застосунок, design.md рішення 5) — до моделі й лише з ключем; вичерпано чи база не відповіла —
+  // помічник недоступний (AC-INTAKE-08). Функція бази ще раз перевіряє роль (AC-INTAKE-09).
+  const { data: allowed, error } = await supabase.rpc("take_assistant_request");
+  if (error || !allowed) return { ...unchanged, message: MESSAGES.INTAKE_UNAVAILABLE };
+
+  const { result } = await proposeIntakeDraft(text, client, practiceToday(new Date()));
   if (result.status !== "ok" && result.status !== "needs_info") return { ...unchanged, message: intakeMessage(result) };
   return {
     seq: previous.seq + 1,
