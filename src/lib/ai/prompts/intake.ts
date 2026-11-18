@@ -36,6 +36,19 @@ export const INTAKE_INSTRUCTIONS = [
   "Copy email addresses exactly as written, even when they look invalid.",
 ].join("\n");
 
+// Явні вказівки помічнику чи системі (AC-INTAKE-07, GC-10): перевіряє код до ліміту й моделі (design.md, рішення 3), щоб
+// відмова на ін'єкцію не залежала лише від моделі. Перелік вузький — звичайне звернення («ignore my previous email») не
+// збігається; вказівки, яких він не впізнає, лишаються моделі.
+const ASSISTANT_INSTRUCTIONS = [
+  /\bignore\s+(?:all\s+|any\s+|the\s+)?(?:previous|prior|above|earlier)\s+(?:instructions?|rules|prompts?)\b/i,
+  /\b(?:for|to|dear|hey)\s+the\s+(?:assistant|ai|bot|model)\b/i,
+  /\b(?:system|developer)\s+(?:prompt|message|instructions?)\b/i,
+  /\bcreate\s+(?:a\s+)?cards?\s+for\s+(?:every|all|each)\b/i,
+  /<\/?\s*(?:system|assistant|instructions?)\b[^<>]*>/i,
+];
+
+export const instructsAssistant = (text: string) => ASSISTANT_INSTRUCTIONS.some((pattern) => pattern.test(text));
+
 // Тег-межа в будь-якому регістрі, з атрибутами чи без; [^<>] не дає «тегу» без «>» з'їсти текст через інший «<».
 const BOUNDARY_TAG = /<\/?\s*intake_text\b[^<>]*>/gi;
 

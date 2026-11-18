@@ -3,6 +3,7 @@
 import { assistantClient } from "@/lib/ai/anthropic";
 import { intakeMessage, intakeText, proposeIntakeDraft } from "@/lib/ai/intake-draft";
 import type { IntakeFormState } from "@/lib/ai/intake-form";
+import { instructsAssistant } from "@/lib/ai/prompts/intake";
 import { requireRole } from "@/lib/auth/require-role";
 import { canCreateCards } from "@/lib/scheduling/clients";
 import { MESSAGES } from "@/lib/scheduling/messages";
@@ -19,7 +20,8 @@ export async function requestIntakeDraft(previous: IntakeFormState, form: FormDa
   if (!canCreateCards(role)) return { ...unchanged, message: MESSAGES.CARD_FORBIDDEN };
 
   const text = intakeText(raw);
-  if (!text) return { ...unchanged, message: MESSAGES.INTAKE_REFUSED };
+  // Порожній чи задовгий текст і явні вказівки помічнику — відмова без моделі (AC-INTAKE-06, 07).
+  if (!text || instructsAssistant(text)) return { ...unchanged, message: MESSAGES.INTAKE_REFUSED };
 
   const { result } = await proposeIntakeDraft(text, assistantClient(), practiceToday(new Date()));
   if (result.status !== "ok" && result.status !== "needs_info") return { ...unchanged, message: intakeMessage(result) };
