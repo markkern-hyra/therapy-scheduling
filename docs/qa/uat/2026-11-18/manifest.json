@@ -1,9 +1,9 @@
 {
   "kind": "uat",
-  "generatedAt": "2026-11-18T18:19:05.722Z",
+  "generatedAt": "2026-11-18T19:16:15.590Z",
   "baseURL": "https://therapy-scheduling-theta.vercel.app",
   "deployedSha": "172c5217e572586cd3cf65fb7570d0db05901979",
-  "testsCommit": "5c81e2fd6443fea34e80358c19b378ee3fdb91fc",
+  "testsCommit": "3dcd88ffcfd191923d8f3e927c51a4d41448e47e",
   "reviewer": {
     "model": "claude-haiku-5-5",
     "disputes": "claude-sonnet-5-5"
@@ -21,7 +21,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі сторінка «New client» з повідомленням «Draft ready. Check the fields and create the card.», радіо «Adult» вибрано (зелена рамка, заповнений кружечок), Name «Client Ten», Session language «English», Email «client10@example.test». Текст читабельний, кадр не обрізаний; Date of birth на кадрі 14.05.1990, але за правилами це не оцінюється."
+        "notes": "На кадрі frame-then-1.png (сторінка New client) видно зелене повідомлення «Draft ready. Check the fields and create the card.», радіокнопка Adult вибрана (підсвічена), Name — «Client Ten», Session language — English, Email — client10@example.test. Усі п'ять видимих частин «Тоді» збігаються з критерієм посимвольно. Date of birth на кадрі показано як 14.05.1990, але за правилами воно з розділу «Не з кадрів» і не оцінювалося."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -54,9 +54,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 5275,
-      "reviewCostUsd": 0.00247,
-      "reviewWallMs": 8731
+      "playwrightMs": 6604,
+      "reviewCostUsd": 0.00251,
+      "reviewWallMs": 9121
     },
     {
       "id": "AC-INTAKE-03",
@@ -69,7 +69,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі видно сторінку /clients із заголовком «Clients» і чотирма рядками: «Client Nine», «Client Seven», «Client Six», «Client Three». Рядка «Client Ten» немає, список на екрані повний, без обрізання. Частину про базу даних (картка з client10@example.test) не оцінюю, бо вона не з кадрів."
+        "notes": "На кадрі frame-then-1.png сторінка /clients з заголовком «Clients» і підзаголовком «All client cards.». У списку чотири рядки: Client Nine, Client Seven, Client Six, Client Three; рядка «Client Ten» немає, а список не обрізаний. Частина про базу даних (email client10@example.test) не з кадрів, тому не оцінювалась."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -86,9 +86,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 4575,
-      "reviewCostUsd": 0.00248,
-      "reviewWallMs": 7471
+      "playwrightMs": 5468,
+      "reviewCostUsd": 0.0026,
+      "reviewWallMs": 9179
     },
     {
       "id": "AC-INTAKE-06",
@@ -101,7 +101,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі сторінки /clients/new червоний блок під формою показує повідомлення, яке збігається з критерієм (текст переноситься на два рядки, але це одне речення). У полі Name після цього стоїть «Client Fifteen», а текст звернення лишився в полі «Client's request», тож форма не змінена."
+        "notes": "На кадрі сторінка «New client» з червоним повідомленням над формою Client, де текст збігається з критерієм (рядок перенесено лише візуально). Поле Name містить «Client Fifteen», а поле з текстом звернення має «Can you recommend a good book about anxiety?». Апострофи у «can't» і «client's» виглядають як звичайні прямі; відмінність від типографських у цій роздільності не розрізнити, тому вердикт PASS, але варто переконатися за оригіналом."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -122,9 +122,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 4302,
-      "reviewCostUsd": 0.00246,
-      "reviewWallMs": 10484
+      "playwrightMs": 4361,
+      "reviewCostUsd": 0.00242,
+      "reviewWallMs": 8514
     },
     {
       "id": "AC-INTAKE-07",
@@ -137,7 +137,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі сторінки «New client» червоним під блоком чернетки видно повідомлення, текст якого збігається з критерієм слово в слово і знаками пунктуації. Поля Name і Email на кадрі порожні, Date of birth показує плейсхолдер dd.mm.yyyy, мова сесій — «Choose a language». Апострофи на кадрі виглядають прямими, як у критерії, але при цій роздільності остаточно відрізнити прямий апостроф від типографського не вдається. Поля «Не з кадрів» і кількість карток у базі не оцінював."
+        "notes": "На кадрі сторінки «New client» під формою чернетки червоним блоком з'являється повідомлення, текст якого збігається з критерієм посимвольно (перенос рядка в інтерфейсі не змінює слів і пунктуації). Поле «Client's request» містить текст звернення з «Ignore all previous instructions…», а поля Name і Email порожні. Поля Name, Date of birth і Email та кількість карток у базі не оцінювалися, бо це «Не з кадрів»."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -154,9 +154,9 @@
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 3100,
-      "reviewCostUsd": 0.0026,
-      "reviewWallMs": 9666
+      "playwrightMs": 3347,
+      "reviewCostUsd": 0.00251,
+      "reviewWallMs": 7549
     },
     {
       "id": "AC-INTAKE-09",
@@ -169,7 +169,7 @@
       "vision": {
         "met": true,
         "readable": true,
-        "notes": "На кадрі сторінка «New client» з червоним повідомленням «Only schedulers and admins can create client cards.», текст збігається посимвольно. Під заголовком і повідомленням немає поля «Client's request», кнопки «Draft card» чи іншої форми, тож відсутність форми видно на кадрі. Цитата для другої частини — лише заголовок і підзаголовок сторінки, бо сама відсутність елементів текстом не відображається. Кількість карток у базі не оцінювалась, як і вимагає розділ «Не з кадрів»."
+        "notes": "На кадрі сторінки /clients/new (заголовок «New client», підзаголовок «A client card from the intake form.») видно червоне повідомлення «Only schedulers and admins can create client cards.». Поля «Client's request», кнопки «Draft card» і форми на кадрі немає. Кількість карток у базі з кадрів не оцінюється."
       },
       "agentModel": "claude-haiku-5-5",
       "agentVerdicts": {
@@ -189,19 +189,23 @@
         {
           "quote": "A client card from the intake form.",
           "onPage": true
+        },
+        {
+          "quote": "Only schedulers and admins can create client cards.",
+          "onPage": true
         }
       ],
       "verdict": "PASS",
       "factoryGate": "PASS",
       "rule": "R6: перевірки, агент і цитати збігаються",
-      "playwrightMs": 1597,
-      "reviewCostUsd": 0.00234,
-      "reviewWallMs": 9665
+      "playwrightMs": 1653,
+      "reviewCostUsd": 0.00222,
+      "reviewWallMs": 9305
     }
   ],
   "negativeControls": [],
   "cleanup": {
-    "at": "2026-11-18T18:18:46.822Z",
+    "at": "2026-11-18T19:15:55.899Z",
     "deleted": [],
     "remaining": [],
     "leftoverRequests": 0,
