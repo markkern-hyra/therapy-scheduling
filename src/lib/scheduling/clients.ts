@@ -1,5 +1,6 @@
 import { isStaff, type Role } from "@/lib/auth/roles";
 import { MESSAGES, type MessageCode } from "./messages";
+import { isCalendarDate } from "./time";
 
 // Рядок clients із форми картки «New client». Лише нормалізація; форму перевіряє validateCard, а прямий запит — check і
 // unique у міграціях (ADR 0003, 0009). Порожнє поле лишається порожнім рядком чи null, щоб відмовив саме check.
@@ -46,10 +47,8 @@ export function validateCard(values: Record<string, string>, today: string): Car
   if (kind === "adult") Object.assign(errors, pair("full_name", "email", "CLIENT_INVALID"));
   else if (!text("full_name")) errors.full_name = "NAME_MISSING";
   const birthDate = text("birth_date");
-  // Рядкове порівняння дат коректне лише для РРРР-ММ-ДД. Node розбирає 2026-02-30 як 2 березня, тому звіряємо дату назад.
-  const parsed = /^\d{4}-\d{2}-\d{2}$/.test(birthDate) ? new Date(birthDate) : null;
-  const realDate = parsed && !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === birthDate;
-  if (!realDate || birthDate > today) errors.birth_date = "BIRTH_DATE_INVALID";
+  // Рядкове порівняння дат коректне лише для РРРР-ММ-ДД — isCalendarDate це й гарантує.
+  if (!isCalendarDate(birthDate) || birthDate > today) errors.birth_date = "BIRTH_DATE_INVALID";
   if (text("language") !== "English" && text("language") !== "Spanish") errors.language = "LANGUAGE_MISSING";
   if (kind === "child") Object.assign(errors, pair("guardian_name", "guardian_email", "GUARDIAN_INVALID"));
   return errors;

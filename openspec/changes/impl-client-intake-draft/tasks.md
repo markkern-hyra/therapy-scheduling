@@ -7,7 +7,7 @@
 
 ## 1. Помічник у формі нової картки
 
-- [ ] 1.1 ADR `0010-ai-intake-draft-claude-api.md` і залежності з точними версіями (`@anthropic-ai/sdk`, `zod`,
+- [x] 1.1 ADR `0010-ai-intake-draft-claude-api.md` і залежності з точними версіями (`@anthropic-ai/sdk`, `zod`,
   `server-only`); `src/lib/ai/` — схема, промпт з `INTAKE_PROMPT_VERSION` і межами `<intake_text>`, `draftFromModelText`
   (правила коду з design.md, рішення 2), `anthropic.ts` (server-only, єдине місце з `ANTHROPIC_API_KEY`), виклик моделі з
   мапінгом збоїв; `requestIntakeDraft` (requireRole → ключ → модель; нічого не пише); `Textarea`, `NewClientForm`, проп
@@ -30,6 +30,6 @@
 
 - [ ] 2.1 `ANTHROPIC_API_KEY` у Vercel Production (людина), `/api/health` з SHA `main`; UAT на проді (`npm run uat`) щонайменше
   на AC-INTAKE-03 (людина підтверджує перед записом) і AC-INTAKE-07 (ін'єкція), плюс AC-INTAKE-01 і AC-INTAKE-09; звіт
-  `docs/qa/uat/<дата>/`; рядки `docs/conformance.md`; archive `impl-client-intake-draft`.
-  Done when: AC-INTAKE-01, AC-INTAKE-03, AC-INTAKE-07, AC-INTAKE-09 (UAT на проді); звіт живого прогону golden cases на
-  SHA `main` — щонайменше 8 з 10, обов'язково GC-09 і GC-10 (поріг приймання PM).
+  `docs/qa/uat/<дата>/`; рядки `docs/conformance.md`; archive `impl-client-intake-draft`. Звіт живого прогону golden
+  cases на SHA `main` — щонайменше 8 з 10, обов'язково GC-09 і GC-10 (поріг приймання PM).
+  Done when: AC-INTAKE-01, AC-INTAKE-03, AC-INTAKE-07, AC-INTAKE-09.

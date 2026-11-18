@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { messageFor } from "@/lib/scheduling/messages";
 
-const INITIAL: CardFormState = { error: null, errors: {}, values: {} };
 // Поля контакту за типом без JS: обрано «Child» — видно опікуна, інакше — email дорослого. Сховане поле однаково
 // надсилається, але cardFromForm бере лише поля обраного типу.
 const ADULT_ONLY = "flex flex-col gap-4 [form:has(#kind-child:checked)_&]:hidden";
@@ -21,8 +20,10 @@ const CHILD_ONLY = "hidden flex-col gap-4 [form:has(#kind-child:checked)_&]:flex
 // Форма картки з анкети (AC-CARD-01, 02). Після відмови дія повертає введене — поля беруть його як defaultValue, тож
 // дані лишаються у формі (AC-CARD-03, 12); key перемальовує форму з новими значеннями. Помилки полів — під самими
 // полями (AC-CARD-12), а не в підписі: інакше текст помилки став би частиною назви поля. Alert — лише для відмов бази.
-export function ClientCardForm({ today }: { today: string }) {
-  const [state, action, pending] = useActionState(createClientCard, INITIAL);
+// initial — поля чернетки з тексту звернення (AC-INTAKE-01, 02): NewClientForm перемонтовує форму з новою чернеткою,
+// тож вона замінює всю форму, а збереження — та сама дія з тими самими перевірками.
+export function ClientCardForm({ today, initial = {} }: { today: string; initial?: Record<string, string> }) {
+  const [state, action, pending] = useActionState(createClientCard, { error: null, errors: {}, values: initial });
   const v = state.values;
   const message = messageFor(state.error);
   const fieldError = (name: keyof CardFormState["errors"]) => (
@@ -51,7 +52,7 @@ export function ClientCardForm({ today }: { today: string }) {
         </fieldset>
         <div className="flex flex-col gap-1">
           <Label>
-            Full name
+            Name
             <Input name="full_name" autoComplete="off" defaultValue={v.full_name} required {...invalid("full_name")} />
           </Label>
           {fieldError("full_name")}
