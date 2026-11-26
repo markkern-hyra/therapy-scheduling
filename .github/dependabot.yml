@@ -26,9 +26,40 @@ updates:
     groups:
       npm-minor-and-patch:
         update-types: [minor, patch]
+    # Стек закріплено в AGENTS.md («Стек і версії (не оновлювати без ADR)»): мінорні й мажорні оновлення цих пакетів —
+    # лише окремим PR з ADR, не груповим PR бота. Патчі (16.4.x, 19.3.x, 2.117.x, 0.12.x) — можна.
     ignore:
-      - dependency-name: supabase
+      - dependency-name: supabase # CLI 2.120; 3.x змінює поведінку команд бази
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@fission-ai/openspec" # 1.14.1 — та сама версія, що й глобальний CLI
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+      - dependency-name: next
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: eslint-config-next
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: react
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: react-dom
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@supabase/supabase-js"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "@supabase/ssr"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: typescript # TypeScript 7 шаблон не перевіряв
         update-types: ["version-update:semver-major"]
+      - dependency-name: eslint # ESLint 10 шаблон не перевіряв
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node" # рантайм — Node 24.x, типи — теж 24.x
+        update-types: ["version-update:semver-major"]
+      - dependency-name: tailwindcss
+        update-types: ["version-update:semver-major"]
+      - dependency-name: vitest
+        update-types: ["version-update:semver-major"]
+      # 1.6.28 (patch) підняв peer-залежність до typescript >=6.0.0, а в нас TypeScript 5.9 і typescript-eslint <6.1:
+      # npm install на Vercel падав з ERESOLVE (груповий PR #53, 26.11.2026; той самий випадок — демо курсу, PR #42 → #46).
+      # Прибрати рядок, коли перейдемо на TypeScript 6 окремим PR з ADR.
+      - dependency-name: "@vitest/eslint-plugin"
+        versions: [">=1.6.28"]
     open-pull-requests-limit: 5
 
   - package-ecosystem: github-actions
