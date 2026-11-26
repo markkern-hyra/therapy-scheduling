@@ -36,8 +36,16 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-const boom = () => Object.assign(new Error(`Cannot save ${USER_TEXT}\nsecond line ${USER_TEXT}`), { digest: "1234567" });
-const otherBoom = () => new Error("Cannot load");
+// Стек, як на Vercel: кадри з коду застосунку (/var/task/src/…). Кадри з tests/ трекер відкидає (не код застосунку).
+const withFrame = <E extends Error>(error: E, fn: string, file: string): E => {
+  error.stack = `${error.name}: ${error.message}\n    at ${fn} (/var/task/src/${file}:12:7)`;
+  return error;
+};
+const boom = () =>
+  Object.assign(withFrame(new Error(`Cannot save ${USER_TEXT}\nsecond line ${USER_TEXT}`), "saveClient", "app/clients/actions.ts"), {
+    digest: "1234567",
+  });
+const otherBoom = () => withFrame(new Error("Cannot load"), "loadClient", "app/clients/page.tsx");
 
 describe("onRequestError", () => {
   it("надсилає маршрут-шаблон, тип, назву помилки, digest і рядки стеку — без тексту помилки, заголовків і query", async () => {
@@ -66,10 +74,15 @@ describe("onRequestError", () => {
     // Бібліотека загорнула помилку й підставила чужий стек: заголовок не збігається, а рядок тексту схожий на кадр.
     const wrapped = new Error(`at ClientTen (client10@example.test:1:1)`);
     wrapped.stack = new Error(`Wrapped:\nnote\nat ClientTen (client10@example.test:1:1)`).stack;
+    // Те саме без пробілів: рядок схожий на кадр V8, а змінений текст його вже не містить (CodeRabbit, #57).
+    const compact = new Error("Slot taken\nat ClientTen (client10@example.test:1:1)");
+    expect(compact.stack).toContain("ClientTen");
+    compact.message = "Slot taken";
     await onRequestError(sneaky, request, context);
     await onRequestError(rewritten, request, { ...context, routePath: "/slots" });
     await onRequestError(wrapped, request, { ...context, routePath: "/holds" });
-    expect(sent).toHaveLength(3);
+    await onRequestError(compact, request, { ...context, routePath: "/schedule" });
+    expect(sent).toHaveLength(4);
     for (const { body } of sent) {
       expect(body.text).toMatch(/\nat .+:\d+:\d+\)?/);
       for (const leak of ["Client Ten", "ClientTen", "client10", "2026-11-03"]) expect(body.text).not.toContain(leak);
@@ -135,12 +148,17 @@ describe("onRequestError", () => {
       "    at save (/Users/someone/app/.next/server/chunks/a.js:1:2)",
       "    at load (file:///Users/someone/app/node_modules/x/index.js:3:4)",
       "    at C:\\Users\\someone\\app\\src\\lib\\b.ts:5:6",
+      // Шлях поза .next, src і node_modules (локальний інструмент) — кадр відкидаємо цілим (CodeRabbit, #57).
+      "    at helper (/Users/someone/tools/helper.js:7:8)",
+      "    at node:internal/process/task_queues:105:5",
     ].join("\n");
     await onRequestError(error, request, context);
     const { text } = sent[0].body;
     expect(text).toContain("at save (.next/server/chunks/a.js:1:2)");
     expect(text).toContain("at load (node_modules/x/index.js:3:4)");
     expect(text).toContain("at src/lib/b.ts:5:6");
+    expect(text).toContain("at node:internal/process/task_queues:105:5");
+    expect(text).not.toContain("helper");
     expect(text).not.toContain("someone");
   });
 });

@@ -26,11 +26,15 @@ const lastSent = new Map<string, number>();
 // шляху, тож рядок тексту помилки на кшталт «at 2026-11-03 14:30 Client Ten (x:1:1)» кадром не вважається.
 const FRAME = /^at (?:(?:async |new )?[^\s()]+ \()?[^\s()]+:\d+:\d+\)?$/;
 const ERROR_NAME = /^[A-Za-z][A-Za-z0-9_]{0,59}$/;
+// Кадр лишаємо, лише коли його шлях (після скорочення) — у коді застосунку, залежностях чи Node: рядок тексту помилки
+// на кшталт «at ClientTen (client10@example.test:1:1)» і локальні шляхи з іменем користувача ОС сюди не підходять.
+const KNOWN_ROOT = /^(?:\.next|src|node_modules)\/|^node:/;
+const frameLocation = (line: string) => /\(([^()]+)\)$/.exec(line)?.[1] ?? line.slice(3);
 
 /**
  * Лише рядки «at …» зі стеку. Заголовок «Назва: текст помилки» відрізаємо цілим (текст може бути багаторядковим і
  * містити дані користувача), беремо лише рядки виду «at … файл:рядок:колонка», а абсолютний шлях скорочуємо до
- * .next/…, src/… чи node_modules/… — щоб у чат не потрапило ім'я користувача ОС з локального шляху.
+ * .next/…, src/… чи node_modules/…; кадри з іншими шляхами відкидаємо — щоб у чат не потрапило ім'я користувача ОС.
  */
 function stackFrames(error: unknown): string[] {
   if (!(error instanceof Error) || typeof error.stack !== "string") return [];
@@ -48,6 +52,7 @@ function stackFrames(error: unknown): string[] {
         .replace(/(?:file:\/\/)?(?:[A-Za-z]:)?[\\/][^\s()]*?[\\/](\.next|src|node_modules)[\\/]/g, "$1/")
         .replaceAll("\\", "/"),
     )
+    .filter((line) => KNOWN_ROOT.test(frameLocation(line)))
     .slice(0, STACK_FRAMES)
     .map((line) => line.slice(0, 160));
 }
