@@ -70,12 +70,24 @@ jobs:
           set -euo pipefail
           umask 077
           d="$RUNNER_TEMP/backup"; mkdir -p "$d"
+          # Кожен db dump — окремий pg_dump зі своїм знімком, а спільного (--snapshot) supabase db dump не має. Тому
+          # версію останньої міграції читаємо до й після дампів: змінилась (db-deploy встиг між ними) — схема й дані з
+          # різних моментів, копію не шифруємо й не завантажуємо. Спільну concurrency з db-deploy свідомо не беремо
+          # (див. вище). Версія — мітка часу міграції, не дані.
+          schema_version() { psql "$SUPABASE_DB_URL" -Atc "select coalesce(max(version), '') from supabase_migrations.schema_migrations"; }
+          before=$(schema_version)
           supabase db dump --db-url "$SUPABASE_DB_URL" --role-only -f "$d/roles.sql"
           supabase db dump --db-url "$SUPABASE_DB_URL" -f "$d/schema.sql"
           supabase db dump --db-url "$SUPABASE_DB_URL" --data-only --use-copy \
             -x storage.buckets_vectors -x storage.vector_indexes -f "$d/data.sql"
           # Запасний варіант для відновлення лише ваших таблиць (-s public разом з --data-only не перевірено).
           supabase db dump --db-url "$SUPABASE_DB_URL" --data-only --use-copy -s public -f "$d/data-public.sql"
+          after=$(schema_version)
+          if [ "$before" != "$after" ]; then
+            echo "::error title=backup::Під час копії застосовано міграцію ($before → $after): схема й дані з різних моментів. Копію не збережено — запустіть backup ще раз."
+            exit 1
+          fi
+          echo "Версія схеми (остання міграція): $after"
           # Кількість рядків кожної таблиці — з блоків COPY самого дампу (лише назви таблиць і числа).
           for f in data data-public; do
             awk '/^COPY /{t=$2; n=0; inside=1; next} inside && /^\\\.$/{print t"|"n; inside=0; next} inside{n++}' \
