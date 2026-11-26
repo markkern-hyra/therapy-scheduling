@@ -11,6 +11,33 @@ const SUPABASE_PAUSED = 540;
 export type DbProbe = { status: number; error: { code?: string; message?: string } | null };
 export type DbHealth = { db: "ok" | "down"; reason: string };
 
+/** WS11: APP_ENV — змінна Vercel лише для гілки staging. Лише коротка мітка: довільний текст у відповідь не йде. */
+const APP_ENV = /^[a-z][a-z0-9-]{0,19}$/;
+/** Ref проєкту Supabase — перша частина адреси https://<ref>.supabase.co; не секрет (браузер бачить цю адресу). */
+const SUPABASE_HOST = /^([a-z0-9]{20})\.supabase\.co$/;
+
+function supabaseRef(url: string | undefined): string | null {
+  try {
+    return SUPABASE_HOST.exec(new URL(url ?? "").hostname)?.[1] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Яка збірка відповідає і в яку базу ходить. На staging VERCEL_ENV теж "preview" — розрізняють APP_ENV і supabaseRef.
+ * VERCEL_GIT_COMMIT_SHA є, коли у Vercel увімкнено «Automatically expose System Environment Variables» (типово так).
+ */
+export function buildInfo(env: Readonly<Record<string, string | undefined>>) {
+  const appEnv = env.APP_ENV?.trim() ?? "";
+  return {
+    sha: env.VERCEL_GIT_COMMIT_SHA ?? "local",
+    env: env.VERCEL_ENV ?? "local",
+    appEnv: APP_ENV.test(appEnv) ? appEnv : null,
+    supabaseRef: supabaseRef(env.NEXT_PUBLIC_SUPABASE_URL),
+  };
+}
+
 export function classifyDbProbe({ status, error }: DbProbe): DbHealth {
   if (status === SUPABASE_PAUSED) return { db: "down", reason: "paused" };
   const code = error?.code ?? "";
