@@ -22,10 +22,12 @@
 const [rawBase = process.env.PROD_URL ?? "", expectSha = ""] = process.argv.slice(2);
 // client_payload.url від Vercel може прийти хостом без схеми — додаємо https://.
 const base = (/^https?:\/\//.test(rawBase) ? rawBase : rawBase ? `https://${rawBase}` : "").replace(/\/+$/, "");
-// Секрет обходу — лише на адреси Vercel: помилка в полі url ручного запуску не віддасть його чужому хосту.
+// Секрет обходу — лише на адреси Vercel і лише через HTTPS: помилка в полі url ручного запуску не віддасть його чужому
+// хосту чи відкритим текстом.
 const onVercel = (() => {
   try {
-    return /(^|\.)vercel\.app$/.test(new URL(base).hostname);
+    const url = new URL(base);
+    return url.protocol === "https:" && /(^|\.)vercel\.app$/.test(url.hostname);
   } catch {
     return false;
   }
