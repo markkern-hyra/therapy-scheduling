@@ -5,7 +5,8 @@ import { MESSAGES } from "@/lib/scheduling/messages";
 import { isCalendarDate } from "@/lib/scheduling/time";
 import { MAX_INTAKE_LENGTH } from "./intake-form";
 import { IntakeModelSchema } from "./intake-schema";
-import { INTAKE_INSTRUCTIONS, wrapIntakeText } from "./prompts/intake";
+import { logLlmCall } from "./llm-log";
+import { INTAKE_INSTRUCTIONS, INTAKE_PROMPT_VERSION, wrapIntakeText } from "./prompts/intake";
 
 // Модель помічника (рішення людини: дешевша за Opus, надійніша за Haiku на відмові й ін'єкції; ADR 0010).
 export const INTAKE_MODEL = "claude-sonnet-5-5";
@@ -120,15 +121,50 @@ export function intakeText(raw: unknown): string | null {
   return text.length <= MAX_INTAKE_LENGTH && text.trim() ? text.trim() : null;
 }
 
-export type IntakeCall = { result: IntakeResult; modelId?: string; modelText?: string; stopReason?: string };
+export type IntakeCall = {
+  result: IntakeResult;
+  modelId?: string;
+  modelText?: string;
+  stopReason?: string;
+  usage?: { input_tokens: number; output_tokens: number };
+};
+type CallOptions = { timeoutMs?: number; maxRetries?: number; deadlineMs?: number };
 
 // Один виклик моделі. Клієнт — параметром (застосунок бере його з anthropic.ts, тести — з підміненим fetch, eval — зі
 // своїм ключем), тож тут немає ні process.env, ні server-only. modelId і modelText — для звіту eval і запису реплею.
+// log (WS11) — рядок llm.call у журнал Vercel після кожного виклику моделі; без log (golden-тести, eval) журналу немає.
 export async function proposeIntakeDraft(
   text: string,
   client: Anthropic | null,
   today: string,
-  { timeoutMs = 25_000, maxRetries = 1, deadlineMs = 45_000 } = {},
+  { log, ...options }: CallOptions & { log?: { requestId: string; route: string } } = {},
+): Promise<IntakeCall> {
+  const started = performance.now();
+  const call = await callModel(text, client, today, options);
+  if (log && client) {
+    const { result } = call;
+    logLlmCall({
+      ...log,
+      model: call.modelId ?? INTAKE_MODEL,
+      fallbackUsed: call.modelId !== undefined && call.modelId !== INTAKE_MODEL,
+      state: result.status,
+      latencyMs: performance.now() - started,
+      // shortcut: при серверному fallback usage — лише спроба, що відповіла (відмовлена — в usage.iterations); рахувати
+      // всі спроби — коли вартість fallback стане важливою.
+      inputTokens: call.usage?.input_tokens,
+      outputTokens: call.usage?.output_tokens,
+      promptVersion: INTAKE_PROMPT_VERSION,
+      errorKind: result.status === "unavailable" ? result.reason : undefined,
+    });
+  }
+  return call;
+}
+
+async function callModel(
+  text: string,
+  client: Anthropic | null,
+  today: string,
+  { timeoutMs = 25_000, maxRetries = 1, deadlineMs = 45_000 }: CallOptions,
 ): Promise<IntakeCall> {
   if (!client) return { result: { status: "unavailable", reason: "no_key" } };
   try {
@@ -148,7 +184,7 @@ export async function proposeIntakeDraft(
       { timeout: timeoutMs, maxRetries, signal: AbortSignal.timeout(deadlineMs) },
     );
     // Відмовив увесь ланцюжок моделей — текст не годиться для чернетки (AC-INTAKE-06).
-    const call = { modelId: message.model, stopReason: message.stop_reason ?? undefined };
+    const call = { modelId: message.model, stopReason: message.stop_reason ?? undefined, usage: message.usage };
     if (message.stop_reason === "refusal") return { result: { status: "refused" }, ...call };
     const modelText = message.content.find((block) => block.type === "text")?.text ?? "";
     return { result: draftFromModelText(modelText, today, text), modelText, ...call };
