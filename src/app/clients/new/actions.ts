@@ -32,7 +32,9 @@ export async function requestIntakeDraft(previous: IntakeFormState, form: FormDa
   const { data: allowed, error } = await supabase.rpc("take_assistant_request");
   if (error || !allowed) return { ...unchanged, message: MESSAGES.INTAKE_UNAVAILABLE };
 
-  const { result } = await proposeIntakeDraft(text, client, practiceToday(new Date()));
+  // Рядок llm.call у журнал Vercel (WS11): id запиту й маршрут-шаблон, без тексту звернення.
+  const log = { requestId: crypto.randomUUID(), route: "/clients/new" };
+  const { result } = await proposeIntakeDraft(text, client, practiceToday(new Date()), { log });
   if (result.status !== "ok" && result.status !== "needs_info") return { ...unchanged, message: intakeMessage(result) };
   return {
     seq: previous.seq + 1,

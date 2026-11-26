@@ -1,7 +1,7 @@
 // Виклик моделі для чернетки картки: що саме йде в Claude API і що бачить людина, коли модель не відповіла як треба.
 // Клієнт SDK справжній, підмінено лише fetch — тож класи помилок (429, таймаут, 5xx) ті самі, що на проді. Мережі й
 // ключа тест не потребує (CI).
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { INTAKE_MODEL, intakeText, proposeIntakeDraft } from "@/lib/ai/intake-draft";
 import { MAX_INTAKE_LENGTH } from "@/lib/ai/intake-form";
 import { INTAKE_INSTRUCTIONS, INTAKE_PROMPT_VERSION, instructsAssistant, wrapIntakeText } from "@/lib/ai/prompts/intake";
@@ -151,5 +151,55 @@ describe("помічник недоступний — форма працює в
     const { client } = clientWith(async () => message("", "refusal"));
     const call = await proposeIntakeDraft("text", client, TODAY);
     expect(call.result).toEqual({ status: "refused" });
+  });
+});
+
+// WS11, B: журнал llm.call — один рядок на виклик моделі, без тексту звернення, промпту й відповіді моделі.
+describe("журнал llm.call", () => {
+  const LOG = { requestId: "3f0c2a9e-1b7d-4c55-9a3e-2f6d8e1c0b4a", route: "/clients/new" };
+  afterEach(() => vi.restoreAllMocks());
+
+  it("успішна чернетка — рядок з моделлю, станом, токенами й версією промпту, без тексту звернення", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    const { client } = clientWith(async () => message(JSON.stringify(FACTS)));
+    await proposeIntakeDraft(AC01_TEXT, client, TODAY, { log: LOG });
+    expect(info).toHaveBeenCalledTimes(1);
+    const line = String(info.mock.calls[0][0]);
+    expect(JSON.parse(line)).toMatchObject({
+      event: "llm.call",
+      ...LOG,
+      model: INTAKE_MODEL,
+      fallbackUsed: false,
+      state: "ok",
+      inputTokens: 10,
+      outputTokens: 5,
+      latencyMs: expect.any(Number),
+      promptVersion: INTAKE_PROMPT_VERSION,
+    });
+    for (const marker of ["Client Ten", "1990", "client10", "intake_text", INTAKE_INSTRUCTIONS.slice(0, 40)]) {
+      expect(line).not.toContain(marker);
+    }
+  });
+
+  it("помічник недоступний — рядок рівнем error з кодом причини; відповіла інша модель — fallbackUsed", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    const { client } = clientWith(async () => apiError(429, "rate_limit_error"));
+    await proposeIntakeDraft("text", client, TODAY, { maxRetries: 0, log: LOG });
+    expect(JSON.parse(String(error.mock.calls[0][0]))).toMatchObject({ state: "unavailable", errorKind: "rate_limited" });
+
+    const fallback = clientWith(async () => {
+      const reply = await message(JSON.stringify(FACTS)).json();
+      return Response.json({ ...reply, model: "claude-sonnet-5" });
+    });
+    await proposeIntakeDraft(AC01_TEXT, fallback.client, TODAY, { log: LOG });
+    expect(JSON.parse(String(info.mock.calls[0][0]))).toMatchObject({ model: "claude-sonnet-5", fallbackUsed: true });
+  });
+
+  it("без log — журналу немає (golden-тести й eval)", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    const { client } = clientWith(async () => message(JSON.stringify(FACTS)));
+    await proposeIntakeDraft(AC01_TEXT, client, TODAY);
+    expect(info).not.toHaveBeenCalled();
   });
 });
