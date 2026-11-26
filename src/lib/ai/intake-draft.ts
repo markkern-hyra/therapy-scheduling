@@ -149,6 +149,8 @@ export async function proposeIntakeDraft(
       fallbackUsed: call.modelId !== undefined && call.modelId !== INTAKE_MODEL,
       state: result.status,
       latencyMs: performance.now() - started,
+      // shortcut: при серверному fallback usage — лише спроба, що відповіла (відмовлена — в usage.iterations); рахувати
+      // всі спроби — коли вартість fallback стане важливою.
       inputTokens: call.usage?.input_tokens,
       outputTokens: call.usage?.output_tokens,
       promptVersion: INTAKE_PROMPT_VERSION,

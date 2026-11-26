@@ -173,6 +173,7 @@ describe("журнал llm.call", () => {
       state: "ok",
       inputTokens: 10,
       outputTokens: 5,
+      latencyMs: expect.any(Number),
       promptVersion: INTAKE_PROMPT_VERSION,
     });
     for (const marker of ["Client Ten", "1990", "client10", "intake_text", INTAKE_INSTRUCTIONS.slice(0, 40)]) {
@@ -189,10 +190,10 @@ describe("журнал llm.call", () => {
 
     const fallback = clientWith(async () => {
       const reply = await message(JSON.stringify(FACTS)).json();
-      return Response.json({ ...reply, model: "claude-opus-5-5" });
+      return Response.json({ ...reply, model: "claude-sonnet-5" });
     });
     await proposeIntakeDraft(AC01_TEXT, fallback.client, TODAY, { log: LOG });
-    expect(JSON.parse(String(info.mock.calls[0][0]))).toMatchObject({ model: "claude-opus-5-5", fallbackUsed: true });
+    expect(JSON.parse(String(info.mock.calls[0][0]))).toMatchObject({ model: "claude-sonnet-5", fallbackUsed: true });
   });
 
   it("без log — журналу немає (golden-тести й eval)", async () => {
