@@ -2,7 +2,8 @@
 // (сторінка, маршрут API, Server Action, proxy), а ми надсилаємо КОРОТКЕ повідомлення в той самий Telegram-чат,
 // що й алерт smoke: маршрут, метод, назва помилки, digest, до 5 верхніх рядків стеку, деплой, середовище.
 // WS11, B: трекер помилок сервера без Sentry (власний onRequestError). Взято з набору ops-kit WS11
-// (src/instrumentation.ts.example) без змін коду. Тест: tests/instrumentation.test.ts.
+// (src/instrumentation.ts.example); за рецензією посилено фільтр кадрів стеку, назву помилки й ключ паузи.
+// Тест: tests/instrumentation.test.ts.
 // Секрети (лише назви): TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID — тут це змінні середовища VERCEL (Settings →
 // Environment Variables, Production і Preview), без префікса NEXT_PUBLIC_; GitHub Secrets сюди не потрапляють.
 // Нема змінних — функція мовчки нічого не робить.
@@ -21,6 +22,10 @@ const TIMEOUT_MS = 2_500; // не тримаємо відповідь корис
 const SAME_ERROR_PAUSE_MS = 60_000; // та сама помилка на тому самому маршруті — не частіше разу на хвилину
 const STACK_FRAMES = 5; // скільки верхніх рядків «at …» стеку надсилати
 const lastSent = new Map<string, number>();
+// Кадр стеку V8: «at [async |new ]функція (шлях:рядок:колонка)» або «at шлях:рядок:колонка» — без пробілів у назві й
+// шляху, тож рядок тексту помилки на кшталт «at 2026-11-03 14:30 Client Ten (x:1:1)» кадром не вважається.
+const FRAME = /^at (?:(?:async |new )?[^\s()]+ \()?[^\s()]+:\d+:\d+\)?$/;
+const ERROR_NAME = /^[A-Za-z][A-Za-z0-9_]{0,59}$/;
 
 /**
  * Лише рядки «at …» зі стеку. Заголовок «Назва: текст помилки» відрізаємо цілим (текст може бути багаторядковим і
@@ -36,10 +41,45 @@ function stackFrames(error: unknown): string[] {
   return body
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => line.startsWith("at ") && /:\d+:\d+\)?$/.test(line))
-    .map((line) => line.replace(/(?:[A-Za-z]:)?[\\/][^\s()]*?[\\/](\.next|src|node_modules)[\\/]/g, "$1/"))
+    // Ще й не частина тексту помилки: заголовок стеку міг не збігтися з error.message (стек переписали, текст змінили).
+    .filter((line) => FRAME.test(line) && !error.message.includes(line.slice(3)))
+    .map((line) =>
+      line
+        .replace(/(?:file:\/\/)?(?:[A-Za-z]:)?[\\/][^\s()]*?[\\/](\.next|src|node_modules)[\\/]/g, "$1/")
+        .replaceAll("\\", "/"),
+    )
     .slice(0, STACK_FRAMES)
     .map((line) => line.slice(0, 160));
+}
+
+// Назва власного класу помилки може нести дані — лише коротке слово, інакше «Error».
+function errorName(error: unknown): string {
+  if (!(error instanceof Error)) return typeof error;
+  return ERROR_NAME.test(error.name) ? error.name : "Error";
+}
+
+function errorDigest(error: unknown): string {
+  const digest = (error as { digest?: unknown } | null)?.digest;
+  return typeof digest === "string" ? digest.slice(0, 40) : "";
+}
+
+// Digest Next.js рахує з тексту й стеку, тож у тієї самої помилки зі змінними даними він щоразу інший: ключ — маршрут,
+// назва й верхній кадр. Старі ключі прибираємо, щоб пам'ять не росла.
+function firstInPause(key: string): boolean {
+  const now = Date.now();
+  if (now - (lastSent.get(key) ?? 0) < SAME_ERROR_PAUSE_MS) return false;
+  for (const [k, at] of lastSent) if (now - at >= SAME_ERROR_PAUSE_MS) lastSent.delete(k);
+  lastSent.set(key, now);
+  return true;
+}
+
+function deployLines(): string[] {
+  const env = process.env.APP_ENV ?? process.env.VERCEL_ENV ?? "local"; // APP_ENV=staging — змінна лише для гілки staging
+  const branch = process.env.VERCEL_GIT_COMMIT_REF;
+  return [
+    `Середовище: ${env}${branch ? ` (гілка ${branch})` : ""}`,
+    `Деплой: ${process.env.VERCEL_DEPLOYMENT_ID ?? "?"}, коміт ${(process.env.VERCEL_GIT_COMMIT_SHA ?? "local").slice(0, 7)}`,
+  ];
 }
 
 export const onRequestError: Instrumentation.onRequestError = async (error, request, context) => {
@@ -47,26 +87,20 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (!token || !chatId) return;
 
-  const name = error instanceof Error ? error.name : typeof error;
-  const rawDigest = (error as { digest?: unknown } | null)?.digest;
-  const digest = typeof rawDigest === "string" ? rawDigest.slice(0, 40) : "";
-  // routePath — шаблон маршруту (/requests/[id]), без id і без ?query. request.path не беремо.
+  const name = errorName(error);
+  const digest = errorDigest(error);
+  // routePath — шаблон маршруту (/clients/[id]), без id і без ?query. request.path не беремо.
   const route = context.routePath;
-
-  const key = `${route}|${digest || name}`;
-  const now = Date.now();
-  if (now - (lastSent.get(key) ?? 0) < SAME_ERROR_PAUSE_MS) return;
-  lastSent.set(key, now);
-
-  const env = process.env.APP_ENV ?? process.env.VERCEL_ENV ?? "local"; // APP_ENV=staging — змінна лише для гілки staging
-  const branch = process.env.VERCEL_GIT_COMMIT_REF;
   const frames = stackFrames(error);
+  if (!firstInPause(`${route}|${name}|${frames[0] ?? ""}`)) return;
+
+  const [envLine, deployLine] = deployLines();
   const text = [
     "ПОМИЛКА СЕРВЕРА",
-    `Середовище: ${env}${branch ? ` (гілка ${branch})` : ""}`,
+    envLine,
     `Маршрут: ${request.method} ${route} (${context.routeType}, ${context.routerKind})`,
     `Помилка: ${name}${digest ? `, digest ${digest}` : ""}`,
-    `Деплой: ${process.env.VERCEL_DEPLOYMENT_ID ?? "?"}, коміт ${(process.env.VERCEL_GIT_COMMIT_SHA ?? "local").slice(0, 7)}`,
+    deployLine,
     ...(frames.length ? ["Стек (верхні рядки):", ...frames] : []),
   ].join("\n");
 
