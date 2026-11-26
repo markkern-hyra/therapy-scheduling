@@ -13,7 +13,8 @@
 #
 # Важливо:
 # - repository_dispatch, status і schedule GitHub запускає ЛИШЕ з файлу на гілці за замовчуванням (main). До merge
-#   перевіряйте ручним запуском: Actions → smoke → Run workflow (поле url порожнє → прод; заповнене → job "deploy").
+#   перевіряйте ручним запуском з main: Actions → smoke → Run workflow (поле url порожнє → прод; заповнене → job
+#   "deploy"). Ручний прод-прогін з іншої гілки чекає її коміт на проді й буде червоним.
 # - Захист Vercel: у цьому репо Vercel Authentication вимкнено з дня 0 (docs/bootstrap.md), тож PM відкриває staging
 #   за адресою без входу; заголовок обходу нічому не заважає і врятує smoke, якщо захист колись увімкнуть. Вмикаючи —
 #   лише Standard Protection (прод відкритий: курс читає прод /api/health без входу), не All Deployments.
@@ -66,8 +67,6 @@ jobs:
       PROD_URL: ${{ vars.PROD_URL }}
       # Очікуваний коміт: щойно розгорнутий (status / repository_dispatch) або HEAD main (schedule, ручний запуск з main).
       EXPECT_SHA: ${{ github.event.client_payload.git.sha || github.event.sha || github.sha }}
-      # Прод не за захистом, але заголовок не шкодить, якщо колись увімкнуть All Deployments.
-      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -83,6 +82,9 @@ jobs:
             exit 1
           fi
       - name: Прод = main, сторінка входу відкривається, база відповідає
+        env:
+          # Прод не за захистом, але заголовок не шкодить, якщо колись увімкнуть All Deployments. Секрет — лише цьому кроку.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: node scripts/smoke.mjs "$PROD_URL" "$EXPECT_SHA"
       - name: Алерт людині в Telegram (лише якщо щось червоне)
         if: failure()
@@ -125,8 +127,6 @@ jobs:
       DEPLOY_ENV: ${{ github.event.client_payload.environment || 'manual' }}
       DEPLOY_BRANCH: ${{ github.event.client_payload.git.ref || '' }}
       SMOKE_TARGET: deploy
-      # Значення — лише з GitHub Secrets; скрипт додає заголовок x-vercel-protection-bypass і не друкує секрет.
-      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       # repository_dispatch завжди бере останній коміт main — нам звідти потрібен лише scripts/smoke.mjs.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -137,16 +137,21 @@ jobs:
         with:
           node-version: 24
       - name: Що перевіряємо
+        env:
+          HAS_BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET != '' }}
         run: |
           if [ -z "$DEPLOY_URL" ]; then
             echo "::error title=smoke::Немає адреси деплою (client_payload.url чи поле url ручного запуску)"
             exit 1
           fi
-          if [ -z "$VERCEL_AUTOMATION_BYPASS_SECRET" ]; then
+          if [ "$HAS_BYPASS" != "true" ]; then
             echo "::warning title=smoke::Немає секрету VERCEL_AUTOMATION_BYPASS_SECRET — захищений деплой відповість стіною входу Vercel."
           fi
           echo "Середовище: $DEPLOY_ENV; гілка: ${DEPLOY_BRANCH:-?}; коміт: ${EXPECT_SHA:0:7}"
       - name: Деплой відкривається з обходом захисту, база відповідає, коміт той самий
+        env:
+          # Значення — лише з GitHub Secrets; скрипт додає заголовок x-vercel-protection-bypass і не друкує секрет.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: node scripts/smoke.mjs "$DEPLOY_URL" "$EXPECT_SHA"
       - name: Алерт людині в Telegram (лише якщо щось червоне)
         if: failure()

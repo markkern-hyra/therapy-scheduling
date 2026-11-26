@@ -74,12 +74,18 @@ describe("buildInfo (/api/health)", () => {
       supabaseRef: null,
     });
     expect(buildInfo({ NEXT_PUBLIC_SUPABASE_URL: `https://${STAGING}.supabase.co.evil.test` }).supabaseRef).toBeNull();
+    expect(buildInfo({ NEXT_PUBLIC_SUPABASE_URL: `https://a.${STAGING}.supabase.co` }).supabaseRef).toBeNull();
+    expect(buildInfo({ NEXT_PUBLIC_SUPABASE_URL: `https://x${STAGING}.supabase.co` }).supabaseRef).toBeNull();
+    expect(buildInfo({ NEXT_PUBLIC_SUPABASE_URL: `https://${STAGING.slice(1)}.supabase.co` }).supabaseRef).toBeNull();
     expect(buildInfo({ NEXT_PUBLIC_SUPABASE_URL: "не адреса" }).supabaseRef).toBeNull();
   });
 
-  it("не віддає довільний текст з APP_ENV — лише коротку мітку", () => {
-    expect(buildInfo({ APP_ENV: " staging " }).appEnv).toBe("staging");
-    expect(buildInfo({ APP_ENV: "sb_secret_abcdefghijklmnopqrstuvwxyz" }).appEnv).toBeNull();
+  it("не віддає довільний текст з APP_ENV — лише коротку мітку: до 20 символів, малі літери, цифри й дефіс", () => {
+    expect(buildInfo({ APP_ENV: " Staging " }).appEnv).toBe("staging");
+    expect(buildInfo({ APP_ENV: "a".repeat(20) }).appEnv).toBe("a".repeat(20));
+    expect(buildInfo({ APP_ENV: "a".repeat(21) }).appEnv).toBeNull();
+    expect(buildInfo({ APP_ENV: "sb_x" }).appEnv).toBeNull();
+    expect(buildInfo({ APP_ENV: "1staging" }).appEnv).toBeNull();
     expect(buildInfo({ APP_ENV: "<script>" }).appEnv).toBeNull();
   });
 });

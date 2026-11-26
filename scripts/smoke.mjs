@@ -22,7 +22,15 @@
 const [rawBase = process.env.PROD_URL ?? "", expectSha = ""] = process.argv.slice(2);
 // client_payload.url від Vercel може прийти хостом без схеми — додаємо https://.
 const base = (/^https?:\/\//.test(rawBase) ? rawBase : rawBase ? `https://${rawBase}` : "").replace(/\/+$/, "");
-const bypass = (process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? "").trim();
+// Секрет обходу — лише на адреси Vercel: помилка в полі url ручного запуску не віддасть його чужому хосту.
+const onVercel = (() => {
+  try {
+    return /(^|\.)vercel\.app$/.test(new URL(base).hostname);
+  } catch {
+    return false;
+  }
+})();
+const bypass = onVercel ? (process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? "").trim() : "";
 const target = process.env.SMOKE_TARGET === "deploy" ? "deploy" : "prod";
 
 const headers = { "user-agent": "smoke/2.0 (WS11)" };
@@ -43,7 +51,8 @@ const get = async (path) => {
       text: await r.text(),
     };
   } catch (e) {
-    return { status: 0, location: "", vercelError: "", text: String(e.cause?.code ?? e) };
+    // Лише код чи назва помилки: текст помилки fetch може містити значення заголовка (секрет обходу).
+    return { status: 0, location: "", vercelError: "", text: String(e.cause?.code ?? e.name) };
   }
 };
 const vercelWall = (r) =>

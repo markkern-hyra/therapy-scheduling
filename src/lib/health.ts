@@ -29,7 +29,7 @@ function supabaseRef(url: string | undefined): string | null {
  * VERCEL_GIT_COMMIT_SHA є, коли у Vercel увімкнено «Automatically expose System Environment Variables» (типово так).
  */
 export function buildInfo(env: Readonly<Record<string, string | undefined>>) {
-  const appEnv = env.APP_ENV?.trim() ?? "";
+  const appEnv = env.APP_ENV?.trim().toLowerCase() ?? "";
   return {
     sha: env.VERCEL_GIT_COMMIT_SHA ?? "local",
     env: env.VERCEL_ENV ?? "local",
